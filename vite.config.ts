@@ -13,9 +13,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg'],
       manifest: {
-        name: 'Twenty-One Weeks',
-        short_name: '21 Weeks',
-        description: 'Training log for the 21-week cut → walk-run → 10K program.',
+        name: 'Sixteen Weeks',
+        short_name: '16 Weeks',
+        description: 'Training log for the 16-week cut → base → 10K program.',
         start_url: base,
         scope: base,
         display: 'standalone',
