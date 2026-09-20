@@ -220,6 +220,14 @@ function buildSession(phase: Phase, pw: number, week: number, dow: number): Sess
       lines: ['45-min easy treadmill walk', 'Nothing else — let the week’s work land'],
     };
   }
+  // Race day is day 1 of week 16, so week 15's last lifting day would land the
+  // evening before the 10K. It becomes an easy walk instead.
+  if (phase.id === 'p3' && pw === 7 && dow === 6) {
+    return {
+      kind: 'rest', tag: 'Rest', short: 'Rest', title: 'Rest before the 10K', minutes: 30,
+      lines: ['30-min easy walk, nothing else', 'The 10K is tomorrow — legs stay fresh', 'Eat normally and get to bed early'],
+    };
+  }
   const L = LIFTS[dow];
   if (L) {
     const first = week === 1;
