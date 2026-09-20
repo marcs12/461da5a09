@@ -11,7 +11,7 @@ export function Plan({ data, date, onOpen }: { data: Data; date: string; onOpen:
   return (
     <section>
       <div className="pagehead">
-        <div><h1>The program</h1><p>Sep 19, 2026 – Feb 12, 2027 · 21 weeks · Huberman’s Day 1 on Saturdays</p></div>
+        <div><h1>The program</h1><p>Sep 20, 2026 – Jan 9, 2027 · 16 weeks · Huberman’s Day 1 on Sundays</p></div>
         <div className="legend">
           <span className="chip k-cardio">Cardio</span><span className="chip k-strength">Resistance</span>
           <span className="chip k-rest">Rest + walk</span><span className="chip k-break">Break</span>
@@ -51,10 +51,10 @@ export function Plan({ data, date, onOpen }: { data: Data; date: string; onOpen:
         </div>
         <div className="guides">
           <article className="card"><h3>Every week</h3><ul>
-            <li><b>Sat</b> long cardio · <b>Sun</b> legs · <b>Mon</b> rest</li>
-            <li><b>Tue</b> torso · <b>Wed</b> medium cardio · <b>Thu</b> short, hard</li>
-            <li><b>Fri</b> shoulders & arms</li>
-            <li>45-min easy treadmill walk on Sun, Mon, Tue and Fri</li>
+            <li><b>Sun</b> long run · <b>Mon</b> legs · <b>Tue</b> rest</li>
+            <li><b>Wed</b> torso · <b>Thu</b> medium cardio · <b>Fri</b> short, hard</li>
+            <li><b>Sat</b> shoulders & arms</li>
+            <li>45-min easy treadmill walk on Mon, Tue, Wed and Sat</li>
           </ul></article>
           <article className="card"><h3>Resistance</h3><ul>
             <li>Week 1: 2 sets, leave 2–3 reps in the tank</li>
@@ -67,9 +67,10 @@ export function Plan({ data, date, onOpen }: { data: Data; date: string; onOpen:
             <li>Drop liquid calories and alcohol; lean protein + vegetables</li>
             <li>Sleep 7–8 hours</li>
           </ul></article>
-          <article className="card"><h3>Phase 3 · Vancouver winter</h3>
+          <article className="card"><h3>Running · Vancouver winter</h3>
+            <p>Baseline going in: 2.5 km at 7:30/km. Every easy run is written at that pace or slower — tempo and intervals are the only places you push.</p>
             <p>The treadmill can’t reach running speed, so you’ll run in the rain. A light waterproof shell and grippy running shoes keep you consistent.</p>
-            <p><b>Shins, knees or Achilles aching?</b> Repeat that week before moving on.</p>
+            <p><b>Shins, knees or Achilles aching?</b> Repeat that week before moving on — the 10K date moves, you don’t.</p>
           </article>
         </div>
       </div>

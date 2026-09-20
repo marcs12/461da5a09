@@ -1,7 +1,7 @@
 import { diff, fmtShort } from '../lib/dates';
 import { END, PHASES, START, TOTAL_DAYS, phaseEnd, phaseStart, programDay } from '../lib/program';
 
-/** The 21-week timeline, one segment per phase, with a marker on `date`. */
+/** The 16-week timeline, one segment per phase, with a marker on `date`. */
 export function Ribbon({ date }: { date: string }) {
   const pd = programDay(date);
   const cur = pd.status === 'in' ? pd.phase.id : null;

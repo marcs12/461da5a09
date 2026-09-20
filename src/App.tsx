@@ -58,10 +58,10 @@ export default function App() {
       <header className="top">
         <div className="top-in">
           <div className="brand">
-            <div className="mark" aria-hidden="true">21</div>
+            <div className="mark" aria-hidden="true">16</div>
             <div>
-              <div className="brand-name">Twenty-One Weeks</div>
-              <div className="brand-sub">Cut → walk-run → 10K · Sep 19 – Feb 12</div>
+              <div className="brand-name">Sixteen Weeks</div>
+              <div className="brand-sub">Cut → base → 10K · Sep 20 – Jan 9</div>
             </div>
           </div>
           <nav className="tabs" aria-label="Sections">{tabs('tab')}</nav>

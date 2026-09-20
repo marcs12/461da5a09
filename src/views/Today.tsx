@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { addDays, diff, fmtDay, fmtShort, num, parse, r1, sgn, today } from '../lib/dates';
-import { DOW, EST_NOTE, EX, START, programDay, weekStart, type ProgramDay, type Session } from '../lib/program';
+import { DOW, EST_NOTE, EX, START, WEEKS, programDay, weekStart, type ProgramDay, type Session } from '../lib/program';
 import { editDay, editSettings, type Data, type DayLog, type SetEntry } from '../lib/store';
 import { avg7, calorieNudge, isDone, lastPerf, weights } from '../lib/stats';
 import { Ribbon } from '../components/Ribbon';
@@ -27,7 +27,7 @@ export function Today({ data, date, setDate, onTimer }: Props) {
   const eyebrow = pd.status === 'pre'
     ? (pd.daysUntil === 1 ? 'Program starts tomorrow' : `Program starts in ${pd.daysUntil} days`)
     : pd.status === 'post' ? 'Program complete'
-    : `Week ${pd.week} of 21 · ${pd.phase.name}${pd.phase.id !== 'brk' ? ' — ' + pd.phase.label : ''}`;
+    : `Week ${pd.week} of ${WEEKS} · ${pd.phase.name}${pd.phase.id !== 'brk' ? ' — ' + pd.phase.label : ''}`;
   const rel = date === t ? 'Today' : date === addDays(t, 1) ? 'Tomorrow' : date === addDays(t, -1) ? 'Yesterday' : '';
 
   return (
@@ -51,8 +51,8 @@ export function Today({ data, date, setDate, onTimer }: Props) {
           {pd.status === 'pre' && <PreStart setDate={setDate} />}
           {pd.status === 'post' && (
             <article className="session"><div className="pre">
-              <div className="eyebrow">Feb 12, 2027 — done</div>
-              <h2>21 weeks complete</h2>
+              <div className="eyebrow">Jan 9, 2027 — done</div>
+              <h2>{WEEKS} weeks complete</h2>
               <p className="tip">Your log is still here. Check Progress for the whole arc.</p>
             </div></article>
           )}
@@ -88,7 +88,7 @@ function PreStart({ setDate }: { setDate: (d: string) => void }) {
     <article className="session"><div className="pre">
       <div className="eyebrow">Day 1 · {fmtDay(START)}</div>
       <h2>{s1.title}</h2>
-      <p className="tip">{s1.lines[0]}. Log a baseline weigh-in today so the Oct 16 target has a starting point.</p>
+      <p className="tip">{s1.lines[0]}. Log a baseline weigh-in today so the Oct 17 target has a starting point.</p>
       <div><button className="btn primary" onClick={() => setDate(START)}>See Day 1</button></div>
     </div></article>
   );

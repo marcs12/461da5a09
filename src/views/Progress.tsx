@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { addDays, avg, diff, fmtDay, fmtShort, num, r1, sgn, today } from '../lib/dates';
-import { EX, P1_END, START, phaseOfWeek, programDay, sessionOf, weekStart } from '../lib/program';
+import { EX, P1_END, START, WEEKS, phaseOfWeek, programDay, sessionOf, weekStart } from '../lib/program';
 import { adherence, avg7, calorieNudge, sortedKeys, weekAvg, weights, type WeighIn } from '../lib/stats';
 import { editSettings, type Data } from '../lib/store';
 import { NumField } from '../components/ui';
@@ -16,7 +16,7 @@ export function Progress({ data, goToday }: { data: Data; goToday: () => void })
   const nudge = calorieNudge(data);
 
   const pdT = programDay(today());
-  const curWeek = pdT.status === 'pre' ? 0 : pdT.status === 'post' ? 21 : pdT.week;
+  const curWeek = pdT.status === 'pre' ? 0 : pdT.status === 'post' ? WEEKS : pdT.week;
   const weeks = Array.from({ length: curWeek }, (_, i) => curWeek - i);
 
   const liftRows = Object.entries(EX).map(([id, ex]) => {
@@ -47,7 +47,7 @@ export function Progress({ data, goToday }: { data: Data; goToday: () => void })
           <p>{last ? `latest ${last.w} lb · ${fmtShort(last.date)}` : 'no weigh-ins yet'}</p></div>
         <div className="tile"><dt>Since start</dt><dd className={cls(change)}>{change != null ? sgn(change) : '—'}<small>lb</small></dd>
           <p>{start != null ? `from ${start} lb · ${fmtShort(E[0].date)}` : 'first weigh-in sets the baseline'}</p></div>
-        <div className="tile"><dt>Oct 16 target</dt><dd>{start != null ? `${r1(start - 12)}–${r1(start - 8)}` : '−8 to −12'}<small>lb</small></dd>
+        <div className="tile"><dt>Oct 17 target</dt><dd>{start != null ? `${r1(start - 12)}–${r1(start - 8)}` : '−8 to −12'}<small>lb</small></dd>
           <p>Week 1 drops faster (water weight)</p></div>
         <div className="tile"><dt>Sessions done</dt><dd>{adh.done}<small>/ {adh.sched}</small></dd>
           <p>walks {adh.wDone} / {adh.wSched}</p></div>
@@ -58,7 +58,7 @@ export function Progress({ data, goToday }: { data: Data; goToday: () => void })
           <article className="card">
             <header><h3>Body weight</h3><span className="aside">lb</span></header>
             {E.length ? <WeightChart E={E} /> : (
-              <div className="empty">Log a weigh-in on the Today tab. Your 7-day average and the Oct 16 target corridor appear here.
+              <div className="empty">Log a weigh-in on the Today tab. Your 7-day average and the Oct 17 target corridor appear here.
                 <button className="btn" onClick={goToday}>Go to Today</button></div>
             )}
             <div className="chart-legend">
@@ -67,13 +67,13 @@ export function Progress({ data, goToday }: { data: Data; goToday: () => void })
           </article>
           {nudge && <article className="card"><Nudge {...nudge} /></article>}
           <article className="card">
-            <header><h3>Week by week</h3><span className="aside">Sat – Fri</span></header>
+            <header><h3>Week by week</h3><span className="aside">Sun – Sat</span></header>
             {weeks.length ? (
               <div className="tablewrap"><table>
                 <thead><tr><th>Week</th><th>Starts</th><th>Avg lb</th><th>Δ</th><th>Sessions</th><th>Walks</th><th>Avg kcal</th><th>Avg protein</th></tr></thead>
                 <tbody>{weeks.map(w => <WeekRow key={w} data={data} E={E} w={w} />)}</tbody>
               </table></div>
-            ) : <div className="empty">Weekly averages start filling in on Sat, Sep 19.</div>}
+            ) : <div className="empty">Weekly averages start filling in on Sun, Sep 20.</div>}
           </article>
         </div>
         <div className="stack">

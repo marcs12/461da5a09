@@ -1,11 +1,12 @@
 import { addDays, diff, fmtMin } from './dates';
 
-export const START = '2026-09-19';
-export const END = '2027-02-12';
-export const P1_END = '2026-10-16';
-export const TOTAL_DAYS = 147;
-/** Program weeks run Saturday → Friday. */
-export const DOW = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+export const START = '2026-09-20';
+export const END = '2027-01-09';
+export const P1_END = '2026-10-17';
+export const WEEKS = 16;
+export const TOTAL_DAYS = WEEKS * 7;
+/** Program weeks run Sunday → Saturday. */
+export const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export type Kind = 'cardio' | 'strength' | 'rest' | 'break';
 export type Tone = 'work' | 'easy' | 'warm';
@@ -33,8 +34,8 @@ export type ProgramDay =
 export const PHASES: Phase[] = [
   { id: 'p1', name: 'Phase 1', label: 'Cut', from: 1, to: 4 },
   { id: 'brk', name: 'Break', label: 'Break', from: 5, to: 5 },
-  { id: 'p2', name: 'Phase 2', label: 'Walk–run', from: 6, to: 9 },
-  { id: 'p3', name: 'Phase 3', label: 'Build to 10K', from: 10, to: 21 },
+  { id: 'p2', name: 'Phase 2', label: 'Base', from: 6, to: 8 },
+  { id: 'p3', name: 'Phase 3', label: 'Build to 10K', from: 9, to: 16 },
 ];
 export const weekStart = (week: number) => addDays(START, (week - 1) * 7);
 export const phaseStart = (p: Phase) => weekStart(p.from);
@@ -70,29 +71,11 @@ const seg = (label: string, min: number, tone: Tone): Segment => ({ label, sec: 
 export const segTotal = (segs: Segment[]) => segs.reduce((a, s) => a + s.sec, 0);
 const segMin = (segs: Segment[]) => Math.round(segTotal(segs) / 60);
 
-/** n jog blocks spread evenly through a walk. */
-function spread(total: number, n: number, jog: number) {
-  const w = (total - n * jog) / (n + 1);
-  const out: Segment[] = [];
-  for (let i = 0; i < n; i++) out.push(seg('Walk', w, 'easy'), seg('Jog', jog, 'work'));
-  out.push(seg('Walk', w, 'easy'));
-  return out;
-}
-/** Repeat a pattern until `total` minutes are filled. */
-function cycle(total: number, pattern: [string, number, Tone][]) {
-  const out: Segment[] = [];
-  let t = 0;
-  while (t < total - 0.01) {
-    for (const [label, m, tone] of pattern) {
-      if (t >= total - 0.01) break;
-      const d = Math.min(m, total - t);
-      out.push(seg(label, d, tone));
-      t += d;
-    }
-  }
-  return out;
-}
-function rounds(n: number, on: number, off: number, onL = 'Hard', offL = 'Easy', warm = 3) {
+/** An easy run bracketed by walking, as timer segments. */
+const easyRun = (min: number, warm = 5, cool = 5) => [seg('Walk', warm, 'warm'), seg('Jog', min, 'work'), seg('Walk', cool, 'easy')];
+/** Warm-up, a tempo block, cool-down. */
+const tempo = (min: number) => [seg('Warm-up', 8, 'warm'), seg('Tempo', min, 'work'), seg('Cool-down', 5, 'easy')];
+function rounds(n: number, on: number, off: number, onL = 'Hard', offL = 'Easy', warm = 5) {
   const out: Segment[] = warm ? [seg('Warm-up', warm, 'warm')] : [];
   for (let i = 0; i < n; i++) out.push(seg(onL, on / 60, 'work'), seg(offL, off / 60, 'easy'));
   return out;
@@ -101,84 +84,125 @@ function rounds(n: number, on: number, off: number, onL = 'Hard', offL = 'Easy',
 export const EST_NOTE = 'The source plan gives this phase’s start and end points; weeks in between are filled in evenly.';
 type CardioSession = Omit<Session, 'kind'>;
 
+const longRun = (km: number, lines: string[]): CardioSession => ({
+  tag: 'Long run', short: `${km}k`, title: 'Long easy run', km, lines: [`${km} km easy, conversational pace`, ...lines],
+});
+
 const CARDIO: Record<'p1' | 'p2' | 'p3', (pw: number, dow: number) => CardioSession> = {
   p1(pw, dow) {
     if (dow === 0) {
-      const [T, n, j] = [[60, 4, 1], [60, 6, 1], [65, 8, 1], [70, 8, 2]][pw - 1];
+      const km = [3, 3.5, 4, 4.5][pw - 1];
       return {
-        tag: 'Long cardio', short: `${T}m`, title: 'Long cardio', minutes: T, segments: spread(T, n, j),
-        lines: [`${T}-min walk with ${n} × ${j}-min jog${j > 1 ? 's' : ''}`, 'Jogs spread evenly — the timer paces them for you'],
+        ...longRun(km, ['10-min walk to warm up, 5-min walk to finish', 'You are in a deficit — keep this one genuinely easy']),
+        est: pw === 2 || pw === 3,
       };
     }
     if (dow === 4) {
-      const [j, w] = [[1, 2], [1.5, 1.5], [2, 1], [3, 1]][pw - 1];
+      const j = [20, 22, 25, 28][pw - 1];
+      const segs = easyRun(j);
       return {
-        tag: 'Medium cardio', short: '30m', title: 'Medium cardio', minutes: 30,
-        segments: cycle(30, [['Jog', j, 'work'], ['Walk', w, 'easy']]),
-        lines: [`30 min alternating ${fmtMin(j)} jog / ${fmtMin(w)} walk`],
+        tag: 'Medium cardio', short: `${segMin(segs)}m`, title: 'Continuous easy run', minutes: segMin(segs), segments: segs,
+        est: pw === 2 || pw === 3,
+        lines: [`${j} min of continuous easy jogging`, '5-min walk either side', 'No walk breaks — you already hold this pace'],
       };
     }
-    const [n, on, off] = [[8, 20, 40], [10, 20, 40], [12, 20, 40], [12, 30, 30]][pw - 1];
+    const [n, on, off] = [[10, 30, 60], [12, 30, 60], [10, 45, 75], [8, 60, 90]][pw - 1];
     const segs = rounds(n, on, off);
     return {
       tag: 'Hard cardio', short: 'Hard', title: 'Short, hard cardio', minutes: segMin(segs), segments: segs,
-      lines: [`${n} rounds · ${on}s hard / ${off}s easy`, 'Body Combat, uphill walks, or dumbbell thrusters & swings', 'Timer adds a 3-min easy warm-up'],
+      lines: [`${n} rounds · ${on}s hard / ${off}s easy`, 'Body Combat, uphill runs, or dumbbell thrusters & swings', 'Timer adds a 5-min easy warm-up'],
     };
   },
   p2(pw, dow) {
     if (dow === 0) {
-      const [T, n, j] = [[70, 8, 3], [70, 6, 5], [75, 5, 8], [75, 3, 12]][pw - 1];
-      return {
-        tag: 'Long cardio', short: `${T}m`, title: 'Long walk–run', minutes: T, segments: spread(T, n, j), est: true,
-        lines: [`${T} min · walk with ${n} × ${j}-min jogs`, 'More jogging mixed in each week'],
-      };
+      const km = [4.5, 5, 5.5][pw - 1];
+      return { ...longRun(km, ['Calories back to maintenance — this block buys distance', 'Adds 0.5 km a week']), est: pw === 2 };
     }
     if (dow === 4) {
-      const plan = [
-        { l: '4 min jog / 1 min walk × 6', s: cycle(30, [['Jog', 4, 'work'], ['Walk', 1, 'easy']]) },
-        { l: '6 min jog / 1 min walk × 4, then walk', s: cycle(30, [['Jog', 6, 'work'], ['Walk', 1, 'easy']]) },
-        { l: '9 min jog / 1 min walk × 3', s: cycle(30, [['Jog', 9, 'work'], ['Walk', 1, 'easy']]) },
-        { l: '20+ min continuous easy jog', s: [seg('Walk', 5, 'warm'), seg('Jog', 22, 'work'), seg('Walk', 3, 'easy')] },
-      ][pw - 1];
+      if (pw === 1) {
+        const segs = easyRun(30);
+        return {
+          tag: 'Medium cardio', short: '30m', title: 'Continuous easy run', minutes: segMin(segs), segments: segs,
+          lines: ['30 min of continuous easy jogging', 'First full half-hour with no walk breaks'],
+        };
+      }
+      const t = pw === 2 ? 15 : 20;
+      const segs = tempo(t);
       return {
-        tag: 'Medium cardio', short: pw === 4 ? '20m+' : 'Run', title: 'Walk–run', minutes: segMin(plan.s), segments: plan.s,
-        est: pw === 2 || pw === 3, lines: [plan.l, 'Builds to 20+ min of continuous jogging by Nov 20'],
+        tag: 'Tempo', short: 'Tempo', title: 'Tempo run', minutes: segMin(segs), segments: segs, est: true,
+        lines: [`${fmtMin(t)} tempo, “comfortably hard”`, 'Faster than your 7:30/km easy pace, not a sprint', '8-min easy warm-up, 5-min cool-down'],
       };
     }
-    const n = pw <= 2 ? 12 : 14;
-    const segs = rounds(n, 30, 30);
+    if (pw === 1) {
+      const segs = rounds(12, 30, 30);
+      return {
+        tag: 'Hard cardio', short: 'Hard', title: 'Short, hard cardio', minutes: segMin(segs), segments: segs,
+        lines: ['12 rounds · 30s hard / 30s easy', 'Body Combat, uphill runs, or dumbbell thrusters & swings'],
+      };
+    }
+    const n = pw === 2 ? 6 : 8;
+    const segs = rounds(n, 60, 120, 'Fast', 'Easy', 8);
     return {
-      tag: 'Hard cardio', short: 'Hard', title: 'Short, hard cardio', minutes: segMin(segs), segments: segs, est: true,
-      lines: [`${n} rounds · 30s hard / 30s easy`, 'Body Combat, uphill walks, or dumbbell thrusters & swings'],
+      tag: 'Intervals', short: 'Intv', title: 'Intervals', minutes: segMin(segs), segments: segs, est: true,
+      lines: [`${n} × 1 min fast / 2 min easy`, '8-min easy jog warm-up first'],
     };
   },
   p3(pw, dow) {
+    const race = pw === 8;
     if (dow === 0) {
-      const km = 4.5 + 0.5 * (pw - 1);
-      return {
-        tag: 'Long run', short: `${km}k`, title: 'Long easy run', km, est: true,
-        lines: [`${km} km easy, conversational pace`, 'Adds 0.5–1 km a week; 10 km lands late Jan – early Feb'],
-      };
+      if (race) {
+        return {
+          tag: '10K', short: '10k', title: 'The 10K', km: 10,
+          lines: ['10 km — the whole point of the block', 'Start slower than feels right; the last 2 km are the test', 'Roughly 75 min at 7:30/km'],
+        };
+      }
+      const km = 6 + 0.5 * (pw - 1);
+      return { ...longRun(km, ['Adds 0.5 km a week; 10 km lands Sun, Jan 3']), est: pw > 1 };
     }
     if (dow === 4) {
-      const t = pw <= 6 ? 25 : 30;
-      const segs = [seg('Warm-up', 8, 'warm'), seg('Tempo', t, 'work'), seg('Cool-down', 5, 'easy')];
+      if (race) {
+        const segs = easyRun(25, 5, 5);
+        return {
+          tag: 'Recovery', short: 'Easy', title: 'Recovery jog', minutes: segMin(segs), segments: segs,
+          lines: ['25 min very easy', 'Four days after the 10K — nothing to prove'],
+        };
+      }
+      const t = pw === 7 ? 15 : pw <= 4 ? 20 : 25;
+      const segs = tempo(t);
       return {
-        tag: 'Tempo', short: 'Tempo', title: 'Tempo run', minutes: segMin(segs), segments: segs,
-        lines: [`${t} min tempo, “comfortably hard”`, '8-min easy warm-up, 5-min cool-down'],
+        tag: 'Tempo', short: 'Tempo', title: 'Tempo run', minutes: segMin(segs), segments: segs, est: pw > 1 && pw < 7,
+        lines: pw === 7
+          ? ['15 min tempo — cut short on purpose', 'Taper week: sharp legs, not tired ones']
+          : [`${fmtMin(t)} tempo, “comfortably hard”`, '8-min easy warm-up, 5-min cool-down'],
+      };
+    }
+    if (race) {
+      const segs = easyRun(30, 5, 5);
+      return {
+        tag: 'Recovery', short: 'Easy', title: 'Easy run', minutes: segMin(segs), segments: segs,
+        lines: ['30 min easy — last session of the program', 'Whatever you build next starts from here'],
+      };
+    }
+    if (pw === 7) {
+      const segs = easyRun(20, 5, 5);
+      return {
+        tag: 'Shakeout', short: 'Easy', title: 'Shakeout jog', minutes: segMin(segs), segments: segs,
+        lines: ['20 min very easy', 'Two days out from the 10K — stay loose, stay fresh'],
       };
     }
     if (pw % 2) {
-      const segs = rounds(6, 60, 120, 'Fast', 'Easy', 8);
+      const n = pw <= 3 ? 8 : 10;
+      const segs = rounds(n, 60, 120, 'Fast', 'Easy', 8);
       return {
-        tag: 'Intervals', short: 'Intv', title: 'Intervals', minutes: segMin(segs), segments: segs,
-        lines: ['6 × 1 min fast / 2 min easy', '8-min easy jog warm-up first'],
+        tag: 'Intervals', short: 'Intv', title: 'Intervals', minutes: segMin(segs), segments: segs, est: pw > 1,
+        lines: [`${n} × 1 min fast / 2 min easy`, '8-min easy jog warm-up first'],
       };
     }
-    const segs = rounds(6, 45, 90, 'Uphill', 'Down easy', 8);
+    const n = pw <= 4 ? 6 : 8;
+    const segs = rounds(n, 45, 90, 'Uphill', 'Down easy', 8);
     return {
       tag: 'Intervals', short: 'Hills', title: 'Hill repeats', minutes: segMin(segs), segments: segs, est: true,
-      lines: ['6 × 45s hard uphill, easy jog or walk down', '8-min easy jog warm-up first'],
+      lines: [`${n} × 45s hard uphill, easy jog or walk down`, '8-min easy jog warm-up first'],
     };
   },
 };

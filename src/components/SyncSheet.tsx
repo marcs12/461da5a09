@@ -3,7 +3,7 @@ import { connect, disconnect, syncNow, useSyncStatus } from '../lib/gistSync';
 import { getData, isData, merge, replaceData } from '../lib/store';
 import { today } from '../lib/dates';
 
-const TOKEN_URL = 'https://github.com/settings/tokens/new?scopes=gist&description=Twenty-One%20Weeks%20sync';
+const TOKEN_URL = 'https://github.com/settings/tokens/new?scopes=gist&description=Sixteen%20Weeks%20sync';
 
 export function SyncSheet({ onClose }: { onClose: () => void }) {
   const st = useSyncStatus();
@@ -40,7 +40,7 @@ export function SyncSheet({ onClose }: { onClose: () => void }) {
       replaceData(merge(getData(), o));
       setMsg(`Imported ${Object.keys(o.days).length} days.`);
       syncNow();
-    } catch { setMsg('That file isn’t a Twenty-One Weeks export.'); }
+    } catch { setMsg('That file isn’t a Sixteen Weeks export.'); }
   };
 
   const connected = st.state !== 'off';
@@ -71,7 +71,7 @@ export function SyncSheet({ onClose }: { onClose: () => void }) {
           <section className="stack-sm">
             <p className="lead">Right now your log lives only in this browser. Connect GitHub to share it between your MacBook and your Z Fold.</p>
             <ol className="steps">
-              <li><a href={TOKEN_URL} target="_blank" rel="noreferrer">Create a GitHub token</a> with only the <b>gist</b> scope. Pick an expiration you’re comfortable with (Feb 2027 covers the program).</li>
+              <li><a href={TOKEN_URL} target="_blank" rel="noreferrer">Create a GitHub token</a> with only the <b>gist</b> scope. Pick an expiration you’re comfortable with (Jan 2027 covers the program).</li>
               <li>Paste it below. The first device creates a secret gist; the other device finds it with its own token.</li>
             </ol>
             <div className="field">
