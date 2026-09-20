@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { connect, disconnect, syncNow, useSyncStatus } from '../lib/gistSync';
-import { getData, isData, merge, replaceData } from '../lib/store';
+import { getData, isData, merge, replaceData, resetDays } from '../lib/store';
 import { today } from '../lib/dates';
 
 const TOKEN_URL = 'https://github.com/settings/tokens/new?scopes=gist&description=Sixteen%20Weeks%20sync';
@@ -11,6 +11,8 @@ export function SyncSheet({ onClose }: { onClose: () => void }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const [msg, setMsg] = useState('');
+  const [armed, setArmed] = useState(false);
+  const [resetMsg, setResetMsg] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -29,7 +31,7 @@ export function SyncSheet({ onClose }: { onClose: () => void }) {
     const blob = new Blob([JSON.stringify(getData(), null, 1)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `twenty-one-weeks-${today()}.json`;
+    a.download = `sixteen-weeks-${today()}.json`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   };
@@ -44,6 +46,7 @@ export function SyncSheet({ onClose }: { onClose: () => void }) {
   };
 
   const connected = st.state !== 'off';
+  const dayCount = Object.keys(getData().days).length;
   const last = st.last ? new Date(st.last).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : null;
 
   return (
@@ -95,6 +98,31 @@ export function SyncSheet({ onClose }: { onClose: () => void }) {
             <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={e => { const f = e.target.files?.[0]; if (f) importJson(f); e.target.value = ''; }} />
           </div>
           {msg && <p className="msg">{msg}</p>}
+        </section>
+
+        <hr />
+        <section className="stack-sm">
+          <h3>Start over</h3>
+          <p className="fine">
+            Erases every logged day — weigh-ins, sessions, sets, meals, notes — and puts you back on Day 1.
+            Your calorie and protein targets stay. {connected && 'The empty log syncs to your other device too. '}
+            Export a backup first if you might want it.
+          </p>
+          <div className="actions">
+            {armed ? (
+              <>
+                <button className="btn danger" onClick={() => { resetDays(); setArmed(false); setResetMsg(`Erased ${dayCount} day${dayCount === 1 ? '' : 's'}. Back to Day 1.`); }}>
+                  Erase {dayCount} day{dayCount === 1 ? '' : 's'} — tap to confirm
+                </button>
+                <button className="btn ghost" onClick={() => setArmed(false)}>Cancel</button>
+              </>
+            ) : (
+              <button className="btn" disabled={!dayCount} onClick={() => { setArmed(true); setResetMsg(''); }}>
+                {dayCount ? 'Erase all logged days' : 'Nothing logged yet'}
+              </button>
+            )}
+          </div>
+          {resetMsg && <p className="msg">{resetMsg}</p>}
         </section>
       </div>
     </div>

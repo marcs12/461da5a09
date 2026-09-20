@@ -114,13 +114,13 @@ function WeekRow({ data, E, w }: { data: Data; E: WeighIn[]; w: number }) {
   return (
     <tr>
       <td className="wk">W{w}</td>
-      <td>{fmtShort(ws)} · {ph.id === 'brk' ? 'Break' : ph.label}</td>
-      <td>{wa != null ? r1(wa).toFixed(1) : '—'}</td>
-      <td className={dl == null ? '' : dl < 0 ? 'down' : 'upc'}>{dl != null ? sgn(dl) : '—'}</td>
-      <td>{s ? `${dn}/${s}` : '—'}</td>
-      <td>{wk}</td>
-      <td>{ac != null ? Math.round(ac).toLocaleString() : '—'}</td>
-      <td>{ap != null ? `${Math.round(ap)} g` : '—'}</td>
+      <td className="when">{fmtShort(ws)} · {ph.id === 'brk' ? 'Break' : ph.label}</td>
+      <td data-l="Avg lb">{wa != null ? r1(wa).toFixed(1) : '—'}</td>
+      <td data-l="Δ" className={dl == null ? '' : dl < 0 ? 'down' : 'upc'}>{dl != null ? sgn(dl) : '—'}</td>
+      <td data-l="Sessions">{s ? `${dn}/${s}` : '—'}</td>
+      <td data-l="Walks">{wk}</td>
+      <td data-l="Avg kcal">{ac != null ? Math.round(ac).toLocaleString() : '—'}</td>
+      <td data-l="Avg protein">{ap != null ? `${Math.round(ap)} g` : '—'}</td>
     </tr>
   );
 }

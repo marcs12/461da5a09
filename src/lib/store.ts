@@ -67,6 +67,12 @@ export function editSettings(patch: Partial<Settings>) {
   commitLocal({ ...data, settings: { ...data.settings, ...patch, _u: Date.now() } });
 }
 
+/** Wipe every logged day and start the program over. Targets and the sync
+ *  connection stay; the empty log syncs out like any other edit. */
+export function resetDays() {
+  commitLocal({ ...data, days: {} });
+}
+
 /** Replace everything (sync merge, import). Doesn't trigger another sync. */
 export function replaceData(next: Data) {
   data = next;
