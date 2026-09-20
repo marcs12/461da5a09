@@ -11,7 +11,7 @@ export function Plan({ data, date, onOpen }: { data: Data; date: string; onOpen:
   return (
     <section>
       <div className="pagehead">
-        <div><h1>The program</h1><p>Sep 20, 2026 – Jan 9, 2027 · 16 weeks · Huberman’s Day 1 on Sundays</p></div>
+        <div><h1>The program</h1><p>Sep 21, 2026 – Jan 10, 2027 · 16 weeks · Huberman’s Day 1 on Mondays</p></div>
         <div className="legend">
           <span className="chip k-cardio">Cardio</span><span className="chip k-strength">Resistance</span>
           <span className="chip k-rest">Rest + walk</span><span className="chip k-break">Break</span>
@@ -51,10 +51,10 @@ export function Plan({ data, date, onOpen }: { data: Data; date: string; onOpen:
         </div>
         <div className="guides">
           <article className="card"><h3>Every week</h3><ul>
-            <li><b>Sun</b> long run · <b>Mon</b> legs · <b>Tue</b> rest</li>
-            <li><b>Wed</b> torso · <b>Thu</b> medium cardio · <b>Fri</b> short, hard</li>
-            <li><b>Sat</b> shoulders & arms</li>
-            <li>45-min easy treadmill walk on Mon, Tue, Wed and Sat</li>
+            <li><b>Mon</b> long run · <b>Tue</b> legs · <b>Wed</b> rest</li>
+            <li><b>Thu</b> torso · <b>Fri</b> medium cardio · <b>Sat</b> short, hard</li>
+            <li><b>Sun</b> shoulders & arms</li>
+            <li>45-min easy treadmill walk on Tue, Wed, Thu and Sun</li>
           </ul></article>
           <article className="card"><h3>Resistance</h3><ul>
             <li>Week 1: 2 sets, leave 2–3 reps in the tank</li>

@@ -47,7 +47,7 @@ export function Progress({ data, goToday }: { data: Data; goToday: () => void })
           <p>{last ? `latest ${last.w} lb · ${fmtShort(last.date)}` : 'no weigh-ins yet'}</p></div>
         <div className="tile"><dt>Since start</dt><dd className={cls(change)}>{change != null ? sgn(change) : '—'}<small>lb</small></dd>
           <p>{start != null ? `from ${start} lb · ${fmtShort(E[0].date)}` : 'first weigh-in sets the baseline'}</p></div>
-        <div className="tile"><dt>Oct 17 target</dt><dd>{start != null ? `${r1(start - 12)}–${r1(start - 8)}` : '−8 to −12'}<small>lb</small></dd>
+        <div className="tile"><dt>Oct 18 target</dt><dd>{start != null ? `${r1(start - 12)}–${r1(start - 8)}` : '−8 to −12'}<small>lb</small></dd>
           <p>Week 1 drops faster (water weight)</p></div>
         <div className="tile"><dt>Sessions done</dt><dd>{adh.done}<small>/ {adh.sched}</small></dd>
           <p>walks {adh.wDone} / {adh.wSched}</p></div>
@@ -58,7 +58,7 @@ export function Progress({ data, goToday }: { data: Data; goToday: () => void })
           <article className="card">
             <header><h3>Body weight</h3><span className="aside">lb</span></header>
             {E.length ? <WeightChart E={E} /> : (
-              <div className="empty">Log a weigh-in on the Today tab. Your 7-day average and the Oct 17 target corridor appear here.
+              <div className="empty">Log a weigh-in on the Today tab. Your 7-day average and the Oct 18 target corridor appear here.
                 <button className="btn" onClick={goToday}>Go to Today</button></div>
             )}
             <div className="chart-legend">
@@ -67,19 +67,19 @@ export function Progress({ data, goToday }: { data: Data; goToday: () => void })
           </article>
           {nudge && <article className="card"><Nudge {...nudge} /></article>}
           <article className="card">
-            <header><h3>Week by week</h3><span className="aside">Sun – Sat</span></header>
+            <header><h3>Week by week</h3><span className="aside">Mon – Sun</span></header>
             {weeks.length ? (
               <div className="tablewrap"><table>
                 <thead><tr><th>Week</th><th>Starts</th><th>Avg lb</th><th>Δ</th><th>Sessions</th><th>Walks</th><th>Avg kcal</th><th>Avg protein</th></tr></thead>
                 <tbody>{weeks.map(w => <WeekRow key={w} data={data} E={E} w={w} />)}</tbody>
               </table></div>
-            ) : <div className="empty">Weekly averages start filling in on Sun, Sep 20.</div>}
+            ) : <div className="empty">Weekly averages start filling in on Mon, Sep 21.</div>}
           </article>
         </div>
         <div className="stack">
           <article className="card">
             <header><h3>Lifts</h3><span className="aside">first → latest top set</span></header>
-            {liftRows.length ? <div className="lifts-list">{liftRows}</div> : <div className="empty">Log sets on Sun, Tue or Fri to see each lift climb.</div>}
+            {liftRows.length ? <div className="lifts-list">{liftRows}</div> : <div className="empty">Log sets on Tue, Thu or Sun to see each lift climb.</div>}
           </article>
           <article className="card">
             <header><h3>Daily targets</h3></header>

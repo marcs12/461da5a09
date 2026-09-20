@@ -1,6 +1,6 @@
 # Sixteen Weeks
 
-Training log for a 16-week program (Sep 20, 2026 – Jan 9, 2027): a 4-week cut, a break week, a 3-week base block, and an 8-week build to a 10K on Jan 3. Weekly layout follows Huberman's protocol, with Day 1 on Sunday.
+Training log for a 16-week program (Sep 21, 2026 – Jan 10, 2027): a 4-week cut, a break week, a 3-week base block, and an 8-week build to a 10K on Jan 4. Weekly layout follows Huberman's protocol, with Day 1 on Monday.
 
 The cardio is written for someone who already runs 2.5 km at 7:30/km: continuous running from week 1, no walk-run ramp.
 

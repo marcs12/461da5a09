@@ -1,12 +1,12 @@
 import { addDays, diff, fmtMin } from './dates';
 
-export const START = '2026-09-20';
-export const END = '2027-01-09';
-export const P1_END = '2026-10-17';
+export const START = '2026-09-21';
+export const END = '2027-01-10';
+export const P1_END = '2026-10-18';
 export const WEEKS = 16;
 export const TOTAL_DAYS = WEEKS * 7;
-/** Program weeks run Sunday → Saturday. */
-export const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+/** Program weeks run Monday → Sunday. */
+export const DOW = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 export type Kind = 'cardio' | 'strength' | 'rest' | 'break';
 export type Tone = 'work' | 'easy' | 'warm';
@@ -157,7 +157,7 @@ const CARDIO: Record<'p1' | 'p2' | 'p3', (pw: number, dow: number) => CardioSess
         };
       }
       const km = 6 + 0.5 * (pw - 1);
-      return { ...longRun(km, ['Adds 0.5 km a week; 10 km lands Sun, Jan 3']), est: pw > 1 };
+      return { ...longRun(km, ['Adds 0.5 km a week; 10 km lands Mon, Jan 4']), est: pw > 1 };
     }
     if (dow === 4) {
       if (race) {

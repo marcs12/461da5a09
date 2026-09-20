@@ -61,7 +61,7 @@ export default function App() {
             <div className="mark" aria-hidden="true">16</div>
             <div>
               <div className="brand-name">Sixteen Weeks</div>
-              <div className="brand-sub">Cut → base → 10K · Sep 20 – Jan 9</div>
+              <div className="brand-sub">Cut → base → 10K · Sep 21 – Jan 10</div>
             </div>
           </div>
           <nav className="tabs" aria-label="Sections">{tabs('tab')}</nav>
