@@ -2,10 +2,12 @@ import { useEffect, useReducer, useRef } from 'react';
 import { clock, fmtDay } from '../lib/dates';
 import { segTotal, type Segment } from '../lib/program';
 
-interface Props { title: string; date: string; segments: Segment[]; onClose: () => void; onDone: () => void }
+/** Round tally for an AMRAP: tap once per finished round. */
+interface Counter { value: number; onChange: (n: number) => void }
+interface Props { title: string; date: string; segments: Segment[]; counter?: Counter; onClose: () => void; onDone: () => void }
 
 /** Full-screen treadmill timer: color flips per segment, beeps + vibrates on change, keeps the screen awake. */
-export function IntervalTimer({ title, date, segments: segs, onClose, onDone }: Props) {
+export function IntervalTimer({ title, date, segments: segs, counter, onClose, onDone }: Props) {
   const [, force] = useReducer((x: number) => x + 1, 0);
   const T = useRef({ i: 0, left: segs[0].sec * 1000, endAt: 0, run: false, finished: false, pip: '' });
   const ac = useRef<AudioContext | null>(null);
@@ -125,6 +127,13 @@ export function IntervalTimer({ title, date, segments: segs, onClose, onDone }: 
           {t.finished ? 'Nice work' : works > 1 ? (seg.tone === 'work' ? `Round ${k} of ${works}` : k ? `${k} of ${works} done` : `${works} rounds ahead`) : ''}
         </div>
       </div>
+      {counter && (t.finished || seg.tone === 'work') && (
+        <div className="t-count">
+          <button onClick={() => counter.onChange(Math.max(0, counter.value - 1))} aria-label="Remove a round">−</button>
+          <b aria-live="polite">{counter.value} round{counter.value === 1 ? '' : 's'}</b>
+          <button className="t-plus" onClick={() => counter.onChange(counter.value + 1)}>+1 round</button>
+        </div>
+      )}
       <div className="t-bar">
         {segs.map((x, j) => (
           <i key={j} style={{ flex: x.sec / total }} className={t.finished || j < t.i ? 'd' : j === t.i ? 'c' : x.tone === 'work' ? 'w' : ''} />

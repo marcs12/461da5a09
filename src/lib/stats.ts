@@ -1,5 +1,5 @@
 import { addDays, avg, diff, num, today } from './dates';
-import { START, programDay, weekStart, type Session } from './program';
+import { CAL_FLOOR, START, phaseOfWeek, programDay, weekStart, type Session } from './program';
 import type { Data, SetEntry } from './store';
 
 export interface WeighIn { date: string; w: number }
@@ -34,17 +34,22 @@ export function lastPerf(d: Data, exId: string, before: string): { date: string;
   return null;
 }
 
-/** Plan rule: if the weekly average isn't dropping after week 1, cut ~200 kcal. */
+/** Plan rule: if the weekly average isn't dropping after week 1, cut ~200 kcal.
+ *  Weight loss is the priority, so this runs in every training phase, down to CAL_FLOOR. */
 export function calorieNudge(d: Data) {
   const pd = programDay(today());
-  if (pd.status !== 'in' || pd.phase.id !== 'p1') return null;
+  if (pd.status !== 'in' || pd.phase.id === 'brk') return null;
   const w = pd.week - 1;
   if (w < 2) return null;
+  // Travel week weights don't say anything about the deficit.
+  if (phaseOfWeek(w).id === 'brk' || phaseOfWeek(w - 1).id === 'brk') return null;
   const E = weights(d);
   const a = weekAvg(E, w), b = weekAvg(E, w - 1);
   if (a == null || b == null || a < b - 0.1) return null;
   if ((d.settings.cutWeek || 0) >= w) return null;
-  return { week: w, a, b, next: d.settings.calTarget - 200 };
+  const next = Math.max(CAL_FLOOR, d.settings.calTarget - 200);
+  if (next >= d.settings.calTarget) return null;
+  return { week: w, a, b, next };
 }
 
 export function adherence(d: Data) {

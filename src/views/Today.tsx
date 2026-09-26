@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { addDays, diff, fmtDay, fmtShort, num, parse, r1, sgn, today } from '../lib/dates';
-import { DOW, EST_NOTE, EX, START, WEEKS, programDay, weekStart, type ProgramDay, type Session } from '../lib/program';
-import { editDay, editSettings, type Data, type DayLog, type SetEntry } from '../lib/store';
+import { COMPLEX, COMPLEX_START_LB, DOW, END, EST_NOTE, EX, P1_END, START, WEEKS, programDay, sessionOf, weekStart, type ProgramDay, type Session } from '../lib/program';
+import { editDay, editSet, editSettings, type Data, type DayLog } from '../lib/store';
 import { avg7, calorieNudge, isDone, lastPerf, weights } from '../lib/stats';
 import { Ribbon } from '../components/Ribbon';
 import { Check, Icon, NumField } from '../components/ui';
@@ -51,7 +51,7 @@ export function Today({ data, date, setDate, onTimer }: Props) {
           {pd.status === 'pre' && <PreStart setDate={setDate} />}
           {pd.status === 'post' && (
             <article className="session"><div className="pre">
-              <div className="eyebrow">Jan 10, 2027 — done</div>
+              <div className="eyebrow">{fmtShort(END)} — done</div>
               <h2>{WEEKS} weeks complete</h2>
               <p className="tip">Your log is still here. Check Progress for the whole arc.</p>
             </div></article>
@@ -88,7 +88,7 @@ function PreStart({ setDate }: { setDate: (d: string) => void }) {
     <article className="session"><div className="pre">
       <div className="eyebrow">Day 1 · {fmtDay(START)}</div>
       <h2>{s1.title}</h2>
-      <p className="tip">{s1.lines[0]}. Log a baseline weigh-in today so the Oct 18 target has a starting point.</p>
+      <p className="tip">{s1.lines[0]}. Log a baseline weigh-in today so the {fmtShort(P1_END)} target has a starting point.</p>
       <div><button className="btn primary" onClick={() => setDate(START)}>See Day 1</button></div>
     </div></article>
   );
@@ -97,7 +97,7 @@ function PreStart({ setDate }: { setDate: (d: string) => void }) {
 function SessionCard({ data, date, pd, log, onTimer }: { data: Data; date: string; pd: Extract<ProgramDay, { status: 'in' }>; log: DayLog; onTimer: () => void }) {
   const s = pd.session;
   const set = (patch: Partial<DayLog>) => editDay(date, d => Object.assign(d, patch));
-  const effortHint = s.tag === 'Hard cardio' || s.tag === 'Intervals' ? '8' : s.tag === 'Tempo' ? '7' : '4';
+  const effortHint = s.amrap || s.tag === 'Intervals' ? '8' : s.tag === 'Tempo' ? '7' : '4';
 
   return (
     <>
@@ -121,7 +121,8 @@ function SessionCard({ data, date, pd, log, onTimer }: { data: Data; date: strin
               <Check id="f-done" checked={!!log.done} onChange={v => set({ done: v })} label="Session done" />
             </div>
           )}
-          {s.kind === 'cardio' && (
+          {s.amrap && <ComplexFields data={data} date={date} log={log} effortHint={effortHint} set={set} />}
+          {s.kind === 'cardio' && !s.amrap && (
             <>
               <div className="fields">
                 <div className="field"><label htmlFor="f-min">Minutes</label>
@@ -144,22 +145,60 @@ function SessionCard({ data, date, pd, log, onTimer }: { data: Data; date: strin
         </article>
       )}
       {s.lifts && <LiftCard data={data} date={date} s={s} log={log} />}
+      {s.amrap && <ComplexCard />}
     </>
   );
 }
 
+const DB_MAX = 50;
+/** What to load for the complex, from the last logged one: +5 lb once rounds reach half the minutes (≈2 min a round). */
+function complexHint(data: Data, date: string): { hint: string; up: boolean; prefW: number } {
+  const last = lastPerf(data, 'complex', date);
+  if (!last) return { hint: `First complex — start around ${COMPLEX_START_LB} lb`, up: false, prefW: COMPLEX_START_LB };
+  const w = num(last.sets[0].w), r = Number(last.sets[0].r);
+  const min = sessionOf(last.date)?.amrap ?? 10;
+  const when = fmtShort(last.date);
+  if (w == null) return { hint: `Last ${when}: ${r} rounds`, up: false, prefW: COMPLEX_START_LB };
+  if (r >= min / 2) {
+    return w + 5 <= DB_MAX
+      ? { hint: `${r} rounds in ${min} min ${when} → go ${w + 5} lb`, up: true, prefW: w + 5 }
+      : { hint: `${r} rounds at ${w} lb — the dumbbell is maxed, chase rounds`, up: true, prefW: w };
+  }
+  return { hint: `Last ${when}: ${w} lb × ${r} rounds in ${min} min — beat it`, up: false, prefW: w };
+}
+
+function ComplexFields({ data, date, log, effortHint, set }: { data: Data; date: string; log: DayLog; effortHint: string; set: (p: Partial<DayLog>) => void }) {
+  const { hint, up, prefW } = complexHint(data, date);
+  const v = log.ex?.complex?.[0] || {};
+  return (
+    <>
+      <div className="fields">
+        <div className="field"><label htmlFor="f-cxw">Dumbbell (lb)</label>
+          <NumField className="inp" id="f-cxw" inputMode="decimal" placeholder={String(prefW)} value={v.w} onCommit={x => editSet(date, 'complex', 0, 'w', x)} /></div>
+        <div className="field"><label htmlFor="f-cxr">Rounds</label>
+          <NumField className="inp" id="f-cxr" inputMode="decimal" placeholder="—" value={v.r} onCommit={x => editSet(date, 'complex', 0, 'r', x)} /></div>
+        <div className="field"><label htmlFor="f-rpe">Effort (1–10)</label>
+          <NumField className="inp" id="f-rpe" inputMode="numeric" placeholder={effortHint} value={log.rpe} onCommit={x => set({ rpe: x })} /></div>
+      </div>
+      <div className={`hint ${up ? 'up' : ''}`}>{hint}</div>
+    </>
+  );
+}
+
+function ComplexCard() {
+  return (
+    <article className="card">
+      <header><h3>The complex</h3><span className="aside">1 round = 60 reps</span></header>
+      <ol className="cx-list">
+        {COMPLEX.map(m => <li key={m.name}><b>10 × {m.name}</b><span>{m.cue}</span></li>)}
+      </ol>
+      <p className="tip"><b>Adjustable dumbbell:</b> check the plates are locked before you start and between rounds — swings shake loose collars. If anything rattles, swap the swings for fast Romanian deadlifts.</p>
+    </article>
+  );
+}
+
 function LiftCard({ data, date, s, log }: { data: Data; date: string; s: Session; log: DayLog }) {
-  const setEntry = (id: string, i: number, k: keyof SetEntry, v: number | undefined) =>
-    editDay(date, d => {
-      const ex = { ...(d.ex || {}) };
-      const arr = [...(ex[id] || [])];
-      while (arr.length <= i) arr.push({});
-      const e = { ...arr[i] };
-      if (v == null) delete e[k]; else e[k] = v;
-      arr[i] = e;
-      ex[id] = arr;
-      d.ex = ex;
-    });
+  const setEntry = (id: string, i: number, k: 'w' | 'r', v: number | undefined) => editSet(date, id, i, k, v);
   const addSet = (id: string, n: number) => {
     editDay(date, d => {
       const ex = { ...(d.ex || {}) };

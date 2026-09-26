@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useData, editDay } from './lib/store';
+import { useData, editDay, editSet } from './lib/store';
 import { useSyncStatus } from './lib/gistSync';
 import { sessionOf } from './lib/program';
 import { Icon } from './components/ui';
@@ -61,7 +61,7 @@ export default function App() {
             <div className="mark" aria-hidden="true">16</div>
             <div>
               <div className="brand-name">Sixteen Weeks</div>
-              <div className="brand-sub">Cut → base → 10K · Sep 21 – Jan 10</div>
+              <div className="brand-sub">Cut → base → 10K · Sep 27 – Jan 16</div>
             </div>
           </div>
           <nav className="tabs" aria-label="Sections">{tabs('tab')}</nav>
@@ -79,6 +79,10 @@ export default function App() {
 
       {timerDate && timerSession?.segments && (
         <IntervalTimer title={timerSession.title} date={timerDate} segments={timerSession.segments}
+          counter={timerSession.amrap ? {
+            value: data.days[timerDate]?.ex?.complex?.[0]?.r ?? 0,
+            onChange: n => editSet(timerDate, 'complex', 0, 'r', n || undefined),
+          } : undefined}
           onClose={() => setTimerDate(null)} onDone={() => editDay(timerDate, d => { d.done = true; })} />
       )}
       {sheet && <SyncSheet onClose={closeSheet} />}

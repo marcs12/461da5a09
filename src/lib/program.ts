@@ -1,12 +1,16 @@
 import { addDays, diff, fmtMin } from './dates';
 
-export const START = '2026-09-21';
-export const END = '2027-01-10';
-export const P1_END = '2026-10-18';
+export const START = '2026-09-27';
+export const END = '2027-01-16';
+export const P1_END = '2026-10-17';
+/** Phase 1 weight target (lb below the first weigh-in), shown as a corridor on Progress. */
+export const P1_TARGET = [6, 9] as const;
+/** The calorie nudge never takes the daily target below this. */
+export const CAL_FLOOR = 1800;
 export const WEEKS = 16;
 export const TOTAL_DAYS = WEEKS * 7;
-/** Program weeks run Monday → Sunday. */
-export const DOW = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+/** Program weeks run Sunday → Saturday, so Huberman's Day 1 lands on Sunday. */
+export const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export type Kind = 'cardio' | 'strength' | 'rest' | 'break';
 export type Tone = 'work' | 'easy' | 'warm';
@@ -24,6 +28,8 @@ export interface Session {
   sets?: number;
   walk?: boolean;
   est?: boolean;
+  /** Minutes of work for the dumbbell complex (AMRAP). */
+  amrap?: number;
 }
 export interface Phase { id: 'p1' | 'brk' | 'p2' | 'p3'; name: string; label: string; from: number; to: number }
 export type ProgramDay =
@@ -32,9 +38,9 @@ export type ProgramDay =
   | { status: 'in'; idx: number; week: number; dow: number; phase: Phase; pw: number; session: Session };
 
 export const PHASES: Phase[] = [
-  { id: 'p1', name: 'Phase 1', label: 'Cut', from: 1, to: 4 },
-  { id: 'brk', name: 'Break', label: 'Break', from: 5, to: 5 },
-  { id: 'p2', name: 'Phase 2', label: 'Base', from: 6, to: 8 },
+  { id: 'p1', name: 'Phase 1', label: 'Cut', from: 1, to: 3 },
+  { id: 'brk', name: 'Break', label: 'Break', from: 4, to: 4 },
+  { id: 'p2', name: 'Phase 2', label: 'Base', from: 5, to: 8 },
   { id: 'p3', name: 'Phase 3', label: 'Build to 10K', from: 9, to: 16 },
 ];
 export const weekStart = (week: number) => addDays(START, (week - 1) * 7);
@@ -60,7 +66,20 @@ export const EX: Record<string, Exercise> = {
   triext: { name: 'Overhead triceps extension' },
   farmer: { name: 'Farmer carry', unit: 'sec', note: 'per hand' },
   sideplank: { name: 'Side plank', bw: true, unit: 'sec', note: 'per side' },
+  complex: { name: 'Dumbbell complex', note: 'rounds' },
 };
+
+/** The reel's kettlebell complex, done with one adjustable dumbbell. 10 reps of each, back to back = 1 round. */
+export const COMPLEX: { name: string; cue: string }[] = [
+  { name: 'Bent-over row', cue: 'Both hands on the handle, hinge to about 45°, row to your belly button' },
+  { name: 'Goblet squat', cue: 'Hold it upright against your chest by the top plate' },
+  { name: 'Push-ups', cue: 'Set the dumbbell down; drop to your knees once form breaks' },
+  { name: 'Goblet curl', cue: 'Cup the top plate in both palms, elbows pinned to your sides' },
+  { name: 'Swing', cue: 'Both hands around the handle, hinge and snap the hips — chest height, never overhead' },
+  { name: 'Thruster', cue: 'Goblet squat, then drive up and press it overhead with both hands' },
+];
+export const COMPLEX_START_LB = 25;
+/** Keyed by day of the program week (0 = Sunday). */
 const LIFTS: Record<number, { title: string; short: string; ids: string[] }> = {
   1: { title: 'Legs', short: 'Legs', ids: ['goblet', 'rdl', 'rlunge', 'calf', 'bridge'] },
   3: { title: 'Torso', short: 'Torso', ids: ['floor', 'row', 'pushup', 'pullover', 'deadbug'] },
@@ -84,6 +103,15 @@ function rounds(n: number, on: number, off: number, onL = 'Hard', offL = 'Easy',
 export const EST_NOTE = 'The source plan gives this phase’s start and end points; weeks in between are filled in evenly.';
 type CardioSession = Omit<Session, 'kind'>;
 
+/** Huberman's Day 6 (brief, high intensity): the dumbbell complex as an AMRAP. */
+const complex = (min: number, extra: string[] = []): CardioSession => {
+  const segs = [seg('Warm-up', 5, 'warm'), seg('Complex', min, 'work'), seg('Cool-down', 3, 'easy')];
+  return {
+    tag: 'HIIT', short: 'HIIT', title: 'Dumbbell complex', minutes: segMin(segs), segments: segs, amrap: min,
+    lines: [`${min}-min AMRAP · 10 reps of each move, back to back`, 'Rest only when form slips — count full rounds', ...extra],
+  };
+};
+
 const longRun = (km: number, lines: string[]): CardioSession => ({
   tag: 'Long run', short: `${km}k`, title: 'Long easy run', km, lines: [`${km} km easy, conversational pace`, ...lines],
 });
@@ -91,61 +119,54 @@ const longRun = (km: number, lines: string[]): CardioSession => ({
 const CARDIO: Record<'p1' | 'p2' | 'p3', (pw: number, dow: number) => CardioSession> = {
   p1(pw, dow) {
     if (dow === 0) {
-      const km = [3, 3.5, 4, 4.5][pw - 1];
+      const km = [3, 3.5, 4][pw - 1];
       return {
         ...longRun(km, ['10-min walk to warm up, 5-min walk to finish', 'You are in a deficit — keep this one genuinely easy']),
-        est: pw === 2 || pw === 3,
+        est: pw === 2,
       };
     }
     if (dow === 4) {
-      const j = [20, 22, 25, 28][pw - 1];
+      const j = [20, 22, 25][pw - 1];
       const segs = easyRun(j);
       return {
         tag: 'Medium cardio', short: `${segMin(segs)}m`, title: 'Continuous easy run', minutes: segMin(segs), segments: segs,
-        est: pw === 2 || pw === 3,
+        est: pw === 2,
         lines: [`${j} min of continuous easy jogging`, '5-min walk either side', 'No walk breaks — you already hold this pace'],
       };
     }
-    const [n, on, off] = [[10, 30, 60], [12, 30, 60], [10, 45, 75], [8, 60, 90]][pw - 1];
-    const segs = rounds(n, on, off);
-    return {
-      tag: 'Hard cardio', short: 'Hard', title: 'Short, hard cardio', minutes: segMin(segs), segments: segs,
-      lines: [`${n} rounds · ${on}s hard / ${off}s easy`, 'Body Combat, uphill runs, or dumbbell thrusters & swings', 'Timer adds a 5-min easy warm-up'],
-    };
+    return complex([10, 10, 12][pw - 1], pw === 1
+      ? [`First time: start around ${COMPLEX_START_LB} lb — the curl and thruster set the limit`]
+      : ['Same weight as last time unless the app says go up']);
   },
   p2(pw, dow) {
     if (dow === 0) {
-      const km = [4.5, 5, 5.5][pw - 1];
-      return { ...longRun(km, ['Calories back to maintenance — this block buys distance', 'Adds 0.5 km a week']), est: pw === 2 };
+      const km = [4, 4.5, 5, 5.5][pw - 1];
+      return {
+        ...longRun(km, [pw === 1 ? 'First run back from the break — ease in' : 'Adds 0.5 km a week', 'Still in a deficit — conversational pace only']),
+        est: pw === 2 || pw === 3,
+      };
     }
     if (dow === 4) {
-      if (pw === 1) {
-        const segs = easyRun(30);
+      if (pw <= 2) {
+        const j = pw === 1 ? 25 : 30;
+        const segs = easyRun(j);
         return {
-          tag: 'Medium cardio', short: '30m', title: 'Continuous easy run', minutes: segMin(segs), segments: segs,
-          lines: ['30 min of continuous easy jogging', 'First full half-hour with no walk breaks'],
+          tag: 'Medium cardio', short: `${segMin(segs)}m`, title: 'Continuous easy run', minutes: segMin(segs), segments: segs,
+          lines: pw === 1
+            ? ['25 min of continuous easy jogging', 'Back where the cut left off']
+            : ['30 min of continuous easy jogging', 'First full half-hour with no walk breaks'],
         };
       }
-      const t = pw === 2 ? 15 : 20;
+      const t = pw === 3 ? 15 : 20;
       const segs = tempo(t);
       return {
         tag: 'Tempo', short: 'Tempo', title: 'Tempo run', minutes: segMin(segs), segments: segs, est: true,
         lines: [`${fmtMin(t)} tempo, “comfortably hard”`, 'Faster than your 7:30/km easy pace, not a sprint', '8-min easy warm-up, 5-min cool-down'],
       };
     }
-    if (pw === 1) {
-      const segs = rounds(12, 30, 30);
-      return {
-        tag: 'Hard cardio', short: 'Hard', title: 'Short, hard cardio', minutes: segMin(segs), segments: segs,
-        lines: ['12 rounds · 30s hard / 30s easy', 'Body Combat, uphill runs, or dumbbell thrusters & swings'],
-      };
-    }
-    const n = pw === 2 ? 6 : 8;
-    const segs = rounds(n, 60, 120, 'Fast', 'Easy', 8);
-    return {
-      tag: 'Intervals', short: 'Intv', title: 'Intervals', minutes: segMin(segs), segments: segs, est: true,
-      lines: [`${n} × 1 min fast / 2 min easy`, '8-min easy jog warm-up first'],
-    };
+    return complex([10, 12, 15, 15][pw - 1], pw === 1
+      ? ['Back from the break — drop 5 lb if the first round feels heavy']
+      : ['Same weight as last time unless the app says go up']);
   },
   p3(pw, dow) {
     const race = pw === 8;
@@ -157,7 +178,7 @@ const CARDIO: Record<'p1' | 'p2' | 'p3', (pw: number, dow: number) => CardioSess
         };
       }
       const km = 6 + 0.5 * (pw - 1);
-      return { ...longRun(km, ['Adds 0.5 km a week; 10 km lands Mon, Jan 4']), est: pw > 1 };
+      return { ...longRun(km, ['Adds 0.5 km a week; 10 km lands Sun, Jan 10']), est: pw > 1 };
     }
     if (dow === 4) {
       if (race) {
@@ -198,12 +219,8 @@ const CARDIO: Record<'p1' | 'p2' | 'p3', (pw: number, dow: number) => CardioSess
         lines: [`${n} × 1 min fast / 2 min easy`, '8-min easy jog warm-up first'],
       };
     }
-    const n = pw <= 4 ? 6 : 8;
-    const segs = rounds(n, 45, 90, 'Uphill', 'Down easy', 8);
-    return {
-      tag: 'Intervals', short: 'Hills', title: 'Hill repeats', minutes: segMin(segs), segments: segs, est: true,
-      lines: [`${n} × 45s hard uphill, easy jog or walk down`, '8-min easy jog warm-up first'],
-    };
+    // Even weeks keep the complex; odd weeks run intervals for 10K speed.
+    return complex(pw === 2 ? 15 : 17, ['Alternates with running intervals through the 10K build']);
   },
 };
 

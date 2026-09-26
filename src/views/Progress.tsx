@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { addDays, avg, diff, fmtDay, fmtShort, num, r1, sgn, today } from '../lib/dates';
-import { EX, P1_END, START, WEEKS, phaseOfWeek, programDay, sessionOf, weekStart } from '../lib/program';
+import { EX, P1_END, P1_TARGET, START, WEEKS, phaseOfWeek, programDay, sessionOf, weekStart } from '../lib/program';
 import { adherence, avg7, calorieNudge, sortedKeys, weekAvg, weights, type WeighIn } from '../lib/stats';
 import { editSettings, type Data } from '../lib/store';
 import { NumField } from '../components/ui';
@@ -28,10 +28,12 @@ export function Progress({ data, goToday }: { data: Data; goToday: () => void })
       hist.push({ w: ws.length ? Math.max(...ws) : null, r: Math.max(...sets.map(s => Number(s.r))) });
     }
     if (!hist.length) return null;
-    const val = (h: { w: number | null; r: number }) => (ex.bw || h.w == null ? `${h.r}${ex.unit === 'sec' ? ' s' : ' reps'}` : `${h.w} lb`);
+    const cx = id === 'complex';
+    const val = (h: { w: number | null; r: number }) =>
+      cx ? `${h.w ?? '?'} lb × ${h.r}` : ex.bw || h.w == null ? `${h.r}${ex.unit === 'sec' ? ' s' : ' reps'}` : `${h.w} lb`;
     return (
       <div className="lift-row" key={id}>
-        <div>{ex.name}<br /><span>{hist.length} session{hist.length > 1 ? 's' : ''}</span></div>
+        <div>{ex.name}<br /><span>{hist.length} session{hist.length > 1 ? 's' : ''}{cx && ' · lb × rounds'}</span></div>
         <b>{val(hist[0])} → {val(hist[hist.length - 1])}</b>
       </div>
     );
@@ -47,7 +49,7 @@ export function Progress({ data, goToday }: { data: Data; goToday: () => void })
           <p>{last ? `latest ${last.w} lb · ${fmtShort(last.date)}` : 'no weigh-ins yet'}</p></div>
         <div className="tile"><dt>Since start</dt><dd className={cls(change)}>{change != null ? sgn(change) : '—'}<small>lb</small></dd>
           <p>{start != null ? `from ${start} lb · ${fmtShort(E[0].date)}` : 'first weigh-in sets the baseline'}</p></div>
-        <div className="tile"><dt>Oct 18 target</dt><dd>{start != null ? `${r1(start - 12)}–${r1(start - 8)}` : '−8 to −12'}<small>lb</small></dd>
+        <div className="tile"><dt>{fmtShort(P1_END)} target</dt><dd>{start != null ? `${r1(start - P1_TARGET[1])}–${r1(start - P1_TARGET[0])}` : `−${P1_TARGET[0]} to −${P1_TARGET[1]}`}<small>lb</small></dd>
           <p>Week 1 drops faster (water weight)</p></div>
         <div className="tile"><dt>Sessions done</dt><dd>{adh.done}<small>/ {adh.sched}</small></dd>
           <p>walks {adh.wDone} / {adh.wSched}</p></div>
@@ -58,7 +60,7 @@ export function Progress({ data, goToday }: { data: Data; goToday: () => void })
           <article className="card">
             <header><h3>Body weight</h3><span className="aside">lb</span></header>
             {E.length ? <WeightChart E={E} /> : (
-              <div className="empty">Log a weigh-in on the Today tab. Your 7-day average and the Oct 18 target corridor appear here.
+              <div className="empty">Log a weigh-in on the Today tab. Your 7-day average and the {fmtShort(P1_END)} target corridor appear here.
                 <button className="btn" onClick={goToday}>Go to Today</button></div>
             )}
             <div className="chart-legend">
@@ -67,19 +69,19 @@ export function Progress({ data, goToday }: { data: Data; goToday: () => void })
           </article>
           {nudge && <article className="card"><Nudge {...nudge} /></article>}
           <article className="card">
-            <header><h3>Week by week</h3><span className="aside">Mon – Sun</span></header>
+            <header><h3>Week by week</h3><span className="aside">Sun – Sat</span></header>
             {weeks.length ? (
               <div className="tablewrap"><table>
                 <thead><tr><th>Week</th><th>Starts</th><th>Avg lb</th><th>Δ</th><th>Sessions</th><th>Walks</th><th>Avg kcal</th><th>Avg protein</th></tr></thead>
                 <tbody>{weeks.map(w => <WeekRow key={w} data={data} E={E} w={w} />)}</tbody>
               </table></div>
-            ) : <div className="empty">Weekly averages start filling in on Mon, Sep 21.</div>}
+            ) : <div className="empty">Weekly averages start filling in on {fmtDay(START)}.</div>}
           </article>
         </div>
         <div className="stack">
           <article className="card">
             <header><h3>Lifts</h3><span className="aside">first → latest top set</span></header>
-            {liftRows.length ? <div className="lifts-list">{liftRows}</div> : <div className="empty">Log sets on Tue, Thu or Sun to see each lift climb.</div>}
+            {liftRows.length ? <div className="lifts-list">{liftRows}</div> : <div className="empty">Log sets on Mon, Wed or Sat — or the Friday complex — to see each lift climb.</div>}
           </article>
           <article className="card">
             <header><h3>Daily targets</h3></header>
@@ -147,7 +149,7 @@ function WeightChart({ E }: { E: WeighIn[] }) {
   x1 = addDays(x1, 1);
   const span = diff(x1, x0);
   const vals = E.map(e => e.w);
-  if (showCorr) vals.push(startW - 12);
+  if (showCorr) vals.push(startW - P1_TARGET[1]);
   let lo = Math.min(...vals) - 1, hi = Math.max(...vals) + 1;
   const step = hi - lo > 24 ? 5 : hi - lo > 10 ? 2 : 1;
   lo = Math.floor(lo / step) * step;
@@ -184,10 +186,10 @@ function WeightChart({ E }: { E: WeighIn[] }) {
           </g>
         ))}
         {showCorr && <>
-          <polygon className="corr" points={`${ax},${ay} ${bx},${Y(startW - 8)} ${bx},${Y(startW - 12)}`} />
-          <polyline className="corr-edge" points={`${bx},${Y(startW - 8)} ${ax},${ay} ${bx},${Y(startW - 12)}`} />
-          <text className="tx" x={bx + 5} y={Y(startW - 8) + 4}>−8</text>
-          <text className="tx" x={bx + 5} y={Y(startW - 12) + 4}>−12</text>
+          <polygon className="corr" points={`${ax},${ay} ${bx},${Y(startW - P1_TARGET[0])} ${bx},${Y(startW - P1_TARGET[1])}`} />
+          <polyline className="corr-edge" points={`${bx},${Y(startW - P1_TARGET[0])} ${ax},${ay} ${bx},${Y(startW - P1_TARGET[1])}`} />
+          <text className="tx" x={bx + 5} y={Y(startW - P1_TARGET[0]) + 4}>−{P1_TARGET[0]}</text>
+          <text className="tx" x={bx + 5} y={Y(startW - P1_TARGET[1]) + 4}>−{P1_TARGET[1]}</text>
         </>}
         {E.map(e => <circle key={e.date} className="dot" cx={X(e.date)} cy={Y(e.w)} r={3}><title>{`${fmtDay(e.date)}: ${e.w} lb`}</title></circle>)}
         {pts.length > 1 && <path className="avg" d={'M' + pts.map(p => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join('L')} />}

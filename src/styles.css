@@ -385,3 +385,15 @@ td.wk { font: 600 15px/1 var(--display); }
 .kv dd { margin: 0; font-weight: 600; }
 .msg { margin: 0; font-size: 13.5px; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); }
 .msg.bad { color: var(--bad); background: color-mix(in srgb, var(--bad) 10%, var(--surface)); }
+
+/* dumbbell complex */
+.cx-list { list-style: none; margin: 0 0 14px; padding: 0; counter-reset: cx; display: flex; flex-direction: column; }
+.cx-list li { counter-increment: cx; display: grid; grid-template-columns: 26px 1fr; column-gap: 10px; row-gap: 2px; padding: 10px 0; border-top: 1px solid var(--line); }
+.cx-list li:first-child { border-top: 0; padding-top: 2px; }
+.cx-list li::before { content: counter(cx); grid-row: span 2; width: 22px; height: 22px; border-radius: 6px; background: var(--surface-2); display: grid; place-items: center; font-size: 11px; font-weight: 700; color: var(--muted); }
+.cx-list b { font-weight: 600; font-size: 15px; }
+.cx-list span { font-size: 13px; color: var(--muted); }
+.t-count { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 14px; }
+.t-count b { font: 700 clamp(22px, 5vw, 32px)/1 var(--display); text-transform: uppercase; letter-spacing: .06em; min-width: 5.5em; text-align: center; }
+.t-count button { border: 1px solid rgb(255 255 255 / .4); background: rgb(255 255 255 / .1); color: #fff; border-radius: 14px; min-height: 52px; min-width: 52px; padding: 0 16px; font-weight: 600; font-size: 18px; }
+.t-count .t-plus { background: rgb(255 255 255 / .22); padding: 0 22px; }

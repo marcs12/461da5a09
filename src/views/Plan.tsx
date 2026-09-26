@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
 import { addDays, fmtDay, fmtShort, parse, today } from '../lib/dates';
-import { DOW, PHASES, phaseEnd, phaseStart, sessionOf, weekStart } from '../lib/program';
+import { CAL_FLOOR, COMPLEX, DOW, P1_TARGET, PHASES, phaseEnd, phaseStart, sessionOf, weekStart } from '../lib/program';
 import { isDone } from '../lib/stats';
 import type { Data } from '../lib/store';
 import { Ribbon } from '../components/Ribbon';
@@ -11,7 +11,7 @@ export function Plan({ data, date, onOpen }: { data: Data; date: string; onOpen:
   return (
     <section>
       <div className="pagehead">
-        <div><h1>The program</h1><p>Sep 21, 2026 – Jan 10, 2027 · 16 weeks · Huberman’s Day 1 on Mondays</p></div>
+        <div><h1>The program</h1><p>Sep 27, 2026 – Jan 16, 2027 · 16 weeks · Huberman’s Day 1 on Sundays</p></div>
         <div className="legend">
           <span className="chip k-cardio">Cardio</span><span className="chip k-strength">Resistance</span>
           <span className="chip k-rest">Rest + walk</span><span className="chip k-break">Break</span>
@@ -25,7 +25,7 @@ export function Plan({ data, date, onOpen }: { data: Data; date: string; onOpen:
             <Fragment key={p.id}>
               <div className="phase-row">
                 <b className={p.id === 'brk' ? 'brk' : ''}>{p.name}{p.id !== 'brk' && ` · ${p.label}`}</b>
-                <span>{fmtShort(phaseStart(p))} – {fmtShort(phaseEnd(p))}{p.id === 'p1' && ' · target −8 to −12 lb'}</span>
+                <span>{fmtShort(phaseStart(p))} – {fmtShort(phaseEnd(p))}{p.id === 'p1' && ` · target −${P1_TARGET[0]} to −${P1_TARGET[1]} lb`}</span>
               </div>
               {Array.from({ length: p.to - p.from + 1 }, (_, k) => {
                 const w = p.from + k, ws = weekStart(w);
@@ -51,10 +51,16 @@ export function Plan({ data, date, onOpen }: { data: Data; date: string; onOpen:
         </div>
         <div className="guides">
           <article className="card"><h3>Every week</h3><ul>
-            <li><b>Mon</b> long run · <b>Tue</b> legs · <b>Wed</b> rest</li>
-            <li><b>Thu</b> torso · <b>Fri</b> medium cardio · <b>Sat</b> short, hard</li>
-            <li><b>Sun</b> shoulders & arms</li>
-            <li>45-min easy treadmill walk on Tue, Wed, Thu and Sun</li>
+            <li><b>Sun</b> long run · <b>Mon</b> legs · <b>Tue</b> rest</li>
+            <li><b>Wed</b> torso · <b>Thu</b> medium cardio · <b>Fri</b> dumbbell complex</li>
+            <li><b>Sat</b> shoulders & arms</li>
+            <li>45-min easy treadmill walk on Mon, Tue, Wed and Sat</li>
+          </ul></article>
+          <article className="card"><h3>Dumbbell complex · Fri</h3><ul>
+            <li>10 reps each: {COMPLEX.map(m => m.name.toLowerCase()).join(', ')} = 1 round</li>
+            <li>As many clean rounds as fit in 10–17 min (Huberman’s brief, high-intensity day)</li>
+            <li>Rounds ≥ half the minutes → add 5 lb, up to the dumbbell’s 50</li>
+            <li>From week 9 it alternates with running intervals</li>
           </ul></article>
           <article className="card"><h3>Resistance</h3><ul>
             <li>Week 1: 2 sets, leave 2–3 reps in the tank</li>
@@ -62,7 +68,8 @@ export function Plan({ data, date, onOpen }: { data: Data; date: string; onOpen:
             <li>15 reps on every set → add 5 lb</li>
           </ul></article>
           <article className="card"><h3>Nutrition</h3><ul>
-            <li>~{S.calTarget.toLocaleString()} kcal a day; weekly average not dropping after week 1 → cut ~200</li>
+            <li>~{S.calTarget.toLocaleString()} kcal a day, in a deficit all program except the break week</li>
+            <li>Weekly average not dropping → cut ~200 (floor {CAL_FLOOR.toLocaleString()})</li>
             <li>~{S.proTarget} g protein a day</li>
             <li>Drop liquid calories and alcohol; lean protein + vegetables</li>
             <li>Sleep 7–8 hours</li>

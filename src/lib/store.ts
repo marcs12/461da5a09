@@ -63,6 +63,20 @@ export function editDay(ds: string, fn: (d: DayLog) => void) {
   commitLocal({ ...data, days: { ...data.days, [ds]: d } });
 }
 
+/** Set one field of one logged set (`i`) of exercise `id` on a day; `undefined` clears it. */
+export function editSet(ds: string, id: string, i: number, k: keyof SetEntry, v: number | undefined) {
+  editDay(ds, d => {
+    const ex = { ...(d.ex || {}) };
+    const arr = [...(ex[id] || [])];
+    while (arr.length <= i) arr.push({});
+    const e = { ...arr[i] };
+    if (v == null) delete e[k]; else e[k] = v;
+    arr[i] = e;
+    ex[id] = arr;
+    d.ex = ex;
+  });
+}
+
 export function editSettings(patch: Partial<Settings>) {
   commitLocal({ ...data, settings: { ...data.settings, ...patch, _u: Date.now() } });
 }
