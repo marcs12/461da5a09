@@ -134,9 +134,7 @@ const CARDIO: Record<'p1' | 'p2' | 'p3', (pw: number, dow: number) => CardioSess
         lines: [`${j} min of continuous easy jogging`, '5-min walk either side', 'No walk breaks — you already hold this pace'],
       };
     }
-    return complex([10, 10, 12][pw - 1], pw === 1
-      ? [`First time: start around ${COMPLEX_START_LB} lb — the curl and thruster set the limit`]
-      : ['Same weight as last time unless the app says go up']);
+    return complex([10, 10, 12][pw - 1], ['The short, hard one — push the pace', 'Same weight as last time unless the app says go up']);
   },
   p2(pw, dow) {
     if (dow === 0) {
@@ -246,8 +244,19 @@ function buildSession(phase: Phase, pw: number, week: number, dow: number): Sess
     };
   }
   const L = LIFTS[dow];
+  // The cut runs up to the Vietnam trip: every resistance day is the complex too,
+  // done longer than Friday's, for more work per week while the deficit is on.
+  if (L && phase.id === 'p1') {
+    const extra = week === 1 && dow === 1
+      ? [`First time: start around ${COMPLEX_START_LB} lb — the curl and thruster set the limit`]
+      : dow === 6
+        ? ['Second complex in two days — keep the weight, keep every rep clean']
+        : ['Same weight as last time unless the app says go up'];
+    return { ...complex(pw === 1 ? 15 : 20, extra), kind: 'strength', tag: 'Resistance', short: 'Cmplx', walk: true };
+  }
   if (L) {
-    const first = week === 1;
+    // First lifting week is the one after the break.
+    const first = phase.id === 'p2' && pw === 1;
     return {
       kind: 'strength', tag: 'Resistance', short: L.short, title: L.title, minutes: 40, lifts: L.ids, sets: first ? 2 : 3, walk: true,
       lines: first

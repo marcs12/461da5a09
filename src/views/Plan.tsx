@@ -60,11 +60,13 @@ export function Plan({ data, date, onOpen }: { data: Data; date: string; onOpen:
             <li>10 reps each: {COMPLEX.map(m => m.name.toLowerCase()).join(', ')} = 1 round</li>
             <li>As many clean rounds as fit in 10–17 min (Huberman’s brief, high-intensity day)</li>
             <li>Rounds ≥ half the minutes → add 5 lb, up to the dumbbell’s 50</li>
+            <li>Weeks 1–3: Mon, Wed and Sat are the complex too, 15–20 min, to drop weight before Vietnam</li>
             <li>From week 9 it alternates with running intervals</li>
           </ul></article>
           <article className="card"><h3>Resistance</h3><ul>
-            <li>Week 1: 2 sets, leave 2–3 reps in the tank</li>
-            <li>Week 2 on: 3 sets of 8–15 reps</li>
+            <li>Starts week 5 (Oct 25), after the break</li>
+            <li>Week 5: 2 sets, leave 2–3 reps in the tank</li>
+            <li>Week 6 on: 3 sets of 8–15 reps</li>
             <li>15 reps on every set → add 5 lb</li>
           </ul></article>
           <article className="card"><h3>Nutrition</h3><ul>
