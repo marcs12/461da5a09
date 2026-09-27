@@ -1,14 +1,14 @@
 import { useEffect } from 'react';
-import { addDays, diff, fmtDay, fmtShort, num, parse, r1, sgn, today } from '../lib/dates';
-import { COMPLEX, COMPLEX_START_LB, DOW, END, EST_NOTE, EX, P1_END, START, WEEKS, programDay, sessionOf, weekStart, type ProgramDay, type Session } from '../lib/program';
-import { editDay, editSet, editSettings, type Data, type DayLog } from '../lib/store';
-import { avg7, calorieNudge, isDone, lastPerf, weights } from '../lib/stats';
-import { Ribbon } from '../components/Ribbon';
-import { Check, Icon, NumField } from '../components/ui';
+import { addDays, diff, fmtDay, fmtShort, num, parse, r1, sgn, today } from '../../lib/dates';
+import { COMPLEX, COMPLEX_START_LB, DOW, END, EST_NOTE, EX, P1_END, START, WEEKS, programDay, sessionOf, weekStart, type ProgramDay, type Session } from '../../lib/program';
+import { editDay, editSet, editSettings, type Data, type DayLog } from '../../lib/store';
+import { avg7, calorieNudge, isDone, lastPerf, weights } from '../../lib/stats';
+import { Ribbon } from '../../components/Ribbon';
+import { Check, Icon, NumField } from '../../components/ui';
 
 interface Props { data: Data; date: string; setDate: (d: string) => void; onTimer: () => void }
 
-export function Today({ data, date, setDate, onTimer }: Props) {
+export function SessionDay({ data, date, setDate, onTimer }: Props) {
   const pd = programDay(date);
   const t = today();
   const log = data.days[date] || {};

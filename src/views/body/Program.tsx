@@ -1,11 +1,11 @@
 import { Fragment } from 'react';
-import { addDays, fmtDay, fmtShort, parse, today } from '../lib/dates';
-import { CAL_FLOOR, COMPLEX, DOW, P1_TARGET, PHASES, phaseEnd, phaseStart, sessionOf, weekStart } from '../lib/program';
-import { isDone } from '../lib/stats';
-import type { Data } from '../lib/store';
-import { Ribbon } from '../components/Ribbon';
+import { addDays, fmtDay, fmtShort, parse, today } from '../../lib/dates';
+import { CAL_FLOOR, COMPLEX, DOW, P1_TARGET, PHASES, phaseEnd, phaseStart, sessionOf, weekStart } from '../../lib/program';
+import { isDone } from '../../lib/stats';
+import type { Data } from '../../lib/store';
+import { Ribbon } from '../../components/Ribbon';
 
-export function Plan({ data, date, onOpen }: { data: Data; date: string; onOpen: (d: string) => void }) {
+export function Program({ data, date, onOpen }: { data: Data; date: string; onOpen: (d: string) => void }) {
   const t = today();
   const S = data.settings;
   return (

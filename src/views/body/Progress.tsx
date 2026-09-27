@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { addDays, avg, diff, fmtDay, fmtShort, num, r1, sgn, today } from '../lib/dates';
-import { EX, P1_END, P1_TARGET, START, WEEKS, phaseOfWeek, programDay, sessionOf, weekStart } from '../lib/program';
-import { adherence, avg7, calorieNudge, sortedKeys, weekAvg, weights, type WeighIn } from '../lib/stats';
-import { editSettings, type Data } from '../lib/store';
-import { NumField } from '../components/ui';
-import { Nudge } from './Today';
+import { addDays, avg, diff, fmtDay, fmtShort, num, r1, sgn, today } from '../../lib/dates';
+import { EX, P1_END, P1_TARGET, START, WEEKS, phaseOfWeek, programDay, sessionOf, weekStart } from '../../lib/program';
+import { adherence, avg7, calorieNudge, sortedKeys, weekAvg, weights, type WeighIn } from '../../lib/stats';
+import { editSettings, type Data } from '../../lib/store';
+import { NumField } from '../../components/ui';
+import { Nudge } from './Session';
 
 export function Progress({ data, goToday }: { data: Data; goToday: () => void }) {
   const E = weights(data), S = data.settings;
@@ -61,7 +61,7 @@ export function Progress({ data, goToday }: { data: Data; goToday: () => void })
             <header><h3>Body weight</h3><span className="aside">lb</span></header>
             {E.length ? <WeightChart E={E} /> : (
               <div className="empty">Log a weigh-in on the Today tab. Your 7-day average and the {fmtShort(P1_END)} target corridor appear here.
-                <button className="btn" onClick={goToday}>Go to Today</button></div>
+                <button className="btn" onClick={goToday}>Log a weigh-in</button></div>
             )}
             <div className="chart-legend">
               <span><i className="lg-dot" />Daily weigh-in</span><span><i className="lg-line" />7-day average</span><span><i className="lg-band" />Phase 1 target corridor</span>

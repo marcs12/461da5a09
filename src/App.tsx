@@ -2,43 +2,59 @@ import { useCallback, useEffect, useState } from 'react';
 import { useData, editDay, editSet } from './lib/store';
 import { useSyncStatus } from './lib/gistSync';
 import { sessionOf } from './lib/program';
+import { parse, today as todayStr } from './lib/dates';
 import { Icon } from './components/ui';
 import { IntervalTimer } from './components/IntervalTimer';
-import { SyncSheet, label } from './components/SyncSheet';
-import { Today, initialDate } from './views/Today';
-import { Plan } from './views/Plan';
-import { Progress } from './views/Progress';
+import { label } from './components/SyncPanel';
+import { initialDate } from './views/body/Session';
+import { Body, type BodyView } from './views/Body';
+import { Today } from './views/Today';
+import { Income, Mind, Money } from './views/Areas';
+import { PlanPage } from './views/PlanPage';
+import { Review } from './views/Review';
+import { Settings } from './views/Settings';
+import { Onboarding } from './views/Onboarding';
 
-type View = 'today' | 'plan' | 'progress';
-const VIEW_KEY = 'twentyone-weeks-view';
-const TABS: { id: View; name: string; icon: () => React.ReactElement }[] = [
+type Tab = 'today' | 'income' | 'body' | 'mind' | 'money';
+type Page = 'plan' | 'review' | 'settings';
+const BODY_KEY = 'sixteen-body-view';
+const TABS: { id: Tab; name: string; icon: () => React.ReactElement }[] = [
   { id: 'today', name: 'Today', icon: Icon.today },
-  { id: 'plan', name: 'Plan', icon: Icon.plan },
-  { id: 'progress', name: 'Progress', icon: Icon.progress },
+  { id: 'income', name: 'Income', icon: Icon.income },
+  { id: 'body', name: 'Body', icon: Icon.body },
+  { id: 'mind', name: 'Mind', icon: Icon.mind },
+  { id: 'money', name: 'Money', icon: Icon.money },
 ];
 
 export default function App() {
   const data = useData();
   const sync = useSyncStatus();
-  const [view, setViewState] = useState<View>(() => {
-    try { return (localStorage.getItem(VIEW_KEY) as View) || 'today'; } catch { return 'today'; }
+  const [tab, setTabState] = useState<Tab>('today');
+  const [page, setPage] = useState<Page | null>(null);
+  const [sub, setSubState] = useState<BodyView>(() => {
+    try { return (localStorage.getItem(BODY_KEY) as BodyView) || 'session'; } catch { return 'session'; }
   });
+  const [today, setToday] = useState(todayStr);
   const [date, setDate] = useState(initialDate);
   const [timerDate, setTimerDate] = useState<string | null>(null);
-  const [sheet, setSheet] = useState(false);
 
-  const setView = useCallback((v: View) => {
-    setViewState(v);
-    try { localStorage.setItem(VIEW_KEY, v); } catch { /* storage unavailable */ }
+  const go = useCallback((t: Tab, p: Page | null = null) => {
+    setTabState(t);
+    setPage(p);
     window.scrollTo({ top: 0 });
   }, []);
-  const closeSheet = useCallback(() => setSheet(false), []);
+  const setSub = useCallback((v: BodyView) => {
+    setSubState(v);
+    try { localStorage.setItem(BODY_KEY, v); } catch { /* storage unavailable */ }
+    window.scrollTo({ top: 0 });
+  }, []);
 
   // Opening the app on a new day jumps to that day.
   useEffect(() => {
     let last = initialDate();
     const onVis = () => {
       if (document.visibilityState !== 'visible') return;
+      setToday(todayStr());
       const now = initialDate();
       if (now !== last) { last = now; setDate(now); }
     };
@@ -47,35 +63,59 @@ export default function App() {
   }, []);
 
   const timerSession = timerDate ? sessionOf(timerDate) : null;
-  const tabs = (cls: string) => TABS.map(t => (
-    <button key={t.id} className={cls} onClick={() => setView(t.id)} aria-current={view === t.id ? 'page' : undefined}>
-      <t.icon />{t.name}
+  const isSunday = parse(today).getDay() === 0;
+  const syncIssue = sync.state === 'error' || sync.state === 'offline';
+  const headBtn = (p: Page, name: string, I: () => React.ReactElement, extra?: React.ReactNode) => (
+    <button className="hbtn" onClick={() => (page === p ? setPage(null) : setPage(p))} aria-pressed={page === p} aria-label={name} title={name}>
+      <I />{extra}
     </button>
-  ));
+  );
 
   return (
     <>
       <header className="top">
         <div className="top-in">
-          <div className="brand">
+          <button className="brand" onClick={() => go('today')} aria-label="Today">
             <div className="mark" aria-hidden="true">16</div>
             <div>
-              <div className="brand-name">Sixteen Weeks</div>
-              <div className="brand-sub">Cut → base → 10K · Sep 27 – Jan 16</div>
+              <div className="brand-name">Sixteen</div>
+              <div className="brand-sub">90-day reset · Income, Body, Mind, Money</div>
             </div>
-          </div>
-          <nav className="tabs" aria-label="Sections">{tabs('tab')}</nav>
-          <button className="sync" data-s={sync.state} onClick={() => setSheet(true)} title="Sync & backup">{label(sync.state)}</button>
+          </button>
+          <nav className="hnav" aria-label="Plan, review and settings">
+            {headBtn('plan', 'Plan', Icon.map)}
+            {headBtn('review', isSunday ? 'Sunday review, about 20 minutes' : 'Review', Icon.review, isSunday && <i className="badge" />)}
+            {headBtn('settings', syncIssue ? `Settings · ${label(sync.state)}` : 'Settings', Icon.settings, syncIssue && <i className="badge dim" />)}
+          </nav>
         </div>
       </header>
 
-      <main className="app">
-        {view === 'today' && <Today data={data} date={date} setDate={setDate} onTimer={() => setTimerDate(date)} />}
-        {view === 'plan' && <Plan data={data} date={date} onOpen={d => { setDate(d); setView('today'); }} />}
-        {view === 'progress' && <Progress data={data} goToday={() => setView('today')} />}
-      </main>
+      <div className="shell">
+        <nav className="bnav" aria-label="Areas">
+          {TABS.map(t => (
+            <button key={t.id} className="tab" onClick={() => go(t.id)} aria-current={!page && tab === t.id ? 'page' : undefined}>
+              <t.icon />{t.name}
+            </button>
+          ))}
+        </nav>
 
-      <nav className="bnav" aria-label="Sections">{tabs('tab')}</nav>
+        <main className="app">
+          {page && (
+            <button className="backbtn" onClick={() => setPage(null)}><Icon.back />{TABS.find(t => t.id === tab)!.name}</button>
+          )}
+          {page === 'plan' && <PlanPage data={data} today={today} />}
+          {page === 'review' && <Review today={today} />}
+          {page === 'settings' && <Settings data={data} />}
+          {!page && tab === 'today' && (
+            <Today data={data} today={today} openPlan={() => setPage('plan')}
+              openSession={() => { setDate(initialDate()); setSub('session'); go('body'); }} />
+          )}
+          {!page && tab === 'income' && <Income />}
+          {!page && tab === 'body' && <Body data={data} sub={sub} setSub={setSub} date={date} setDate={setDate} onTimer={() => setTimerDate(date)} />}
+          {!page && tab === 'mind' && <Mind />}
+          {!page && tab === 'money' && <Money />}
+        </main>
+      </div>
 
       {timerDate && timerSession?.segments && (
         <IntervalTimer title={timerSession.title} date={timerDate} segments={timerSession.segments}
@@ -85,7 +125,7 @@ export default function App() {
           } : undefined}
           onClose={() => setTimerDate(null)} onDone={() => editDay(timerDate, d => { d.done = true; })} />
       )}
-      {sheet && <SyncSheet onClose={closeSheet} />}
+      {!data.settings.onboarded && <Onboarding settings={data.settings} />}
     </>
   );
 }
