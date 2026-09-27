@@ -76,7 +76,7 @@ export const DEFAULT_SETTINGS: Settings = {
   planStart: '2026-09-28',
   planDays: 90,
   departDate: '2026-10-16',
-  returnDate: '2026-10-23',
+  returnDate: '2026-10-24',
   workdays: [1, 2, 3, 4, 5],
   wakeTime: '06:00',
   lightsOut: '22:00',

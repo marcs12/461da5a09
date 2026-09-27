@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "plan": {
     "name": "90-Day Reset",
     "start": "2026-09-28",
@@ -78,13 +78,13 @@
   "stretchGoals": ["A job offer at $60K or more", "One paying freelance client who isn't a friend"],
   "schedule": {
     "workday": [
-      { "at": "06:00", "label": "Wake + daylight", "detail": "Water, then 10 minutes outside or at a bright window", "area": "mind" },
-      { "at": "06:15", "until": "07:15", "label": "Career hour", "detail": "Applications and outreach, before work drains you", "area": "income", "link": "income" },
-      { "at": "07:15", "until": "08:00", "label": "Breakfast + get ready", "detail": "Protein first", "area": "body" },
-      { "at": "commute", "label": "Study", "detail": "Credential learning path on your phone", "area": "income" },
+      { "at": "06:00", "until": "06:30", "label": "Wake, daylight, breakfast", "detail": "Water, 10 minutes outside or at a bright window, protein first", "area": "mind" },
+      { "at": "06:30", "until": "08:00", "label": "Commute: study", "detail": "Credential learning path on your phone", "area": "income" },
       { "at": "lunch", "label": "Walk", "detail": "10–15 minutes outside", "area": "body" },
-      { "at": "after work", "label": "Train or walk", "detail": "3 days a week: 35-minute workout. Other days: 30-minute walk", "area": "body", "link": "body" },
-      { "at": "20:00", "until": "21:30", "label": "Free time", "detail": "Girlfriend, family, piano, one fun project (time-boxed)", "area": "mind" },
+      { "at": "17:45", "until": "18:30", "label": "Train or walk", "detail": "Today's session in Body, or a 30-minute walk", "area": "body", "link": "body" },
+      { "at": "18:30", "until": "19:30", "label": "Dinner + reset", "detail": "Protein and half a plate of vegetables", "area": "body" },
+      { "at": "19:30", "until": "20:30", "label": "Career hour", "detail": "Applications and outreach. Phone on do-not-disturb", "area": "income", "link": "income" },
+      { "at": "20:30", "until": "21:30", "label": "Free time", "detail": "Girlfriend, family, piano, one fun project (time-boxed)", "area": "mind" },
       { "at": "21:30", "label": "Wind-down", "detail": "Check-in, pick tomorrow's first task, phone charging away from the bed", "area": "mind", "link": "checkin" },
       { "at": "22:00", "label": "Lights out", "detail": "8 hours before the alarm", "area": "mind" }
     ],
@@ -95,7 +95,7 @@
       { "label": "One TouchGrass or social plan", "area": "mind" },
       { "label": "Sunday: review, 15-minute money check, protein batch-cook", "area": "money", "onlyOn": "sunday" }
     ],
-    "note": "Clock times assume a 06:00 wake; shift them with Settings.wakeTime."
+    "note": "Built around a 06:30–17:45 workday. Morning times shift with Settings.wakeTime; evening times stay put."
   },
   "weeklyTimeBudgetHours": [
     { "area": "Career", "hours": 7 },

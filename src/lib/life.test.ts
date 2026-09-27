@@ -12,7 +12,7 @@ describe('life plan dates', () => {
   it('finds Mondays and Sundays', () => {
     expect(mondayOf('2026-09-28')).toBe('2026-09-28');
     expect(mondayOf('2026-10-04')).toBe('2026-09-28');
-    expect(sundayFrom('2026-10-23')).toBe('2026-10-25');
+    expect(sundayFrom('2026-10-24')).toBe('2026-10-25');
     expect(sundayFrom('2026-10-25')).toBe('2026-10-25');
   });
 
@@ -23,11 +23,11 @@ describe('life plan dates', () => {
     expect(planDay(S, '2026-12-27')).toEqual({ status: 'post' });
   });
 
-  it('splits the phases around the trip (home Fri Oct 23)', () => {
+  it('splits the phases around the trip (home Sat Oct 24)', () => {
     expect(phaseOn(S, '2026-10-15')).toBe('sprint');
     expect(phaseOn(S, '2026-10-16')).toBe('travel');
-    expect(phaseOn(S, '2026-10-22')).toBe('travel');
-    expect(phaseOn(S, '2026-10-23')).toBe('reentry');
+    expect(phaseOn(S, '2026-10-23')).toBe('travel');
+    expect(phaseOn(S, '2026-10-24')).toBe('reentry');
     expect(phaseOn(S, '2026-10-25')).toBe('reentry');
     expect(phaseOn(S, '2026-10-26')).toBe('build');
     expect(travelEnd(S)).toBe('2026-10-25');
