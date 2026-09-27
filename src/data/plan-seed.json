@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "plan": {
     "name": "90-Day Reset",
     "start": "2026-09-28",
@@ -88,9 +88,9 @@
       { "anchor": "home", "onlyIf": "trainEvening", "label": "Train", "detail": "Today's session in Body", "area": "body", "link": "body" },
       { "at": "18:30", "until": "19:30", "label": "Dinner + reset", "detail": "Protein and half a plate of vegetables", "area": "body" },
       { "at": "19:30", "until": "20:30", "label": "Career hour", "detail": "Applications and outreach. Phone on do-not-disturb", "area": "income", "link": "income" },
-      { "at": "20:30", "until": "21:30", "label": "Free time", "detail": "Girlfriend, family, piano, one fun project (time-boxed)", "area": "mind" },
+      { "at": "20:30", "anchor": "freeTime", "label": "Free time", "detail": "Girlfriend, family, piano, one fun project (time-boxed)", "area": "mind" },
       { "anchor": "windDown", "label": "Wind-down", "detail": "Check-in, pick tomorrow's first task, phone charging away from the bed", "area": "mind", "link": "checkin" },
-      { "anchor": "lightsOut", "label": "Lights out", "detail": "7 hours or more before the alarm", "area": "mind" }
+      { "anchor": "lightsOut", "label": "Lights out", "detail": "Phone away, lights off", "area": "mind" }
     ],
     "dayOff": [
       { "label": "Same wake time (within an hour)", "area": "mind" },
@@ -99,7 +99,7 @@
       { "label": "One TouchGrass or social plan", "area": "mind" },
       { "label": "Sunday: review, 15-minute money check, protein batch-cook", "area": "money", "onlyOn": "sunday" }
     ],
-    "note": "Blocks with an anchor take their times from Settings: wake, training (45 min from trainTime), breakfast (until leaving), commute, work, commute home, home, wind-down (30 min before lights out) and lights out. onlyIf picks blocks by where training sits that day."
+    "note": "Blocks with an anchor take their times from Settings: wake, training (45 min from trainTime), breakfast (until leaving), commute, work, commute home, home, free time (until wind-down), wind-down (30 min before lights out) and lights out. onlyIf picks blocks by where training sits that day."
   },
   "weeklyTimeBudgetHours": [
     { "area": "Career", "hours": 7 },

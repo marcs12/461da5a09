@@ -52,6 +52,7 @@ export function blocksFor(s: Settings, ds: string, slot: Slot = s.trainAt): Bloc
       case 'work': if (!sh) continue; at = sh.start; until = sh.end; break;
       case 'commuteHome': if (!sh) continue; at = sh.end; until = sh.home; break;
       case 'home': if (!sh) continue; at = sh.home; break;
+      case 'freeTime': until = fromMin(toMin(s.lightsOut) - 30); break;
       case 'windDown': at = fromMin(toMin(s.lightsOut) - 30); until = s.lightsOut; break;
       case 'lightsOut': at = s.lightsOut; until = null; break;
     }

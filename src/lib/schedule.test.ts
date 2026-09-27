@@ -47,6 +47,7 @@ describe('time blocks', () => {
     expect(at('Commute:')).toMatchObject({ at: '06:45', until: '08:00' });
     expect(at('Walk')).toMatchObject({ at: '18:00' });
     expect(at('Wind-down')).toMatchObject({ at: '22:00', until: '22:30' });
+    expect(at('Free time')).toMatchObject({ at: '20:30', until: '22:00' });
     expect(at('Lights out')).toMatchObject({ at: '22:30' });
     expect(at('Career hour')).toMatchObject({ at: '19:30', until: '20:30' });
   });
@@ -60,7 +61,8 @@ describe('time blocks', () => {
     expect(name('12:00')).toBe('At work');
     expect(name('17:00')).toBe('Commute home');
     expect(name('19:45')).toBe('Career hour');
-    expect(name('21:40')).toBe('Wind-down');
+    expect(name('21:40')).toBe('Free time');
+    expect(name('22:10')).toBe('Wind-down');
     expect(name('23:00')).toBe('Lights out');
   });
 });

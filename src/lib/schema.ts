@@ -3,7 +3,7 @@
  * so it's safe to unit test; `store.ts` owns localStorage and React.
  */
 
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 export interface SetEntry { w?: number; r?: number }
 export interface DayLog {
@@ -127,7 +127,7 @@ export const DEFAULT_SETTINGS: Settings = {
   wakeTime: '05:00',
   trainAt: 'morning',
   trainTime: '05:15',
-  lightsOut: '22:00',
+  lightsOut: '22:30',
   shift: { leave: '06:30', start: '08:00', end: '16:20', home: '17:45' },
   units: { weight: 'lb', distance: 'km', height: 'ft-in' },
   paySchedule: { cadence: 'biweekly', nextPayday: '2026-10-09' },
@@ -150,12 +150,15 @@ export function isData(o: unknown): o is Data {
  *   v1 (no version): { days, settings: { calTarget, proTarget, cutWeek? } }
  *   v2: adds life-guide settings, `cols` and `priv`.
  *   v3: adds morning training. An unconfirmed 06:00 wake moves to 05:00 to fit it.
+ *   v4: an unconfirmed 22:00 lights-out moves to 22:30.
  */
 export function migrate(raw: unknown): Data | null {
   if (!isData(raw)) return null;
   const o = raw as Partial<Data>;
   const settings: Settings = { ...DEFAULT_SETTINGS, ...(isObj(o.settings) ? o.settings : {}) };
-  if ((o.schemaVersion ?? 1) < 3 && !settings.onboarded && settings.wakeTime === '06:00') settings.wakeTime = DEFAULT_SETTINGS.wakeTime;
+  const from = o.schemaVersion ?? 1;
+  if (from < 3 && !settings.onboarded && settings.wakeTime === '06:00') settings.wakeTime = DEFAULT_SETTINGS.wakeTime;
+  if (from < 4 && !settings.onboarded && settings.lightsOut === '22:00') settings.lightsOut = DEFAULT_SETTINGS.lightsOut;
   return {
     schemaVersion: SCHEMA_VERSION,
     days: o.days || {},

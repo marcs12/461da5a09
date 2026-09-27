@@ -104,6 +104,11 @@ describe('v3 migration', () => {
     expect(d.settings.trainAt).toBe('morning');
     expect(d.settings.trainTime).toBe('05:15');
   });
+  it('moves an unconfirmed 22:00 lights-out to 22:30', () => {
+    const v3 = { schemaVersion: 3, days: {}, settings: { ...DEFAULT_SETTINGS, lightsOut: '22:00' }, cols: {} };
+    expect(migrate(v3)!.settings.lightsOut).toBe('22:30');
+    expect(migrate({ ...v3, settings: { ...v3.settings, onboarded: true } })!.settings.lightsOut).toBe('22:00');
+  });
   it('keeps a wake time you confirmed', () => {
     const v2 = { schemaVersion: 2, days: {}, settings: { ...DEFAULT_SETTINGS, wakeTime: '06:00', onboarded: true }, cols: {} };
     expect(migrate(v2)!.settings.wakeTime).toBe('06:00');
