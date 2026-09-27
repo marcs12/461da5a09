@@ -10,7 +10,8 @@ import { label } from './components/SyncPanel';
 import { initialDate } from './views/body/Session';
 import { Body, type BodyView } from './views/Body';
 import { Today } from './views/Today';
-import { Income, Mind, Money } from './views/Areas';
+import { Mind, Money } from './views/Areas';
+import { Income } from './views/Income';
 import { PlanPage } from './views/PlanPage';
 import { Review } from './views/Review';
 import { Settings } from './views/Settings';
@@ -111,7 +112,7 @@ export default function App() {
             <Today data={data} today={today} now={now} openPlan={() => setPage('plan')} openReview={() => setPage('review')}
               openIncome={() => go('income')} openSession={() => { setDate(initialDate()); setSub('session'); go('body'); }} />
           )}
-          {!page && tab === 'income' && <Income />}
+          {!page && tab === 'income' && <Income data={data} today={today} />}
           {!page && tab === 'body' && <Body data={data} sub={sub} setSub={setSub} date={date} setDate={setDate} onTimer={() => setTimerDate(date)} />}
           {!page && tab === 'mind' && <Mind />}
           {!page && tab === 'money' && <Money />}

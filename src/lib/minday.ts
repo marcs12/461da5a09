@@ -1,7 +1,7 @@
 import { addDays, iso } from './dates';
 import { isTravelMode } from './life';
 import { sessionOf } from './program';
-import { recs, type Data, type Job } from './schema';
+import { recs, type Data, type Job, type Rec } from './schema';
 import { SEED } from '../data/seed';
 
 /**
@@ -17,6 +17,7 @@ const EDIT_HOURS = SEED.minimumDay.editWindowHoursIntoNextDay;
 export function appliedOn(d: Data, ds: string) {
   return recs<Job>(d, 'jobs').filter(j => j.appliedAt === ds).length;
 }
+const reachedOutOn = (d: Data, ds: string) => recs<Rec & { date?: string }>(d, 'outreach').filter(o => o.date === ds).length;
 
 /** The items that count on `ds` (three in travel mode), each with whether it's met. */
 export function minItems(d: Data, ds: string): MinItem[] {
@@ -24,10 +25,12 @@ export function minItems(d: Data, ds: string): MinItem[] {
   const travel = isTravelMode(d.settings, ds);
   const s = sessionOf(ds);
   const apps = appliedOn(d, ds);
+  const outs = reachedOutOn(d, ds);
+  const career = [apps && `${apps} application${apps > 1 ? 's' : ''}`, outs && `${outs} outreach`].filter(Boolean).join(' · ');
   const walked = (l.walkMin ?? 0) >= 20 || !!l.walk || (s?.kind === 'rest' && !!l.done);
   const proteinByGrams = (l.pro ?? 0) >= d.settings.proTarget;
   const met: Record<MinItemId, [boolean, string?]> = {
-    careerAction: [!!l.career || apps > 0, apps ? `${apps} application${apps > 1 ? 's' : ''} logged` : undefined],
+    careerAction: [!!l.career || apps + outs > 0, career ? `${career} logged` : undefined],
     walk: [walked, l.walkMin ? `${l.walkMin} min` : l.walk || walked ? 'walk logged' : undefined],
     protein: [l.proMeals === 3 || proteinByGrams, proteinByGrams ? `${l.pro} g` : undefined],
     lightsOut: [!!l.lightsOut],

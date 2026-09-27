@@ -27,6 +27,11 @@ describe('minimum day', () => {
     expect(minItems(d, '2026-10-01').find(i => i.id === 'walk')!.done).toBe(true);
   });
 
+  it('counts an outreach message as the career action', () => {
+    const d = withDays({ '2026-10-01': { ...full, career: undefined } }, { cols: { outreach: { o: { id: 'o', _u: 1, date: '2026-10-01' } as never } } });
+    expect(isComplete(d, '2026-10-01')).toBe(true);
+  });
+
   it('does not count a short walk or 2 protein meals', () => {
     const d = withDays({ '2026-10-01': { ...full, walkMin: 15 } });
     expect(isComplete(d, '2026-10-01')).toBe(false);

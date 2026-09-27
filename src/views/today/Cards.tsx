@@ -16,7 +16,7 @@ const clock12 = (t: string) => {
   return `${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')}${h < 12 ? ' am' : ' pm'}`;
 };
 
-function Ring({ done, total }: { done: number; total: number }) {
+export function Ring({ done, total }: { done: number; total: number }) {
   const r = 22, c = 2 * Math.PI * r, f = total ? done / total : 0;
   return (
     <svg className="ring" viewBox="0 0 56 56" role="img" aria-label={`${done} of ${total} done`}>

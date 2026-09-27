@@ -1,33 +1,9 @@
 import { SEED } from '../data/seed';
 
 /**
- * Income, Mind and Money. Mostly outlines for now; each area fills in over the
- * next phases. Mind's support resources are complete: they must always be one tap away.
+ * Mind and Money. Mostly outlines for now; each area fills in over the next
+ * phases. Mind's support resources are complete: they must always be one tap away.
  */
-
-export function Income() {
-  const I = SEED.income;
-  return (
-    <section className="page">
-      <div className="pagehead"><div><h1>Income</h1><p>Get paid more, from anywhere.</p></div></div>
-      <div className="areagrid">
-        <article className="card">
-          <header><h3>Job pipeline</h3></header>
-          <div className="empty">Save your first posting. Five this week is the target.<small>The pipeline arrives in the next update.</small></div>
-        </article>
-        <article className="card">
-          <header><h3>Where to aim</h3></header>
-          <ul className="tiers">
-            {I.tiers.map(t => (
-              <li key={t.id}><b>{t.label}{t.targetShare != null && <span> · {Math.round(t.targetShare * 100)}%</span>}</b><span>{t.desc}</span></li>
-            ))}
-          </ul>
-          <p className="fine">Search: {I.searchTerms.join(' · ')}</p>
-        </article>
-      </div>
-    </section>
-  );
-}
 
 export function Mind() {
   const M = SEED.mind;
