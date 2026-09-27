@@ -4,6 +4,7 @@ import { nextGate } from '../../lib/gates';
 import { mondayOf, planDay } from '../../lib/life';
 import { dayStreak, isOpen, minItems, type MinItem } from '../../lib/minday';
 import { blocksFor, currentBlock, isWorkday } from '../../lib/schedule';
+import { sessionOf } from '../../lib/program';
 import { delRec, editDay, patchRec, putRec, recs, type Data, type GateOverride, type TaskState } from '../../lib/store';
 import { Sheet } from '../../components/Sheet';
 import { SEED } from '../../data/seed';
@@ -113,8 +114,12 @@ export function GateCard({ data, today, openPlan }: { data: Data; today: string;
 
 export function TimeBlocks({ data, today, now, onLink }: { data: Data; today: string; now: Date; onLink: (link: string) => void }) {
   const S = data.settings;
-  const blocks = blocksFor(S, today);
+  const slot = data.days[today]?.trainSlot ?? S.trainAt;
+  const blocks = blocksFor(S, today, slot);
   const work = isWorkday(S, today);
+  const sess = sessionOf(today);
+  const sessionLine = sess && `${sess.title}${sess.minutes ? ` · ${sess.minutes} min` : ''}`;
+  const moveTo = (to: 'morning' | 'evening') => editDay(today, d => { d.trainSlot = to === S.trainAt ? undefined : to; });
   const cur = work ? currentBlock(blocks, hhmm(now)) : -1;
   return (
     <article className="card">
@@ -125,7 +130,8 @@ export function TimeBlocks({ data, today, now, onLink }: { data: Data; today: st
             <span className="bt">{b.at ? clock12(b.at) : b.when}</span>
             <div className="bd">
               <b>{b.label}</b>
-              {b.detail && <small>{b.detail}</small>}
+              {(b.move ? sessionLine : b.detail) && <small>{b.move ? sessionLine : b.detail}</small>}
+              {b.move && <button className="movebtn" onClick={() => moveTo(b.move!)}>{b.move === 'evening' ? 'Push to the evening' : 'Move back to the morning'}</button>}
             </div>
             {b.link && <button className="btn ghost go" onClick={() => onLink(b.link!)} aria-label={`Go: ${b.label}`}>Go</button>}
           </li>

@@ -95,3 +95,17 @@ describe('export / import', () => {
     expect(stable(merge(migrate({ days: {} })!, back))).toBe(stable({ ...d, settings: { ...d.settings } }));
   });
 });
+
+describe('v3 migration', () => {
+  it('moves an unconfirmed 06:00 wake to 05:00 for morning training', () => {
+    const v2 = { schemaVersion: 2, days: {}, settings: { ...DEFAULT_SETTINGS, wakeTime: '06:00' }, cols: {} };
+    const d = migrate(v2)!;
+    expect(d.settings.wakeTime).toBe('05:00');
+    expect(d.settings.trainAt).toBe('morning');
+    expect(d.settings.trainTime).toBe('05:15');
+  });
+  it('keeps a wake time you confirmed', () => {
+    const v2 = { schemaVersion: 2, days: {}, settings: { ...DEFAULT_SETTINGS, wakeTime: '06:00', onboarded: true }, cols: {} };
+    expect(migrate(v2)!.settings.wakeTime).toBe('06:00');
+  });
+});

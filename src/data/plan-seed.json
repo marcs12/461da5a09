@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "plan": {
     "name": "90-Day Reset",
     "start": "2026-09-28",
@@ -78,15 +78,19 @@
   "stretchGoals": ["A job offer at $60K or more", "One paying freelance client who isn't a friend"],
   "schedule": {
     "workday": [
-      { "at": "06:00", "until": "06:30", "anchor": "wake", "label": "Wake, daylight, breakfast", "detail": "Water, 10 minutes outside or at a bright window, protein first", "area": "mind" },
-      { "at": "06:30", "until": "08:00", "anchor": "commute", "label": "Commute: study", "detail": "Credential learning path on your phone", "area": "income" },
-      { "at": "lunch", "label": "Walk", "detail": "10–15 minutes outside", "area": "body" },
-      { "at": "17:45", "until": "18:30", "anchor": "home", "label": "Train or walk", "detail": "Today's session in Body, or a 30-minute walk", "area": "body", "link": "body" },
+      { "anchor": "wake", "label": "Wake + lights on", "detail": "Water, bright lights. Daylight comes on the lunch walk", "area": "mind" },
+      { "anchor": "trainMorning", "onlyIf": "trainMorning", "label": "Train", "detail": "Today's session in Body", "area": "body", "link": "body" },
+      { "anchor": "breakfast", "label": "Breakfast + get ready", "detail": "Protein first", "area": "body" },
+      { "anchor": "commute", "label": "Commute: study", "detail": "Credential learning path on your phone", "area": "income" },
+      { "anchor": "work", "label": "At work", "detail": "Lunch: a 10–15 minute walk outside, for the daylight too", "area": "body" },
+      { "anchor": "commuteHome", "label": "Commute home", "detail": "Save 2–3 postings for tonight's career hour", "area": "income", "link": "income" },
+      { "anchor": "home", "onlyIf": "trainMorning", "label": "Walk", "detail": "30 minutes, easy. Counts for the minimum day", "area": "body" },
+      { "anchor": "home", "onlyIf": "trainEvening", "label": "Train", "detail": "Today's session in Body", "area": "body", "link": "body" },
       { "at": "18:30", "until": "19:30", "label": "Dinner + reset", "detail": "Protein and half a plate of vegetables", "area": "body" },
       { "at": "19:30", "until": "20:30", "label": "Career hour", "detail": "Applications and outreach. Phone on do-not-disturb", "area": "income", "link": "income" },
       { "at": "20:30", "until": "21:30", "label": "Free time", "detail": "Girlfriend, family, piano, one fun project (time-boxed)", "area": "mind" },
-      { "at": "21:30", "anchor": "windDown", "label": "Wind-down", "detail": "Check-in, pick tomorrow's first task, phone charging away from the bed", "area": "mind", "link": "checkin" },
-      { "at": "22:00", "anchor": "lightsOut", "label": "Lights out", "detail": "8 hours before the alarm", "area": "mind" }
+      { "anchor": "windDown", "label": "Wind-down", "detail": "Check-in, pick tomorrow's first task, phone charging away from the bed", "area": "mind", "link": "checkin" },
+      { "anchor": "lightsOut", "label": "Lights out", "detail": "7 hours or more before the alarm", "area": "mind" }
     ],
     "dayOff": [
       { "label": "Same wake time (within an hour)", "area": "mind" },
@@ -95,7 +99,7 @@
       { "label": "One TouchGrass or social plan", "area": "mind" },
       { "label": "Sunday: review, 15-minute money check, protein batch-cook", "area": "money", "onlyOn": "sunday" }
     ],
-    "note": "Blocks with an anchor take their times from Settings: wake, commute (leave → start), home, wind-down (30 min before lights out) and lights out."
+    "note": "Blocks with an anchor take their times from Settings: wake, training (45 min from trainTime), breakfast (until leaving), commute, work, commute home, home, wind-down (30 min before lights out) and lights out. onlyIf picks blocks by where training sits that day."
   },
   "weeklyTimeBudgetHours": [
     { "area": "Career", "hours": 7 },

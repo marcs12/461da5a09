@@ -1,7 +1,7 @@
 import { fmtDay } from '../lib/dates';
 import { planEnd } from '../lib/life';
 import { DEFAULT_SETTINGS, editSettings, type Data } from '../lib/store';
-import { DateField, PayFields, ShiftFields, TimeField, Toggle, Workdays } from '../components/fields';
+import { DateField, PayFields, ShiftFields, TimeField, Toggle, TrainFields, Workdays } from '../components/fields';
 import { SyncPanel } from '../components/SyncPanel';
 
 export function Settings({ data }: { data: Data }) {
@@ -31,11 +31,14 @@ export function Settings({ data }: { data: Data }) {
         </article>
 
         <article className="card stack-sm">
-          <h3>Sleep and work</h3>
+          <h3>Sleep, training and work</h3>
           <div className="fields">
             <TimeField id="s-wake" label="Wake up" value={S.wakeTime} onChange={v => editSettings({ wakeTime: v })} />
             <TimeField id="s-lights" label="Lights out" value={S.lightsOut} onChange={v => editSettings({ lightsOut: v })} />
           </div>
+          <TrainFields at={S.trainAt} time={S.trainTime} onChange={editSettings} />
+          {S.trainAt === 'morning' && S.trainTime < S.wakeTime && <p className="fine">Your morning session starts before you wake up.</p>}
+          <p className="fine">Any day can move: use the Train block on Today.</p>
           <Workdays value={S.workdays} onChange={v => editSettings({ workdays: v })} />
           <ShiftFields value={S.shift ?? DEFAULT_SETTINGS.shift!} onChange={v => editSettings({ shift: v })} />
         </article>

@@ -70,3 +70,18 @@ export function Toggle({ id, label, checked, onChange }: { id: string; label: st
     </label>
   );
 }
+
+export function TrainFields({ at, time, onChange }: { at: Settings['trainAt']; time: string; onChange: (p: Pick<Settings, 'trainAt' | 'trainTime'>) => void }) {
+  return (
+    <div className="fields">
+      <div className="field">
+        <label htmlFor="train-at">Train on workdays</label>
+        <select className="inp" id="train-at" value={at} onChange={e => onChange({ trainAt: e.target.value as Settings['trainAt'], trainTime: time })}>
+          <option value="morning">Morning, before work</option>
+          <option value="evening">Evening, after work</option>
+        </select>
+      </div>
+      <TimeField id="train-time" label="Morning session" value={time} onChange={v => onChange({ trainAt: at, trainTime: v })} />
+    </div>
+  );
+}

@@ -535,3 +535,4 @@ select.inp { appearance: auto; }
 .quick .btn { grid-column: span 2; }
 .quick .btn:nth-child(n + 4) { grid-column: span 3; }
 .quick .btn:only-child, .quick .btn:nth-child(4):last-child { grid-column: 1 / -1; }
+.movebtn { justify-self: start; text-align: left; border: 0; background: none; padding: 6px 0 2px; min-height: 32px; color: var(--accent); font-weight: 600; font-size: 13px; }

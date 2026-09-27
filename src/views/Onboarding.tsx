@@ -3,9 +3,9 @@ import { fmtDay } from '../lib/dates';
 import { PHASE_NAME, phaseRanges, planEnd } from '../lib/life';
 import { DEFAULT_SETTINGS, editSettings, type Settings } from '../lib/store';
 import { SEED } from '../data/seed';
-import { DateField, PayFields, ShiftFields, TimeField, Toggle, Workdays } from '../components/fields';
+import { DateField, PayFields, ShiftFields, TimeField, Toggle, TrainFields, Workdays } from '../components/fields';
 
-const STEPS = ['Dates', 'Sleep', 'Work and pay', 'Extras'];
+const STEPS = ['Dates', 'Sleep and training', 'Work and pay', 'Extras'];
 
 /** First run after the life-guide upgrade: confirm the four groups of settings. */
 export function Onboarding({ settings }: { settings: Settings }) {
@@ -14,8 +14,8 @@ export function Onboarding({ settings }: { settings: Settings }) {
   const set = (p: Partial<Settings>) => setD(x => ({ ...x, ...p }));
   const last = step === STEPS.length - 1;
   const finish = () => {
-    const { planStart, departDate, returnDate, wakeTime, lightsOut, workdays, shift, paySchedule, gamification } = d;
-    editSettings({ planStart, departDate, returnDate, wakeTime, lightsOut, workdays, shift, paySchedule, gamification, onboarded: true, seedVersion: SEED.version });
+    const { planStart, departDate, returnDate, wakeTime, lightsOut, trainAt, trainTime, workdays, shift, paySchedule, gamification } = d;
+    editSettings({ planStart, departDate, returnDate, wakeTime, lightsOut, trainAt, trainTime, workdays, shift, paySchedule, gamification, onboarded: true, seedVersion: SEED.version });
   };
 
   return (
@@ -53,6 +53,8 @@ export function Onboarding({ settings }: { settings: Settings }) {
               <TimeField id="ob-wake" label="Wake up" value={d.wakeTime} onChange={v => set({ wakeTime: v })} />
               <TimeField id="ob-lights" label="Lights out" value={d.lightsOut} onChange={v => set({ lightsOut: v })} />
             </div>
+            <TrainFields at={d.trainAt} time={d.trainTime} onChange={set} />
+            <p className="fine">Any day can move to the evening from Today.</p>
           </section>
         )}
 
