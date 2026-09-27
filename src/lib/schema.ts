@@ -22,6 +22,12 @@ export interface DayLog {
   career?: boolean;
   walkMin?: number;
   proMeals?: number;
+  /** Protein at breakfast, lunch, dinner. */
+  meals?: { b?: boolean; l?: boolean; d?: boolean };
+  veg?: boolean;
+  noLiquidCal?: boolean;
+  /** Travel circuit done. */
+  circuit?: boolean;
   lightsOut?: boolean;
   /** The check-in itself is private; this synced flag only says it happened. */
   checkedIn?: boolean;

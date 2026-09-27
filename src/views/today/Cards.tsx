@@ -5,6 +5,7 @@ import { mondayOf, planDay } from '../../lib/life';
 import { dayStreak, isOpen, minItems, type MinItem } from '../../lib/minday';
 import { blocksFor, currentBlock, isWorkday } from '../../lib/schedule';
 import { sessionOf } from '../../lib/program';
+import { mealsWithProtein, withMeals } from '../../lib/body';
 import { delRec, editDay, patchRec, putRec, recs, type Data, type GateOverride, type TaskState } from '../../lib/store';
 import { Sheet } from '../../components/Sheet';
 import { SEED } from '../../data/seed';
@@ -33,7 +34,7 @@ function toggle(data: Data, ds: string, it: MinItem, openCheckIn: (ds: string) =
   switch (it.id) {
     case 'careerAction': if (!it.done || l.career) editDay(ds, d => { d.career = !l.career; }); break;
     case 'walk': editDay(ds, d => { if (it.done) { d.walkMin = undefined; d.walk = undefined; } else d.walkMin = Math.max(20, l.walkMin ?? 0); }); break;
-    case 'protein': if (!it.done || l.proMeals === 3) editDay(ds, d => { d.proMeals = it.done ? undefined : 3; }); break;
+    case 'protein': if (!it.done || mealsWithProtein(l) === 3) editDay(ds, d => { Object.assign(d, withMeals(l, { b: !it.done, l: !it.done, d: !it.done })); }); break;
     case 'lightsOut': editDay(ds, d => { d.lightsOut = !l.lightsOut; }); break;
     case 'checkIn': openCheckIn(ds); break;
   }

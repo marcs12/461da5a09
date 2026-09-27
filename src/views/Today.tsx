@@ -10,6 +10,8 @@ import { GateCard, MinimumDay, TimeBlocks, TopThree } from './today/Cards';
 import { CheckInSheet, QUICK, QuickSheet, type QuickKind } from './today/QuickLog';
 import { SpendSheet, TripCard, cad } from './money/Trip';
 import { TransferSheet } from './money/Cards';
+import { CircuitCard } from './body/Overview';
+import { waistDue } from '../lib/body';
 import { prefs, transferDue, tripStats } from '../lib/money';
 
 const WDS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -22,10 +24,12 @@ interface Props {
   openPlan: () => void;
   openReview: () => void;
   openIncome: () => void;
+  onCircuit: (date: string) => void;
+  openBody: () => void;
 }
 
 /** The home screen: what to do now, pulled from all four areas. */
-export function Today({ data, today, now, openSession, openPlan, openReview, openIncome }: Props) {
+export function Today({ data, today, now, openSession, openPlan, openReview, openIncome, onCircuit, openBody }: Props) {
   const [quick, setQuick] = useState<QuickKind | null>(null);
   const [checkInDate, setCheckInDate] = useState<string | null>(null);
   const [moneySheet, setMoneySheet] = useState<'transfer' | 'spend' | null>(null);
@@ -66,6 +70,9 @@ export function Today({ data, today, now, openSession, openPlan, openReview, ope
           <b>Pay yourself first</b><span>Payday {payday === today ? 'today' : fmtDay(payday)}. Log the transfer{takeHome ? `: ${cad(Math.round((takeHome * SEED.money.payYourselfFirstPct) / 100))}` : ''}</span>
         </button>
       )}
+      {waistDue(data, today) && !travel && (
+        <button className="banner" onClick={openBody}><b>Waist measurement</b><span>First of the month. Log it in Body</span></button>
+      )}
       {travel && <p className="banner quiet">Enjoy it. Walk, protein, check-in. That’s the whole job today.</p>}
       {evening && !data.days[today]?.checkedIn && (
         <button className="banner" onClick={() => setCheckInDate(today)}>
@@ -83,6 +90,7 @@ export function Today({ data, today, now, openSession, openPlan, openReview, ope
             {travel && tripBudget && <button className="btn" onClick={() => setMoneySheet('spend')}>Spending</button>}
           </nav>
           {travel && <TripCard data={data} today={today} compact />}
+          {travel && <CircuitCard data={data} today={today} onCircuit={onCircuit} />}
           <GateCard data={data} today={today} openPlan={openPlan} />
         </div>
         <div className="stack">

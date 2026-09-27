@@ -1,6 +1,7 @@
 import { addDays, iso } from './dates';
 import { isTravelMode } from './life';
 import { sessionOf } from './program';
+import { mealsWithProtein } from './body';
 import { recs, type Data, type Job, type Rec } from './schema';
 import { SEED } from '../data/seed';
 
@@ -32,7 +33,7 @@ export function minItems(d: Data, ds: string): MinItem[] {
   const met: Record<MinItemId, [boolean, string?]> = {
     careerAction: [!!l.career || apps + outs > 0, career ? `${career} logged` : undefined],
     walk: [walked, l.walkMin ? `${l.walkMin} min` : l.walk || walked ? 'walk logged' : undefined],
-    protein: [l.proMeals === 3 || proteinByGrams, proteinByGrams ? `${l.pro} g` : undefined],
+    protein: [mealsWithProtein(l) === 3 || proteinByGrams, proteinByGrams ? `${l.pro} g` : undefined],
     lightsOut: [!!l.lightsOut],
     checkIn: [!!l.checkedIn],
   };

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useData, editDay, editSet } from './lib/store';
 import { useSyncStatus } from './lib/gistSync';
 import { sessionOf } from './lib/program';
+import { circuitSegments } from './lib/body';
 import { iso, parse } from './lib/dates';
 import { useNow } from './lib/useNow';
 import { Icon, Mark } from './components/ui';
@@ -40,7 +41,7 @@ export default function App() {
   const now = useNow();
   const today = iso(now);
   const [date, setDate] = useState(initialDate);
-  const [timerDate, setTimerDate] = useState<string | null>(null);
+  const [timer, setTimer] = useState<{ date: string; kind: 'session' | 'circuit' } | null>(null);
 
   const go = useCallback((t: Tab, p: Page | null = null) => {
     setTabState(t);
@@ -65,7 +66,12 @@ export default function App() {
     return () => document.removeEventListener('visibilitychange', onVis);
   }, []);
 
-  const timerSession = timerDate ? sessionOf(timerDate) : null;
+  const timerSession = timer?.kind === 'session' ? sessionOf(timer.date) : null;
+  const timerProps = !timer ? null
+    : timer.kind === 'circuit' ? { title: 'Travel circuit', segments: circuitSegments(), onDone: () => editDay(timer.date, d => { d.circuit = true; }) }
+    : timerSession?.segments ? { title: timerSession.title, segments: timerSession.segments, onDone: () => editDay(timer.date, d => { d.done = true; }) }
+    : null;
+  const startCircuit = (date: string) => setTimer({ date, kind: 'circuit' });
   const isSunday = parse(today).getDay() === 0;
   const syncIssue = sync.state === 'error' || sync.state === 'offline';
   const headBtn = (p: Page, name: string, I: () => React.ReactElement, extra?: React.ReactNode) => (
@@ -111,22 +117,22 @@ export default function App() {
           {page === 'settings' && <Settings data={data} />}
           {!page && tab === 'today' && (
             <Today data={data} today={today} now={now} openPlan={() => setPage('plan')} openReview={() => setPage('review')}
-              openIncome={() => go('income')} openSession={() => { setDate(initialDate()); setSub('session'); go('body'); }} />
+              openIncome={() => go('income')} onCircuit={startCircuit} openBody={() => { setSub('overview'); go('body'); }} openSession={() => { setDate(initialDate()); setSub('session'); go('body'); }} />
           )}
           {!page && tab === 'income' && <Income data={data} today={today} />}
-          {!page && tab === 'body' && <Body data={data} sub={sub} setSub={setSub} date={date} setDate={setDate} onTimer={() => setTimerDate(date)} />}
+          {!page && tab === 'body' && <Body data={data} today={today} sub={sub} setSub={setSub} date={date} setDate={setDate} onTimer={() => setTimer({ date, kind: 'session' })} onCircuit={startCircuit} />}
           {!page && tab === 'mind' && <Mind />}
           {!page && tab === 'money' && <Money data={data} today={today} now={now} />}
         </main>
       </div>
 
-      {timerDate && timerSession?.segments && (
-        <IntervalTimer title={timerSession.title} date={timerDate} segments={timerSession.segments}
-          counter={timerSession.amrap ? {
-            value: data.days[timerDate]?.ex?.complex?.[0]?.r ?? 0,
-            onChange: n => editSet(timerDate, 'complex', 0, 'r', n || undefined),
+      {timer && timerProps && (
+        <IntervalTimer title={timerProps.title} date={timer.date} segments={timerProps.segments}
+          counter={timerSession?.amrap ? {
+            value: data.days[timer.date]?.ex?.complex?.[0]?.r ?? 0,
+            onChange: n => editSet(timer.date, 'complex', 0, 'r', n || undefined),
           } : undefined}
-          onClose={() => setTimerDate(null)} onDone={() => editDay(timerDate, d => { d.done = true; })} />
+          onClose={() => setTimer(null)} onDone={timerProps.onDone} />
       )}
       {!data.settings.onboarded && <Onboarding settings={data.settings} />}
     </>

@@ -613,3 +613,13 @@ select.inp { appearance: auto; }
 .row .inp { min-width: 0; flex: 1; }
 .row .inp:first-child { flex: 1.6; }
 .row .iconbtn { width: 40px; flex: none; color: var(--muted); }
+
+/* ---------- Body overview ---------- */
+.waist { margin: 0 0 8px; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; }
+.waist b { font: 700 44px/1 var(--display); }
+.waist small { flex-basis: 100%; color: var(--muted); font-size: 12.5px; }
+.food-out { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+.rules-more { margin-top: 10px; font-size: 14px; }
+.rules-more summary { cursor: pointer; color: var(--muted); font-weight: 600; min-height: 36px; display: flex; align-items: center; }
+.subtabs { max-width: 480px; }
+.subtabs button { font-size: 13.5px; }
