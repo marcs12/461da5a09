@@ -11,7 +11,7 @@ import { label } from './components/SyncPanel';
 import { initialDate } from './views/body/Session';
 import { Body, type BodyView } from './views/Body';
 import { Today } from './views/Today';
-import { Mind } from './views/Areas';
+import { Mind } from './views/Mind';
 import { Money } from './views/Money';
 import { Income } from './views/Income';
 import { PlanPage } from './views/PlanPage';
@@ -121,7 +121,7 @@ export default function App() {
           )}
           {!page && tab === 'income' && <Income data={data} today={today} />}
           {!page && tab === 'body' && <Body data={data} today={today} sub={sub} setSub={setSub} date={date} setDate={setDate} onTimer={() => setTimer({ date, kind: 'session' })} onCircuit={startCircuit} />}
-          {!page && tab === 'mind' && <Mind />}
+          {!page && tab === 'mind' && <Mind data={data} today={today} />}
           {!page && tab === 'money' && <Money data={data} today={today} now={now} />}
         </main>
       </div>

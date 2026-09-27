@@ -12,6 +12,8 @@ import { SpendSheet, TripCard, cad } from './money/Trip';
 import { TransferSheet } from './money/Cards';
 import { CircuitCard } from './body/Overview';
 import { waistDue } from '../lib/body';
+import { supportTrigger } from '../lib/mind';
+import { SupportAlert } from './Mind';
 import { prefs, transferDue, tripStats } from '../lib/money';
 
 const WDS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -50,6 +52,7 @@ export function Today({ data, today, now, openSession, openPlan, openReview, ope
   const done = s && s.kind !== 'break' && isDone(data, today, s);
   const hm = now.getHours() * 60 + now.getMinutes();
   const evening = hm >= toMin(S.lightsOut) - 30;
+  const support = supportTrigger(data, today);
   const payday = transferDue(data, today);
   const takeHome = prefs(data).takeHome;
   const tripBudget = tripStats(data, today).budget;
@@ -62,6 +65,7 @@ export function Today({ data, today, now, openSession, openPlan, openReview, ope
         <h1>{fmtDay(today)}</h1>
       </button>
 
+      {support.fired && <SupportAlert data={data} today={today} reason={support.reason} compact />}
       {parse(today).getDay() === 0 && (
         <button className="banner" onClick={openReview}><b>Sunday review</b><span>About 20 minutes. Open it</span></button>
       )}

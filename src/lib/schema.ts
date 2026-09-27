@@ -28,6 +28,8 @@ export interface DayLog {
   noLiquidCal?: boolean;
   /** Travel circuit done. */
   circuit?: boolean;
+  /** 10 minutes of morning daylight. */
+  daylight?: boolean;
   lightsOut?: boolean;
   /** The check-in itself is private; this synced flag only says it happened. */
   checkedIn?: boolean;
@@ -120,7 +122,7 @@ export interface GateOverride extends Rec { done: boolean }
 
 /** Collections kept off the sync gist: the spec says mood and money data stay on the device. */
 export const PRIVATE_COLS = new Set([
-  'checkIns', 'reviews', 'weekLife',
+  'checkIns', 'reviews', 'weekLife', 'critic',
   'snapshots', 'fund', 'transfers', 'subscriptions', 'waitList', 'tripBudget', 'tripSpend', 'moneyPrefs',
 ]);
 

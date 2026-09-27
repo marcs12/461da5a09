@@ -4,6 +4,8 @@ import { sessionOf } from '../../lib/program';
 import { weights } from '../../lib/stats';
 import { editDay, putRec, recs, type CheckIn, type Data, type Job, type Tier } from '../../lib/store';
 import { Sheet } from '../../components/Sheet';
+import { Toggle } from '../../components/fields';
+import { sleepHours } from '../../lib/mind';
 import { Check, NumField } from '../../components/ui';
 import { SEED } from '../../data/seed';
 
@@ -119,13 +121,18 @@ function ApplicationSheet({ date, onClose }: Props) {
 
 export function CheckInSheet({ data, date, onClose }: Props) {
   const cur = recs<CheckIn>(data, 'checkIns').find(c => c.id === date);
+  const S = data.settings;
   const [mood, setMood] = useState<number | undefined>(cur?.mood);
   const [win, setWin] = useState(cur?.win ?? '');
   const [first, setFirst] = useState(cur?.firstTaskTomorrow ?? '');
+  const [lost, setLost] = useState(!!cur?.losingInterest);
+  const [sleep, setSleep] = useState<number | undefined>(data.days[date]?.sleep);
+  const [times, setTimes] = useState<{ bed: string; wake: string } | null>(null);
+  const hours = times ? sleepHours(times.bed, times.wake) : sleep;
   const save = () => {
     if (mood == null) return;
-    putRec<CheckIn>('checkIns', { id: date, date, mood, win: win.trim(), firstTaskTomorrow: first.trim() });
-    editDay(date, d => { d.checkedIn = true; });
+    putRec<CheckIn>('checkIns', { id: date, date, mood, win: win.trim(), firstTaskTomorrow: first.trim(), sleepHours: hours, losingInterest: lost || undefined });
+    editDay(date, d => { d.checkedIn = true; if (hours != null) d.sleep = hours; });
     onClose();
   };
   return (
@@ -139,6 +146,22 @@ export function CheckInSheet({ data, date, onClose }: Props) {
         </fieldset>
         <div className="field"><label htmlFor="q-win">One win</label><input className="inp" id="q-win" autoComplete="off" value={win} onChange={e => setWin(e.target.value)} placeholder="Small counts" /></div>
         <div className="field"><label htmlFor="q-first">Tomorrow’s first task</label><input className="inp" id="q-first" autoComplete="off" value={first} onChange={e => setFirst(e.target.value)} /></div>
+        <div className="field">
+          <label htmlFor="q-sleep">Last night’s sleep (optional)</label>
+          {times ? (
+            <div className="fields">
+              <input className="inp" type="time" aria-label="Went to bed" value={times.bed} onChange={e => e.target.value && setTimes({ ...times, bed: e.target.value })} />
+              <input className="inp" type="time" aria-label="Woke up" value={times.wake} onChange={e => e.target.value && setTimes({ ...times, wake: e.target.value })} />
+            </div>
+          ) : (
+            <div className="actions">
+              <NumField className="inp" id="q-sleep" inputMode="decimal" placeholder="hours" value={sleep} onCommit={setSleep} style={{ width: 110 }} />
+              <button type="button" className="btn ghost small" onClick={() => setTimes({ bed: S.lightsOut, wake: S.wakeTime })}>From bed and wake times</button>
+            </div>
+          )}
+          {times && <small className="fine">{hours} hours</small>}
+        </div>
+        <Toggle id="q-lost" label="Losing interest in things I usually enjoy" checked={lost} onChange={setLost} />
         <p className="fine">Stays on this device. It never syncs.</p>
         <div className="actions sheet-go"><button className="btn primary" disabled={mood == null}>Save</button></div>
       </form>
