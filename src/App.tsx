@@ -4,7 +4,7 @@ import { useSyncStatus } from './lib/gistSync';
 import { sessionOf } from './lib/program';
 import { iso, parse } from './lib/dates';
 import { useNow } from './lib/useNow';
-import { Icon } from './components/ui';
+import { Icon, Mark } from './components/ui';
 import { IntervalTimer } from './components/IntervalTimer';
 import { label } from './components/SyncPanel';
 import { initialDate } from './views/body/Session';
@@ -79,9 +79,9 @@ export default function App() {
       <header className="top">
         <div className="top-in">
           <button className="brand" onClick={() => go('today')} aria-label="Today">
-            <div className="mark" aria-hidden="true">16</div>
+            <Mark />
             <div>
-              <div className="brand-name">Sixteen</div>
+              <div className="brand-name">Quarter</div>
               <div className="brand-sub">90-day reset · Income, Body, Mind, Money</div>
             </div>
           </button>

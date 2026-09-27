@@ -3,7 +3,7 @@ import { connect, disconnect, syncNow, useSyncStatus } from '../lib/gistSync';
 import { getData, merge, migrate, recs, replaceData, resetDays } from '../lib/store';
 import { today } from '../lib/dates';
 
-const TOKEN_URL = 'https://github.com/settings/tokens/new?scopes=gist&description=Sixteen%20Weeks%20sync';
+const TOKEN_URL = 'https://github.com/settings/tokens/new?scopes=gist&description=Quarter%20sync';
 
 /** Sync, backup and start-over controls. Lives in Settings. */
 export function SyncPanel() {
@@ -26,7 +26,7 @@ export function SyncPanel() {
     const blob = new Blob([JSON.stringify(getData(), null, 1)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `sixteen-private-backup-${today()}.json`;
+    a.download = `quarter-private-backup-${today()}.json`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   };
@@ -38,7 +38,7 @@ export function SyncPanel() {
       const n = Object.keys({ ...o.cols, ...o.priv }).reduce((a, c) => a + recs(o, c).length, 0);
       setMsg(`Imported ${Object.keys(o.days).length} days${n ? ` and ${n} other entries` : ''}.`);
       syncNow();
-    } catch { setMsg('That file isn’t a Sixteen Weeks export.'); }
+    } catch { setMsg('That file isn’t a Quarter backup.'); }
   };
 
   const connected = st.state !== 'off';

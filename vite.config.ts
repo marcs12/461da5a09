@@ -11,10 +11,10 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon.svg'],
+      includeAssets: ['icon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Sixteen Weeks',
-        short_name: '16 Weeks',
+        name: 'Quarter',
+        short_name: 'Quarter',
         description: '90-day reset across Income, Body, Mind and Money, with the 16-week training log.',
         start_url: base,
         scope: base,

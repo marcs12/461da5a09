@@ -31,7 +31,7 @@ export function Onboarding({ settings }: { settings: Settings }) {
 
         {step === 0 && (
           <section className="stack-sm">
-            <p className="lead">16. now covers four areas: Income, Body, Mind and Money. Your training program and every log you’ve made are under Body, unchanged.</p>
+            <p className="lead">Quarter covers four areas: Income, Body, Mind and Money. Your training program and every log you’ve made are under Body, unchanged.</p>
             <div className="fields">
               <DateField id="ob-start" label="Plan starts" value={d.planStart} onChange={v => v && set({ planStart: v })} />
               <DateField id="ob-depart" label="Fly out" value={d.departDate} onChange={v => v && set({ departDate: v })} />

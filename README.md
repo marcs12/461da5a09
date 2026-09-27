@@ -1,6 +1,8 @@
-# Sixteen Weeks
+# Quarter
 
-Training log for a 16-week program (Sep 27, 2026 – Jan 16, 2027): a 3-week cut, a break week, a 4-week base block, and an 8-week build to a 10K on Sun, Jan 10. Weekly layout follows Huberman's protocol, with Day 1 on Sunday. Weight loss is the priority, so the calorie deficit runs through every phase except the break.
+A personal PWA for a 90-day reset across Income, Body, Mind and Money: a quarter, with four areas making the whole. The logo is that ring, with the current quarter in red.
+
+Its training log follows a 16-week program (Sep 27, 2026 – Jan 16, 2027): a 3-week cut, a break week, a 4-week base block, and an 8-week build to a 10K on Sun, Jan 10. Weekly layout follows Huberman's protocol, with Day 1 on Sunday. Weight loss is the priority, so the calorie deficit runs through every phase except the break.
 
 The cardio is written for someone who already runs 2.5 km at 7:30/km: continuous running from week 1, no walk-run ramp.
 

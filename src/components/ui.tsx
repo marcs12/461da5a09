@@ -24,6 +24,19 @@ export const Icon = {
   phone: () => svg(<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z" />),
 };
 
+/** The Quarter mark: Income, Body, Mind and Money as a ring, one quarter in red. */
+export const Mark = () => (
+  <svg className="mark" viewBox="0 0 512 512" aria-hidden="true">
+    <rect width="512" height="512" rx="112" fill="#0A0A0B" />
+    <g fill="none" strokeWidth="58">
+      <path d="M270 110A146 146 0 0 1 402 242" stroke="#EF3B50" />
+      <path d="M402 270A146 146 0 0 1 270 402" stroke="#F2F2F3" />
+      <path d="M242 402A146 146 0 0 1 110 270" stroke="#F2F2F3" />
+      <path d="M110 242A146 146 0 0 1 242 110" stroke="#F2F2F3" />
+    </g>
+  </svg>
+);
+
 type NumFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'> & {
   value: number | undefined;
   onCommit: (v: number | undefined) => void;
