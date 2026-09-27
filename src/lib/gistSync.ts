@@ -1,9 +1,10 @@
 import { useSyncExternalStore } from 'react';
-import { getData, isData, merge, onLocalChange, replaceData, stable, type Data } from './store';
+import { getData, merge, migrate, onLocalChange, publicData, replaceData, stable, type Data } from './store';
 
 /**
  * Syncs the log to a secret GitHub Gist so the MacBook and the phone share one record.
- * The token and gist id live in this browser's localStorage only.
+ * The token and gist id live in this browser's localStorage only. Private
+ * collections (mood, money) are stripped before upload and never come back down.
  */
 const API = 'https://api.github.com';
 const CFG_KEY = 'twentyone-weeks-gist';
@@ -60,15 +61,16 @@ async function readRemote(c: GistConfig): Promise<Data | null> {
   let text = f.content ?? '';
   if (f.truncated && f.raw_url) text = await (await fetch(f.raw_url, { cache: 'no-store' })).text();
   try {
-    const o = JSON.parse(text);
-    return isData(o) ? o : null;
+    // Older app versions write a v1 shape; bring it up to date before merging.
+    const d = migrate(JSON.parse(text));
+    return d && { ...d, priv: {} };
   } catch { return null; }
 }
 
 function writeRemote(c: GistConfig, d: Data) {
   return gh<Gist>(c.token, `/gists/${c.gistId}`, {
     method: 'PATCH',
-    body: JSON.stringify({ files: { [FILE]: { content: JSON.stringify(d, null, 1) } } }),
+    body: JSON.stringify({ files: { [FILE]: { content: JSON.stringify(publicData(d), null, 1) } } }),
   });
 }
 
@@ -98,7 +100,7 @@ export async function syncNow(): Promise<void> {
     // Merge with whatever is local *now* (edits may have landed during the fetch).
     const merged = merge(getData(), remote);
     if (stable(merged) !== stable(getData())) replaceData(merged);
-    if (!remote || stable(merged) !== stable(remote)) await writeRemote(c, merged);
+    if (!remote || stable(publicData(merged)) !== stable(publicData(remote))) await writeRemote(c, merged);
     setStatus({ state: 'synced', last: Date.now() });
   } catch (e) {
     setStatus(explain(e));
@@ -133,7 +135,7 @@ export async function connect(token: string): Promise<void> {
   if (!found) {
     found = await gh<Gist>(token, '/gists', {
       method: 'POST',
-      body: JSON.stringify({ description: DESC, public: false, files: { [FILE]: { content: JSON.stringify(getData(), null, 1) } } }),
+      body: JSON.stringify({ description: DESC, public: false, files: { [FILE]: { content: JSON.stringify(publicData(getData()), null, 1) } } }),
     }).catch(() => { throw new Error('The token can’t create gists. Create one with the “gist” scope.'); });
   }
   cfg = { token, gistId: found.id, login: user.login };

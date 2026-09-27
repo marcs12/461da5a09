@@ -1,33 +1,28 @@
 import { useSyncExternalStore } from 'react';
+import { PRIVATE_COLS, SCHEMA_VERSION, emptyData, migrate, publicData, type Data, type DayLog, type Rec, type SetEntry, type Settings } from './schema';
 
-export interface SetEntry { w?: number; r?: number }
-export interface DayLog {
-  weight?: number;
-  done?: boolean;
-  walk?: boolean;
-  min?: number;
-  km?: number;
-  rpe?: number;
-  cal?: number;
-  pro?: number;
-  sleep?: number;
-  note?: string;
-  ex?: Record<string, SetEntry[]>;
-  /** Last edit time (ms). Sync merges days last-writer-wins on this. */
-  _u?: number;
-}
-export interface Settings { calTarget: number; proTarget: number; cutWeek?: number; _u?: number }
-export interface Data { days: Record<string, DayLog>; settings: Settings }
+export * from './schema';
 
-export const DEFAULT_SETTINGS: Settings = { calTarget: 2300, proTarget: 180 };
 const LS_KEY = 'twentyone-weeks-v1';
+/** Mood and money collections live under their own key and are never synced. */
+const PRIV_KEY = 'twentyone-weeks-private';
+/** A copy of the data as it was before a schema upgrade, written once per old version. */
+const backupKey = (v: number) => `${LS_KEY}.bak-v${v}`;
 
 function load(): Data {
   try {
-    const o = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
-    if (o && typeof o === 'object') return { days: o.days || {}, settings: { ...DEFAULT_SETTINGS, ...(o.settings || {}) } };
+    const raw = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
+    const priv = JSON.parse(localStorage.getItem(PRIV_KEY) || 'null');
+    const d = migrate(raw);
+    if (!d) return emptyData();
+    const from = typeof raw.schemaVersion === 'number' ? raw.schemaVersion : 1;
+    if (from < SCHEMA_VERSION && !localStorage.getItem(backupKey(from))) {
+      localStorage.setItem(backupKey(from), localStorage.getItem(LS_KEY)!);
+    }
+    if (priv && typeof priv === 'object') d.priv = priv;
+    return d;
   } catch { /* storage unavailable */ }
-  return { days: {}, settings: { ...DEFAULT_SETTINGS } };
+  return emptyData();
 }
 
 let data: Data = load();
@@ -35,8 +30,12 @@ const listeners = new Set<() => void>();
 const changeHooks = new Set<() => void>();
 
 function save() {
-  try { localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch { /* storage unavailable */ }
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(publicData(data)));
+    localStorage.setItem(PRIV_KEY, JSON.stringify(data.priv));
+  } catch { /* storage unavailable */ }
 }
+save();
 function emit() { listeners.forEach(l => l()); }
 
 export const getData = () => data;
@@ -81,6 +80,18 @@ export function editSettings(patch: Partial<Settings>) {
   commitLocal({ ...data, settings: { ...data.settings, ...patch, _u: Date.now() } });
 }
 
+/** Create or replace a record in collection `col` (private collections stay on this device). */
+export function putRec<T extends Rec>(col: string, rec: Omit<T, '_u'>) {
+  const where = PRIVATE_COLS.has(col) ? 'priv' : 'cols';
+  const tables = data[where];
+  const next = { ...rec, _u: Date.now() } as Rec;
+  commitLocal({ ...data, [where]: { ...tables, [col]: { ...(tables[col] || {}), [rec.id]: next } } });
+}
+
+export function delRec(col: string, id: string) {
+  putRec(col, { id, _del: true });
+}
+
 /** Wipe every logged day and start the program over. Targets and the sync
  *  connection stay; the empty log syncs out like any other edit. */
 export function resetDays() {
@@ -94,30 +105,7 @@ export function replaceData(next: Data) {
   emit();
 }
 
-/** Last-writer-wins per day and for settings. */
-export function merge(a: Data, b: Data | null | undefined): Data {
-  if (!b) return a;
-  const days: Record<string, DayLog> = {};
-  const keys = new Set([...Object.keys(a.days || {}), ...Object.keys(b.days || {})]);
-  for (const k of [...keys].sort()) {
-    const x = a.days?.[k], y = b.days?.[k];
-    days[k] = !y ? x! : !x ? y : (x._u ?? 0) >= (y._u ?? 0) ? x : y;
-  }
-  const sa = a.settings, sb = b.settings;
-  const settings = { ...DEFAULT_SETTINGS, ...(!sb ? sa : !sa ? sb : (sa._u ?? 0) >= (sb._u ?? 0) ? sa : sb) };
-  return { days, settings };
-}
-
-/** JSON with sorted keys, for comparing data sets. */
-export function stable(v: unknown): string {
-  if (Array.isArray(v)) return `[${v.map(stable).join(',')}]`;
-  if (v && typeof v === 'object') {
-    return `{${Object.keys(v).sort().filter(k => (v as Record<string, unknown>)[k] !== undefined)
-      .map(k => `${JSON.stringify(k)}:${stable((v as Record<string, unknown>)[k])}`).join(',')}}`;
-  }
-  return JSON.stringify(v);
-}
-
-export function isData(o: unknown): o is Data {
-  return !!o && typeof o === 'object' && typeof (o as Data).days === 'object';
+/** Ask the browser not to evict our storage under pressure. */
+export function persistStorage() {
+  try { navigator.storage?.persist?.().catch(() => {}); } catch { /* unsupported */ }
 }
