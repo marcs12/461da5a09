@@ -27,6 +27,8 @@ export interface DayLog {
   checkedIn?: boolean;
   /** Training moved for this day only. Unset = Settings.trainAt. */
   trainSlot?: 'morning' | 'evening';
+  /** Meals eaten out (shared by Body and Money). */
+  foodOut?: number;
   /** Last edit time (ms). Sync merges days last-writer-wins on this. */
   _u?: number;
 }
@@ -113,7 +115,7 @@ export interface GateOverride extends Rec { done: boolean }
 /** Collections kept off the sync gist: the spec says mood and money data stay on the device. */
 export const PRIVATE_COLS = new Set([
   'checkIns', 'reviews', 'weekLife',
-  'snapshots', 'fund', 'transfers', 'subscriptions', 'waitList', 'tripBudget', 'tripSpend',
+  'snapshots', 'fund', 'transfers', 'subscriptions', 'waitList', 'tripBudget', 'tripSpend', 'moneyPrefs',
 ]);
 
 export const DEFAULT_SETTINGS: Settings = {

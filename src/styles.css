@@ -593,3 +593,23 @@ select.inp { appearance: auto; }
 .tz-out { display: grid; gap: 2px; }
 .tz-out small { font-size: 12px; color: var(--muted); }
 .tz-out b { font: 700 32px/1 var(--display); }
+
+/* ---------- Money ---------- */
+.runway { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; margin-bottom: 12px; }
+.runway b { font: 700 56px/1 var(--display); }
+.runway span { font: 600 18px/1 var(--display); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.runway small { flex-basis: 100%; color: var(--muted); font-size: 13px; }
+.card .kv + .actions, .card .msg + .wins, .card .kv + .msg { margin-top: 12px; }
+.order { margin: 0 0 10px; padding-left: 22px; display: grid; gap: 6px; font-size: 14px; }
+.order li { color: var(--muted); }
+.order li.past { text-decoration: line-through; text-decoration-color: var(--faint); }
+.order li.on { color: var(--ink); font-weight: 700; }
+.order li.on::marker { color: var(--accent); }
+.trip-track { margin: 10px 0 4px; }
+.wins li.dim span { opacity: .55; }
+.stepper b.over { color: var(--warn); }
+.rows { display: grid; gap: 8px; }
+.row { display: flex; gap: 6px; align-items: center; }
+.row .inp { min-width: 0; flex: 1; }
+.row .inp:first-child { flex: 1.6; }
+.row .iconbtn { width: 40px; flex: none; color: var(--muted); }

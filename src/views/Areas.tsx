@@ -1,8 +1,7 @@
 import { SEED } from '../data/seed';
 
 /**
- * Mind and Money. Mostly outlines for now; each area fills in over the next
- * phases. Mind's support resources are complete: they must always be one tap away.
+ * Mind. Mostly an outline for now; it fills in during Phase 6. Mind's support resources are complete: they must always be one tap away.
  */
 
 export function Mind() {
@@ -43,27 +42,5 @@ export function Support() {
         ))}
       </ul>
     </article>
-  );
-}
-
-export function Money() {
-  const M = SEED.money;
-  return (
-    <section className="page">
-      <div className="pagehead"><div><h1>Money</h1><p>Build runway.</p></div></div>
-      <div className="areagrid">
-        <article className="card">
-          <header><h3>Vietnam budget</h3></header>
-          <ol className="rules">{M.trip.steps.map(s => <li key={s}><span>{s}</span></li>)}</ol>
-          <p className="fine">Trip budget and daily spend tracking arrive before you fly.</p>
-        </article>
-        <article className="card">
-          <header><h3>Order of operations</h3></header>
-          <ol className="rules">{M.orderOfOperations.map(s => <li key={s}><span>{s}</span></li>)}</ol>
-          <p className="fine">Pay yourself first: {M.payYourselfFirstPct}% of every paycheque. {M.raiseRule}.</p>
-        </article>
-      </div>
-      <p className="fine disclaimer">{M.disclaimer}</p>
-    </section>
   );
 }

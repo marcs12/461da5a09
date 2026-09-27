@@ -8,6 +8,9 @@ import type { Data } from '../lib/store';
 import { SEED } from '../data/seed';
 import { GateCard, MinimumDay, TimeBlocks, TopThree } from './today/Cards';
 import { CheckInSheet, QUICK, QuickSheet, type QuickKind } from './today/QuickLog';
+import { SpendSheet, TripCard, cad } from './money/Trip';
+import { TransferSheet } from './money/Cards';
+import { prefs, transferDue, tripStats } from '../lib/money';
 
 const WDS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -25,6 +28,7 @@ interface Props {
 export function Today({ data, today, now, openSession, openPlan, openReview, openIncome }: Props) {
   const [quick, setQuick] = useState<QuickKind | null>(null);
   const [checkInDate, setCheckInDate] = useState<string | null>(null);
+  const [moneySheet, setMoneySheet] = useState<'transfer' | 'spend' | null>(null);
   const S = data.settings;
   const pd = planDay(S, today);
   const toFly = diff(S.departDate, today);
@@ -42,6 +46,9 @@ export function Today({ data, today, now, openSession, openPlan, openReview, ope
   const done = s && s.kind !== 'break' && isDone(data, today, s);
   const hm = now.getHours() * 60 + now.getMinutes();
   const evening = hm >= toMin(S.lightsOut) - 30;
+  const payday = transferDue(data, today);
+  const takeHome = prefs(data).takeHome;
+  const tripBudget = tripStats(data, today).budget;
   const onLink = (l: string) => (l === 'income' ? openIncome() : l === 'body' ? openSession() : setCheckInDate(today));
 
   return (
@@ -53,6 +60,11 @@ export function Today({ data, today, now, openSession, openPlan, openReview, ope
 
       {parse(today).getDay() === 0 && (
         <button className="banner" onClick={openReview}><b>Sunday review</b><span>About 20 minutes. Open it</span></button>
+      )}
+      {payday && (
+        <button className="banner" onClick={() => setMoneySheet('transfer')}>
+          <b>Pay yourself first</b><span>Payday {payday === today ? 'today' : fmtDay(payday)}. Log the transfer{takeHome ? `: ${cad(Math.round((takeHome * SEED.money.payYourselfFirstPct) / 100))}` : ''}</span>
+        </button>
       )}
       {travel && <p className="banner quiet">Enjoy it. Walk, protein, check-in. That’s the whole job today.</p>}
       {evening && !data.days[today]?.checkedIn && (
@@ -68,7 +80,9 @@ export function Today({ data, today, now, openSession, openPlan, openReview, ope
             {QUICK.filter(q => !travel || q.id !== 'application').map(q => (
               <button key={q.id} className="btn" onClick={() => setQuick(q.id)}>{q.label}</button>
             ))}
+            {travel && tripBudget && <button className="btn" onClick={() => setMoneySheet('spend')}>Spending</button>}
           </nav>
+          {travel && <TripCard data={data} today={today} compact />}
           <GateCard data={data} today={today} openPlan={openPlan} />
         </div>
         <div className="stack">
@@ -88,6 +102,8 @@ export function Today({ data, today, now, openSession, openPlan, openReview, ope
       </div>
 
       {quick && <QuickSheet kind={quick} data={data} date={today} onClose={() => setQuick(null)} openSession={openSession} />}
+      {moneySheet === 'transfer' && <TransferSheet data={data} today={today} onClose={() => setMoneySheet(null)} />}
+      {moneySheet === 'spend' && <SpendSheet data={data} today={today} onClose={() => setMoneySheet(null)} />}
       {checkInDate && <CheckInSheet data={data} date={checkInDate} onClose={() => setCheckInDate(null)} />}
     </section>
   );
