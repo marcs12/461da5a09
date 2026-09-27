@@ -50,7 +50,8 @@ export interface Settings {
   onboarded?: boolean;
   planStart: string;
   planDays: number;
-  departDate: string;
+  /** null = no trip in this plan: the whole plan runs as Build. */
+  departDate: string | null;
   returnDate: string | null;
   /** 1 = Mon … 7 = Sun */
   workdays: number[];

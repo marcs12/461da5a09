@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { connect, disconnect, syncNow, useSyncStatus } from '../lib/gistSync';
 import { getData, merge, migrate, recs, replaceData, resetDays } from '../lib/store';
-import { today } from '../lib/dates';
+import { exportBackup } from '../lib/backup';
 
 const TOKEN_URL = 'https://github.com/settings/tokens/new?scopes=gist&description=Quarter%20sync';
 
@@ -22,14 +22,6 @@ export function SyncPanel() {
     setBusy(false);
   };
 
-  const exportJson = () => {
-    const blob = new Blob([JSON.stringify(getData(), null, 1)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `quarter-private-backup-${today()}.json`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-  };
   const importJson = async (f: File) => {
     try {
       const o = migrate(JSON.parse(await f.text()));
@@ -84,7 +76,7 @@ export function SyncPanel() {
         <h3>Backup</h3>
         <p className="fine">Download everything as JSON, or merge a backup in (newer edits win). The file holds your weight, mood and money data, so keep it private.</p>
         <div className="actions">
-          <button className="btn" onClick={exportJson}>Export JSON</button>
+          <button className="btn" onClick={exportBackup}>Export JSON</button>
           <button className="btn" onClick={() => fileRef.current?.click()}>Import JSON</button>
           <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={e => { const f = e.target.files?.[0]; if (f) importJson(f); e.target.value = ''; }} />
         </div>

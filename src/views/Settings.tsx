@@ -1,11 +1,16 @@
+import { useState } from 'react';
 import { fmtDay } from '../lib/dates';
+import { exportBackup } from '../lib/backup';
+import { nextPlan } from '../lib/review';
 import { planEnd } from '../lib/life';
 import { DEFAULT_SETTINGS, editSettings, type Data } from '../lib/store';
 import { DateField, PayFields, ShiftFields, TimeField, Toggle, TrainFields, Workdays } from '../components/fields';
 import { SyncPanel } from '../components/SyncPanel';
 
-export function Settings({ data }: { data: Data }) {
+export function Settings({ data, today }: { data: Data; today: string }) {
   const S = data.settings;
+  const [armed, setArmed] = useState(false);
+  const next = nextPlan(S, today);
   return (
     <section className="page">
       <div className="pagehead"><div><h1>Settings</h1><p>Changes save as you make them.</p></div></div>
@@ -14,7 +19,7 @@ export function Settings({ data }: { data: Data }) {
           <h3>Plan dates</h3>
           <div className="fields">
             <DateField id="s-start" label="Plan starts" value={S.planStart} onChange={v => v && editSettings({ planStart: v })} />
-            <DateField id="s-depart" label="Fly out" value={S.departDate} onChange={v => v && editSettings({ departDate: v })} />
+            <DateField id="s-depart" label="Fly out" value={S.departDate} onChange={v => editSettings({ departDate: v, ...(v ? {} : { returnDate: null }) })} hint="Clear it for a plan without a trip." />
             <DateField id="s-return" label="Home again" value={S.returnDate} onChange={v => editSettings({ returnDate: v })}
               hint="Your first day back home." />
           </div>
@@ -60,6 +65,19 @@ export function Settings({ data }: { data: Data }) {
             <label htmlFor="s-tg">TouchGrass Battlepass link</label>
             <input className="inp" id="s-tg" type="url" inputMode="url" placeholder="https://" value={S.touchGrassUrl ?? ''}
               onChange={e => editSettings({ touchGrassUrl: e.target.value || undefined })} />
+          </div>
+        </article>
+
+        <article className="card stack-sm">
+          <h3>The next 90 days</h3>
+          <p className="fine">Keeps everything you’ve logged and the plan’s structure, with new dates: starts {fmtDay(next.planStart)}, no trip. It downloads a backup first, then asks you to confirm the dates.</p>
+          <div className="actions">
+            {armed ? (
+              <>
+                <button className="btn primary" onClick={() => { exportBackup(); editSettings({ ...next, onboarded: false }); setArmed(false); }}>Back up and start</button>
+                <button className="btn ghost" onClick={() => setArmed(false)}>Cancel</button>
+              </>
+            ) : <button className="btn" onClick={() => setArmed(true)}>Start the next 90 days</button>}
           </div>
         </article>
 

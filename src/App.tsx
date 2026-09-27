@@ -5,6 +5,7 @@ import { sessionOf } from './lib/program';
 import { circuitSegments } from './lib/body';
 import { iso, parse } from './lib/dates';
 import { useNow } from './lib/useNow';
+import { reviewWeek, reviews } from './lib/review';
 import { Icon, Mark } from './components/ui';
 import { IntervalTimer } from './components/IntervalTimer';
 import { label } from './components/SyncPanel';
@@ -73,6 +74,7 @@ export default function App() {
     : null;
   const startCircuit = (date: string) => setTimer({ date, kind: 'circuit' });
   const isSunday = parse(today).getDay() === 0;
+  const reviewDue = isSunday && !reviews(data).some(r => r.weekOf === reviewWeek(today));
   const syncIssue = sync.state === 'error' || sync.state === 'offline';
   const headBtn = (p: Page, name: string, I: () => React.ReactElement, extra?: React.ReactNode) => (
     <button className="hbtn" onClick={() => (page === p ? setPage(null) : setPage(p))} aria-pressed={page === p} aria-label={name} title={name}>
@@ -93,7 +95,7 @@ export default function App() {
           </button>
           <nav className="hnav" aria-label="Plan, review and settings">
             {headBtn('plan', 'Plan', Icon.map)}
-            {headBtn('review', isSunday ? 'Sunday review, about 20 minutes' : 'Review', Icon.review, isSunday && <i className="badge" />)}
+            {headBtn('review', reviewDue ? 'Sunday review, about 20 minutes' : 'Review', Icon.review, reviewDue && <i className="badge" />)}
             {headBtn('settings', syncIssue ? `Settings · ${label(sync.state)}` : 'Settings', Icon.settings, syncIssue && <i className="badge dim" />)}
           </nav>
         </div>
@@ -112,9 +114,9 @@ export default function App() {
           {page && (
             <button className="backbtn" onClick={() => setPage(null)}><Icon.back />{TABS.find(t => t.id === tab)!.name}</button>
           )}
-          {page === 'plan' && <PlanPage data={data} today={today} />}
-          {page === 'review' && <Review today={today} />}
-          {page === 'settings' && <Settings data={data} />}
+          {page === 'plan' && <PlanPage data={data} today={today} openSettings={() => setPage('settings')} />}
+          {page === 'review' && <Review data={data} today={today} openIncome={() => go('income')} />}
+          {page === 'settings' && <Settings data={data} today={today} />}
           {!page && tab === 'today' && (
             <Today data={data} today={today} now={now} openPlan={() => setPage('plan')} openReview={() => setPage('review')}
               openIncome={() => go('income')} onCircuit={startCircuit} openBody={() => { setSub('overview'); go('body'); }} openSession={() => { setDate(initialDate()); setSub('session'); go('body'); }} />

@@ -13,6 +13,7 @@ import { TransferSheet } from './money/Cards';
 import { CircuitCard } from './body/Overview';
 import { waistDue } from '../lib/body';
 import { supportTrigger } from '../lib/mind';
+import { reviewWeek, reviews } from '../lib/review';
 import { SupportAlert } from './Mind';
 import { prefs, transferDue, tripStats } from '../lib/money';
 
@@ -37,7 +38,7 @@ export function Today({ data, today, now, openSession, openPlan, openReview, ope
   const [moneySheet, setMoneySheet] = useState<'transfer' | 'spend' | null>(null);
   const S = data.settings;
   const pd = planDay(S, today);
-  const toFly = diff(S.departDate, today);
+  const toFly = S.departDate ? diff(S.departDate, today) : -1;
   const trip = SEED.plan.tripDestination;
   const travel = isTravelMode(S, today);
 
@@ -66,7 +67,10 @@ export function Today({ data, today, now, openSession, openPlan, openReview, ope
       </button>
 
       {support.fired && <SupportAlert data={data} today={today} reason={support.reason} compact />}
-      {parse(today).getDay() === 0 && (
+      {pd.status === 'post' && (
+        <button className="banner" onClick={openPlan}><b>Day-90 review</b><span>Score the table, then set the next 90 days</span></button>
+      )}
+      {parse(today).getDay() === 0 && !reviews(data).some(r => r.weekOf === reviewWeek(today)) && (
         <button className="banner" onClick={openReview}><b>Sunday review</b><span>About 20 minutes. Open it</span></button>
       )}
       {payday && (

@@ -101,7 +101,7 @@ export const tripBudget = (d: Data) => recs<TripBudget>(d, 'tripBudget').find(t 
 
 /** Trip days run from departure to the day before you're home. */
 export function tripDays(s: Settings): { from: string; to: string; days: number } | null {
-  if (!s.returnDate) return null;
+  if (!s.departDate || !s.returnDate) return null;
   const to = addDays(s.returnDate, -1);
   return { from: s.departDate, to, days: diff(to, s.departDate) + 1 };
 }
@@ -119,6 +119,7 @@ export function tripStats(d: Data, today: string) {
 
 /** Money cards that matter before and during the trip. After the Sunday you're back, it's history. */
 export const tripActive = (d: Data, today: string) => {
+  if (!d.settings.departDate) return false;
   const end = travelEnd(d.settings);
   return !end || today <= end;
 };

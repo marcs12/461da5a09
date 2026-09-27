@@ -38,7 +38,7 @@ export function RunwayCard({ data }: { data: Data }) {
   );
 }
 
-function FundSheet({ current, onClose }: { current?: number; onClose: () => void }) {
+export function FundSheet({ current, onClose }: { current?: number; onClose: () => void }) {
   const [v, setV] = useState<number | undefined>(current);
   const save = () => { if (v == null) return; putRec<FundEntry>('fund', { id: crypto.randomUUID(), date: iso(new Date()), balance: v }); onClose(); };
   return (

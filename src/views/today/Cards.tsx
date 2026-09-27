@@ -174,13 +174,23 @@ export function TopThree({ data, today }: { data: Data; today: string }) {
 }
 
 function PickSheet({ data, today, week, onClose }: { data: Data; today: string; week: string; onClose: () => void }) {
+  return (
+    <Sheet title={`Top 3 · week of ${fmtShort(week)}`} onClose={onClose}>
+      <PickList data={data} today={today} week={week} />
+      <div className="actions sheet-go"><button className="btn primary" onClick={onClose}>Done</button></div>
+    </Sheet>
+  );
+}
+
+/** Seed tasks to pick a week's top 3 from, current phase first, P1s at the top. */
+export function PickList({ data, today, week }: { data: Data; today: string; week: string }) {
   const pd = planDay(data.settings, today);
   const list = pd.status !== 'in' || pd.phase === 'sprint' ? 'sprint' : pd.phase === 'build' ? 'build' : 'travel';
   const order = [list, ...['sprint', 'build', 'travel'].filter(x => x !== list)];
   const count = SEED.tasks.filter(t => taskState(data, t.id)?.pickedForWeek === week).length;
   const pri = (p: string) => Number(p.slice(1));
   return (
-    <Sheet title={`Top 3 · week of ${fmtShort(week)}`} onClose={onClose}>
+    <>
       <p className="fine">{count}/3 picked. Tap to add or remove.</p>
       {order.map(l => {
         const tasks = SEED.tasks.filter(t => t.list === l && !taskState(data, t.id)?.done).sort((a, b) => pri(a.priority) - pri(b.priority));
@@ -205,7 +215,6 @@ function PickSheet({ data, today, week, onClose }: { data: Data; today: string; 
           </section>
         );
       })}
-      <div className="actions sheet-go"><button className="btn primary" onClick={onClose}>Done</button></div>
-    </Sheet>
+    </>
   );
 }

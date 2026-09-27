@@ -20,7 +20,7 @@ function autoCheck(d: Data, gateId: string, cid: string): Auto {
   const S = d.settings, b = buildStart(S);
   switch (`${gateId}:${cid}`) {
     case 'before-fly:apps20': {
-      const n = appliedBetween(d, S.planStart, addDays(S.departDate, -1));
+      const n = S.departDate ? appliedBetween(d, S.planStart, addDays(S.departDate, -1)) : 0;
       return { done: n >= 20, progress: `${Math.min(n, 20)}/20` };
     }
     case 'before-fly:resume-linkedin': return { done: taskDone(d, 'resume-v2') && taskDone(d, 'linkedin') };
@@ -37,12 +37,14 @@ function autoCheck(d: Data, gateId: string, cid: string): Auto {
 }
 
 export function gateDue(d: Data, gateId: string): string | null {
-  if (gateId === 'before-fly') return addDays(d.settings.departDate, -1);
+  if (gateId === 'before-fly') return d.settings.departDate && addDays(d.settings.departDate, -1);
   const b = buildStart(d.settings);
   return b && addDays(b, 6);
 }
 
+/** Both gates are about the trip; a plan without one has none. */
 export function gates(d: Data): Gate[] {
+  if (!d.settings.departDate) return [];
   const over = new Map(recs<GateOverride>(d, 'gates').map(o => [o.id, o.done]));
   return SEED.gates.map(g => ({
     id: g.id, name: g.name, due: gateDue(d, g.id),

@@ -18,8 +18,9 @@ export const sundayFrom = (ds: string) => addDays(ds, (7 - parse(ds).getDay()) %
 
 /** Travel runs from departure to the Sunday after you're home (days home before
  *  it are Re-entry). Build starts the Monday after. Null while the return date is unset. */
-export const travelEnd = (s: Dates) => (s.returnDate ? sundayFrom(s.returnDate) : null);
+export const travelEnd = (s: Dates) => (s.departDate && s.returnDate ? sundayFrom(s.returnDate) : null);
 export const buildStart = (s: Dates) => {
+  if (!s.departDate) return s.planStart;
   const t = travelEnd(s);
   return t ? addDays(t, 1) : null;
 };
@@ -30,6 +31,7 @@ export type PlanDay =
   | { status: 'in'; day: number; phase: LifePhaseId; buildWeek: number | null };
 
 export function phaseOn(s: Dates, ds: string): LifePhaseId {
+  if (!s.departDate) return 'build';
   if (ds < s.departDate) return 'sprint';
   if (!s.returnDate || ds < s.returnDate) return 'travel';
   if (ds <= travelEnd(s)!) return 'reentry';
@@ -62,6 +64,7 @@ export const PHASE_NAME: Record<LifePhaseId, string> = { sprint: 'Sprint', trave
 /** Each phase's date range, for the roadmap. */
 export function phaseRanges(s: Dates): { id: LifePhaseId; from: string; to: string | null }[] {
   const end = planEnd(s), te = travelEnd(s), b = buildStart(s);
+  if (!s.departDate) return [{ id: 'build', from: s.planStart, to: end }];
   return [
     { id: 'sprint', from: s.planStart, to: addDays(s.departDate, -1) },
     { id: 'travel', from: s.departDate, to: s.returnDate ? addDays(s.returnDate, -1) : null },

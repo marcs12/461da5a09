@@ -143,7 +143,7 @@ export function TaskItem({ data, t, auto }: { data: Data; t: SeedTask; auto?: { 
 
 export function Checklist({ data, today }: { data: Data; today: string }) {
   const S = data.settings;
-  const sprintApps = jobs(data).filter(j => j.appliedAt && j.appliedAt >= S.planStart && j.appliedAt < S.departDate).length;
+  const sprintApps = jobs(data).filter(j => j.appliedAt && j.appliedAt >= S.planStart && !!S.departDate && j.appliedAt < S.departDate).length;
   const wk = weekCounts(data, today);
   const autos: Record<string, { line: string; done: boolean }> = {
     'apps-20': { line: `${sprintApps}/20 from the pipeline`, done: sprintApps >= 20 },
