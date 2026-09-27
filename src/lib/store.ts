@@ -88,6 +88,14 @@ export function putRec<T extends Rec>(col: string, rec: Omit<T, '_u'>) {
   commitLocal({ ...data, [where]: { ...tables, [col]: { ...(tables[col] || {}), [rec.id]: next } } });
 }
 
+/** Merge `patch` into a record, starting from `base` if it doesn't exist yet. */
+export function patchRec<T extends Rec>(col: string, id: string, patch: Partial<T>, base: Omit<T, 'id' | '_u'>) {
+  const where = PRIVATE_COLS.has(col) ? 'priv' : 'cols';
+  const cur = data[where][col]?.[id] as T | undefined;
+  const { _del, ...live } = (cur && !cur._del ? cur : { ...base, id }) as T;
+  putRec<T>(col, { ...live, ...patch, id } as Omit<T, '_u'>);
+}
+
 export function delRec(col: string, id: string) {
   putRec(col, { id, _del: true });
 }

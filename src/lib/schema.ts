@@ -18,6 +18,13 @@ export interface DayLog {
   sleep?: number;
   note?: string;
   ex?: Record<string, SetEntry[]>;
+  /** Minimum day (life guide). `walk`, `pro` and `done` above also count toward it. */
+  career?: boolean;
+  walkMin?: number;
+  proMeals?: number;
+  lightsOut?: boolean;
+  /** The check-in itself is private; this synced flag only says it happened. */
+  checkedIn?: boolean;
   /** Last edit time (ms). Sync merges days last-writer-wins on this. */
   _u?: number;
 }
@@ -63,6 +70,39 @@ export interface Data {
   /** Collections that never leave this device (mood, money). Included in exports. */
   priv: Tables;
 }
+
+export type Tier = 'bridge' | 'stretch' | 'bestbuy' | 'creative';
+export type Stage = 'saved' | 'applied' | 'followup' | 'interview' | 'offer' | 'closed';
+export interface Job extends Rec {
+  company: string;
+  role: string;
+  url?: string;
+  tier: Tier;
+  stage: Stage;
+  savedAt: string;
+  appliedAt?: string;
+  followUpAt?: string;
+  payRange?: string;
+  notes?: string;
+}
+/** Private. `id` is the date. */
+export interface CheckIn extends Rec {
+  date: string;
+  mood: number;
+  win: string;
+  firstTaskTomorrow: string;
+  sleepHours?: number;
+  losingInterest?: boolean;
+}
+/** Progress on a seed task. `id` is the task id. */
+export interface TaskState extends Rec {
+  checklist: boolean[];
+  done: boolean;
+  /** Monday of the week it's in the top 3. */
+  pickedForWeek?: string;
+}
+/** Manual override of a gate criterion. `id` is `gateId:criterionId`. */
+export interface GateOverride extends Rec { done: boolean }
 
 /** Collections kept off the sync gist: the spec says mood and money data stay on the device. */
 export const PRIVATE_COLS = new Set([

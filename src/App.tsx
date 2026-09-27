@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { useData, editDay, editSet } from './lib/store';
 import { useSyncStatus } from './lib/gistSync';
 import { sessionOf } from './lib/program';
-import { parse, today as todayStr } from './lib/dates';
+import { iso, parse } from './lib/dates';
+import { useNow } from './lib/useNow';
 import { Icon } from './components/ui';
 import { IntervalTimer } from './components/IntervalTimer';
 import { label } from './components/SyncPanel';
@@ -34,7 +35,8 @@ export default function App() {
   const [sub, setSubState] = useState<BodyView>(() => {
     try { return (localStorage.getItem(BODY_KEY) as BodyView) || 'session'; } catch { return 'session'; }
   });
-  const [today, setToday] = useState(todayStr);
+  const now = useNow();
+  const today = iso(now);
   const [date, setDate] = useState(initialDate);
   const [timerDate, setTimerDate] = useState<string | null>(null);
 
@@ -54,7 +56,6 @@ export default function App() {
     let last = initialDate();
     const onVis = () => {
       if (document.visibilityState !== 'visible') return;
-      setToday(todayStr());
       const now = initialDate();
       if (now !== last) { last = now; setDate(now); }
     };
@@ -107,8 +108,8 @@ export default function App() {
           {page === 'review' && <Review today={today} />}
           {page === 'settings' && <Settings data={data} />}
           {!page && tab === 'today' && (
-            <Today data={data} today={today} openPlan={() => setPage('plan')}
-              openSession={() => { setDate(initialDate()); setSub('session'); go('body'); }} />
+            <Today data={data} today={today} now={now} openPlan={() => setPage('plan')} openReview={() => setPage('review')}
+              openIncome={() => go('income')} openSession={() => { setDate(initialDate()); setSub('session'); go('body'); }} />
           )}
           {!page && tab === 'income' && <Income />}
           {!page && tab === 'body' && <Body data={data} sub={sub} setSub={setSub} date={date} setDate={setDate} onTimer={() => setTimerDate(date)} />}
