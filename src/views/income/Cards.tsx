@@ -13,14 +13,14 @@ export function Targets({ data, today }: { data: Data; today: string }) {
   if (t.paused) {
     return (
       <article className="card">
-        <header><h3>This week</h3><span className="aside">targets paused</span></header>
+        <header><h2>This week</h2><span className="aside">targets paused</span></header>
         <p className="fine">Travel mode: answer recruiters within 24 hours, no grind. {c.applications ? `${c.applications} sent anyway.` : ''}</p>
       </article>
     );
   }
   return (
     <article className="card">
-      <header><h3>This week</h3><span className="aside">Mon – Sun</span></header>
+      <header><h2>This week</h2><span className="aside">Mon – Sun</span></header>
       <div className="rings">
         <div><Ring done={c.applications} total={t.applications} /><span>Applications</span></div>
         {t.outreach > 0 && <div><Ring done={c.outreach} total={t.outreach} /><span>Outreach</span></div>}
@@ -33,13 +33,13 @@ export function Stats({ data }: { data: Data }) {
   const s = incomeStats(data), m = tierMix(data);
   return (
     <article className="card">
-      <header><h3>90-day numbers</h3></header>
+      <header><h2>90-day numbers</h2></header>
       <dl className="tiles mini">
         <div className="tile"><dt>Applications</dt><dd>{s.applied}<small>/ {s.target}</small></dd></div>
         <div className="tile"><dt>Interviews</dt><dd>{s.interviews}</dd></div>
         <div className="tile"><dt>Heard back</dt><dd>{s.heardPct ?? '—'}{s.heardPct != null && <small>%</small>}</dd></div>
       </dl>
-      <h4 className="subhead">Tier mix</h4>
+      <h3 className="subhead">Tier mix</h3>
       <ul className="mix">
         {m.rows.map(r => {
           const pct = m.total ? Math.round((r.n / m.total) * 100) : 0;
@@ -61,7 +61,7 @@ export function OutreachCard({ data, today }: { data: Data; today: string }) {
   const replied = list.filter(o => o.replied).length;
   return (
     <article className="card">
-      <header><h3>Outreach</h3><span className="aside">{replied} conversation{replied === 1 ? '' : 's'} · aim 10</span></header>
+      <header><h2>Outreach</h2><span className="aside">{replied} conversation{replied === 1 ? '' : 's'} · aim 10</span></header>
       {list.length ? (
         <ul className="mins">
           {list.slice(0, 8).map(o => (
@@ -152,13 +152,13 @@ export function Checklist({ data, today }: { data: Data; today: string }) {
   const groups = [['sprint', 'Sprint'], ['travel', 'Travel'], ['build', 'Build']] as const;
   return (
     <article className="card">
-      <header><h3>Career checklist</h3></header>
+      <header><h2>Career checklist</h2></header>
       {groups.map(([id, name]) => {
         const tasks = SEED.tasks.filter(t => t.list === id && t.area === 'income' && t.id !== 'applied-skills' && t.id !== 'pl-900');
         if (!tasks.length) return null;
         return (
           <section key={id}>
-            <h4 className="subhead">{name}</h4>
+            <h3 className="subhead">{name}</h3>
             <ul className="tasks">{tasks.map(t => <TaskItem key={t.id} data={data} t={t} auto={autos[t.id]} />)}</ul>
           </section>
         );
@@ -170,7 +170,7 @@ export function Checklist({ data, today }: { data: Data; today: string }) {
 export function Credential({ data }: { data: Data }) {
   return (
     <article className="card">
-      <header><h3>Microsoft credential</h3></header>
+      <header><h2>Microsoft credential</h2></header>
       {I.credentials.map(c => {
         const t = SEED.tasks.find(x => x.id === c.id);
         return (
@@ -203,7 +203,7 @@ export function FreelanceCard({ data }: { data: Data }) {
   );
   return (
     <article className="card">
-      <header><h3>Freelance test</h3></header>
+      <header><h2>Freelance test</h2></header>
       <div className="stack-sm">
         {step('pitches', 'Pitches sent', I.freelance.pitchesTarget)}
         {step('intros', 'Intros asked for', I.freelance.introsToAsk)}
@@ -227,7 +227,7 @@ export function BragFile({ data, today }: { data: Data; today: string }) {
   const starters = I.resumeBullets.filter(b => !wins.some(w => w.text === b));
   return (
     <article className="card">
-      <header><h3>Brag file</h3>{wins.length > 0 && <button className="btn ghost small" onClick={copy}>Copy all</button>}</header>
+      <header><h2>Brag file</h2>{wins.length > 0 && <button className="btn ghost small" onClick={copy}>Copy all</button>}</header>
       <form className="stack-sm" onSubmit={e => { e.preventDefault(); if (text.trim()) { add(text.trim(), metric.trim()); setText(''); setMetric(''); } }}>
         <div className="field"><label htmlFor="w-text">A win, with a number if there is one</label>
           <input className="inp" id="w-text" autoComplete="off" value={text} onChange={e => setText(e.target.value)} placeholder="Laptops processed through the auction workflow" /></div>
@@ -247,7 +247,7 @@ export function BragFile({ data, today }: { data: Data; today: string }) {
       )}
       {starters.length > 0 && (
         <div className="starters">
-          <h4 className="subhead">From the plan</h4>
+          <h3 className="subhead">From the plan</h3>
           {starters.map(b => <button key={b} className="starter" onClick={() => add(b)}><span>{b}</span><small>Add</small></button>)}
         </div>
       )}
@@ -264,7 +264,7 @@ export function TimeZones({ today }: { today: string }) {
   const name = (zone: string) => (zone === z.home ? 'Vancouver' : 'Vietnam');
   return (
     <article className="card">
-      <header><h3>Time zones</h3><button className="btn ghost small" onClick={() => setHomeSide(!homeSide)}>Swap</button></header>
+      <header><h2>Time zones</h2><button className="btn ghost small" onClick={() => setHomeSide(!homeSide)}>Swap</button></header>
       <div className="tz">
         <div className="field"><label htmlFor="tz-in">{name(from)}</label><input className="inp" id="tz-in" type="time" value={time} onChange={e => e.target.value && setTime(e.target.value)} /></div>
         <div className="tz-out"><small>{name(to)}</small><b>{r.time}</b><small>{r.date === today ? 'same day' : fmtDay(r.date)}</small></div>

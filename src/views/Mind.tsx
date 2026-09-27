@@ -28,7 +28,7 @@ export function Mind({ data, today }: { data: Data; today: string }) {
           <Support />
           <CriticTool today={today} />
           <article className="card">
-            <header><h3>Four anchors</h3><span className="aside">{M.anchorsSource}</span></header>
+            <header><h2>Four anchors</h2><span className="aside">{M.anchorsSource}</span></header>
             <ul className="tiers">{M.anchors.map(a => <li key={a.title}><b>{a.title}</b><span>{a.body}</span></li>)}</ul>
           </article>
         </div>
@@ -60,7 +60,7 @@ function CheckInCard({ data, today }: { data: Data; today: string }) {
   const c = checkIns(data).find(x => x.id === today);
   return (
     <article className="card">
-      <header><h3>Check-in</h3><span className="aside">under a minute</span></header>
+      <header><h2>Check-in</h2><span className="aside">under a minute</span></header>
       {c ? (
         <dl className="kv">
           <div><dt>Mood</dt><dd>{c.mood}/10</dd></div>
@@ -83,9 +83,9 @@ function Trends({ data, today }: { data: Data; today: string }) {
   const target = SEED.weeklyTargets.sprint.sleepNights7h;
   return (
     <article className="card">
-      <header><h3>Trends</h3><span className="aside">weekly, Mon – Sun</span></header>
+      <header><h2>Trends</h2><span className="aside">weekly, Mon – Sun</span></header>
       <div className="rings"><div><Ring done={sleep.n} total={7} /><span>Nights with 7+ hours<small> · aim {target}</small></span></div></div>
-      <h4 className="subhead">Mood, weekly average</h4>
+      <h3 className="subhead">Mood, weekly average</h3>
       <ul className="moodweeks">
         {weeks.map(w => {
           const x = weekMood(data, w);
@@ -108,7 +108,7 @@ function DailyBase({ data, today }: { data: Data; today: string }) {
   const walked = (l.walkMin ?? 0) >= 20 || !!l.walk;
   return (
     <article className="card">
-      <header><h3>Daily base</h3></header>
+      <header><h2>Daily base</h2></header>
       <ul className="mins">
         <li><button className="min" aria-pressed={!!l.daylight} onClick={() => editDay(today, d => { d.daylight = !l.daylight || undefined; })}>
           <i aria-hidden="true" /><span><b>10 minutes of morning daylight</b><small>Sunrise is after 7 until spring: the lunch walk counts</small></span></button></li>
@@ -129,7 +129,7 @@ function Connection({ data, today }: { data: Data; today: string }) {
   const mins = w.creativeMinutes ?? 0;
   return (
     <article className="card">
-      <header><h3>Connection and fun</h3><span className="aside">this week</span></header>
+      <header><h2>Connection and fun</h2><span className="aside">this week</span></header>
       <div className="stack-sm">
         <form className="field" onSubmit={e => { e.preventDefault(); patch({ touchGrass: tg.trim() || undefined }); }}>
           <label htmlFor="tg">A TouchGrass activity{url && <> · <a href={url} target="_blank" rel="noreferrer">Battlepass</a></>}</label>
@@ -149,7 +149,7 @@ function Connection({ data, today }: { data: Data; today: string }) {
           </div>
         </div>
       </div>
-      <h4 className="subhead">Vietnam film</h4>
+      <h3 className="subhead">Vietnam film</h3>
       <ul className="tasks">
         {['film-clips', 'travel-edit'].map(id => <TaskItem key={id} data={data} t={SEED.tasks.find(t => t.id === id)!} />)}
       </ul>
@@ -165,7 +165,7 @@ function CriticTool({ today }: { today: string }) {
   const done = step >= steps.length;
   return (
     <article className="card">
-      <header><h3>When the critic shows up</h3>{step > 0 && <button className="btn ghost small" onClick={() => { setStep(0); setNote(''); setSaved(false); }}>Start over</button>}</header>
+      <header><h2>When the critic shows up</h2>{step > 0 && <button className="btn ghost small" onClick={() => { setStep(0); setNote(''); setSaved(false); }}>Start over</button>}</header>
       <ol className="rules critic">
         {steps.map((s, i) => <li key={s} className={i === step ? 'on' : i < step ? 'past' : ''}><span>{s}</span></li>)}
       </ol>
@@ -187,7 +187,7 @@ function CriticTool({ today }: { today: string }) {
 export function Support() {
   return (
     <article className="card support">
-      <header><h3>Support</h3><span className="aside">free, any time</span></header>
+      <header><h2>Support</h2><span className="aside">free, any time</span></header>
       <ul className="res">
         {M.supportResources.map(r => (
           <li key={r.id}>

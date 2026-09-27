@@ -86,7 +86,7 @@ export default function App() {
     <>
       <header className="top">
         <div className="top-in">
-          <button className="brand" onClick={() => go('today')} aria-label="Today">
+          <button className="brand" onClick={() => go('today')} title="Today">
             <Mark />
             <div>
               <div className="brand-name">Quarter</div>

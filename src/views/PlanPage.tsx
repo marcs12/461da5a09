@@ -29,10 +29,10 @@ export function PlanPage({ data, today, openSettings }: { data: Data; today: str
       <div className="plangrid">
         <div className="stack">
           <article className="card">
-            <header><h3>Scoreboard</h3><span className="aside">Day-90 targets · {board.filter(b => b.met).length}/{board.length} met</span></header>
+            <header><h2>Scoreboard</h2><span className="aside">Day-90 targets · {board.filter(b => b.met).length}/{board.length} met</span></header>
             {AREAS.map(([id, name]) => (
               <section key={id}>
-                <h4 className="subhead">{name}</h4>
+                <h3 className="subhead">{name}</h3>
                 <ul className="board">
                   {board.filter(b => b.area === id).map(b => (
                     <li key={b.id} className={b.met ? 'met' : ''}>
@@ -48,7 +48,7 @@ export function PlanPage({ data, today, openSettings }: { data: Data; today: str
           </article>
 
           <article className="card">
-            <header><h3>Roadmap</h3></header>
+            <header><h2>Roadmap</h2></header>
             <ol className="road">
               {phaseRanges(S).map(p => {
                 const sp = seedPhase(p.id);
@@ -71,7 +71,7 @@ export function PlanPage({ data, today, openSettings }: { data: Data; today: str
         <div className="stack">
           {gates(data).map(g => (
             <article key={g.id} className="card">
-              <header><h3>{g.name}</h3><span className="aside">{g.criteria.filter(c => c.done).length}/{g.criteria.length}{g.due ? ` · by ${fmtDay(g.due)}` : ' · after you’re back'}</span></header>
+              <header><h2>{g.name}</h2><span className="aside">{g.criteria.filter(c => c.done).length}/{g.criteria.length}{g.due ? ` · by ${fmtDay(g.due)}` : ' · after you’re back'}</span></header>
               <ul className="mins">
                 {g.criteria.map(c => (
                   <li key={c.id}>
@@ -89,21 +89,21 @@ export function PlanPage({ data, today, openSettings }: { data: Data; today: str
           ))}
 
           <article className="card">
-            <header><h3>The five rules</h3></header>
+            <header><h2>The five rules</h2></header>
             <ol className="rules">
               {SEED.rules.map(r => <li key={r.id}><b>{r.title}</b><span>{r.body}</span></li>)}
             </ol>
           </article>
 
           <article className="card">
-            <header><h3>A week’s time</h3><span className="aside">{hours} h</span></header>
+            <header><h2>A week’s time</h2><span className="aside">{hours} h</span></header>
             <dl className="kv">
               {SEED.weeklyTimeBudgetHours.map(x => <div key={x.area}><dt>{x.area}</dt><dd>{x.hours} h</dd></div>)}
             </dl>
           </article>
 
           <article className="card">
-            <header><h3>{SEED.parkingLot.title}</h3></header>
+            <header><h2>{SEED.parkingLot.title}</h2></header>
             <p className="fine">{SEED.parkingLot.note}</p>
           </article>
         </div>

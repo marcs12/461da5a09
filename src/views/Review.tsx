@@ -60,7 +60,7 @@ function Stepper({ data, today, week, saved, openIncome, onDone }: { data: Data;
   return (
     <article className="card review">
       <div className="ob-dots" aria-hidden="true">{STEPS.map((s, i) => <i key={s.id} className={i <= step ? 'on' : ''} />)}</div>
-      <header><h3>{step + 1}. {STEPS[step].label}</h3><span className="aside">{STEPS[step].minutes} min</span></header>
+      <header><h2>{step + 1}. {STEPS[step].label}</h2><span className="aside">{STEPS[step].minutes} min</span></header>
 
       {step === 0 && (
         <>
@@ -79,7 +79,7 @@ function Stepper({ data, today, week, saved, openIncome, onDone }: { data: Data;
 
       {step === 2 && (
         <div className="stack-sm">
-          <h4 className="subhead">Top 3 for the week of {fmtShort(next)}</h4>
+          <h3 className="subhead">Top 3 for the week of {fmtShort(next)}</h3>
           <PickList data={data} today={addDays(next, 1)} week={next} />
           <div className="actions"><button className="btn" onClick={openIncome}>Save 5 postings in Income</button></div>
           <p className="fine">Put the workouts and a TouchGrass or social plan in your calendar now.</p>
@@ -147,7 +147,7 @@ function Summary({ r, onEdit }: { r: WeeklyReview; onEdit: () => void }) {
   const copy = async () => { try { await navigator.clipboard.writeText(text); setMsg('Copied.'); } catch { setMsg('Couldn’t reach the clipboard.'); } };
   return (
     <article className="card">
-      <header><h3>Done for this week</h3><button className="btn ghost small" onClick={onEdit}>Edit</button></header>
+      <header><h2>Done for this week</h2><button className="btn ghost small" onClick={onEdit}>Edit</button></header>
       <pre className="tmpl">{text}</pre>
       <div className="actions"><button className="btn" onClick={copy}>Copy as text</button>{msg && <span className="fine">{msg}</span>}</div>
     </article>
@@ -160,7 +160,7 @@ function History({ data, current }: { data: Data; current: string }) {
   if (!past.length) return null;
   return (
     <article className="card">
-      <header><h3>Past reviews</h3><span className="aside">{past.length}</span></header>
+      <header><h2>Past reviews</h2><span className="aside">{past.length}</span></header>
       <ul className="wins">
         {past.map(r => (
           <li key={r.id} className="hist">

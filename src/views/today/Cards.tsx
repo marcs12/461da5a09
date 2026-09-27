@@ -71,7 +71,7 @@ export function MinimumDay({ data, today, now, openCheckIn }: { data: Data; toda
   return (
     <article className="card minday">
       <header>
-        <div><h3>Minimum day</h3><p className="streak">{line}{st.best > st.current && st.current > 0 ? ` · best ${st.best}` : ''}</p></div>
+        <div><h2>Minimum day</h2><p className="streak">{line}{st.best > st.current && st.current > 0 ? ` · best ${st.best}` : ''}</p></div>
         <Ring done={done} total={items.length} />
       </header>
       <Items data={data} ds={today} items={items} openCheckIn={openCheckIn} />
@@ -96,7 +96,7 @@ export function GateCard({ data, today, openPlan }: { data: Data; today: string;
   return (
     <article className="card gatecard">
       <header>
-        <button className="linkish" onClick={openPlan}><h3>{g.name}</h3></button>
+        <h2><button className="linkish" onClick={openPlan}>{g.name}</button></h2>
         <span className="aside">{n}/{g.criteria.length}{g.due ? ` · by ${fmtShort(g.due)}` : ''}</span>
       </header>
       <ul className="mins">
@@ -124,7 +124,7 @@ export function TimeBlocks({ data, today, now, onLink }: { data: Data; today: st
   const cur = work ? currentBlock(blocks, hhmm(now)) : -1;
   return (
     <article className="card">
-      <header><h3>{work ? 'Workday' : 'Day off'}</h3><span className="aside">{work ? `wake ${clock12(S.wakeTime)} · lights out ${clock12(S.lightsOut)}` : 'same wake time, within an hour'}</span></header>
+      <header><h2>{work ? 'Workday' : 'Day off'}</h2><span className="aside">{work ? `wake ${clock12(S.wakeTime)} · lights out ${clock12(S.lightsOut)}` : 'same wake time, within an hour'}</span></header>
       <ol className={`blocks${work ? '' : ' untimed'}`}>
         {blocks.map((b, i) => (
           <li key={b.label} className={i === cur ? 'now' : ''} aria-current={i === cur ? 'time' : undefined}>
@@ -152,7 +152,7 @@ export function TopThree({ data, today }: { data: Data; today: string }) {
   const picked = SEED.tasks.filter(t => taskState(data, t.id)?.pickedForWeek === week);
   return (
     <article className="card">
-      <header><h3>This week’s top 3</h3><button className="btn ghost small" onClick={() => setPicking(true)}>{picked.length ? 'Change' : 'Pick'}</button></header>
+      <header><h2>This week’s top 3</h2><button className="btn ghost small" onClick={() => setPicking(true)}>{picked.length ? 'Change' : 'Pick'}</button></header>
       {picked.length ? (
         <ul className="mins">
           {picked.map(t => {

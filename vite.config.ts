@@ -11,7 +11,6 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'Quarter',
         short_name: 'Quarter',

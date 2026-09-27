@@ -29,7 +29,7 @@ export function Overview({ data, today, openSession, onCircuit }: { data: Data; 
         <WaistCard data={data} today={today} />
         <SunRunCard data={data} today={today} />
         <article className="card">
-          <header><h3>Checkup</h3></header>
+          <header><h2>Checkup</h2></header>
           <p className="fine">{B.checkup}.</p>
           <ul className="tasks"><TaskItem data={data} t={SEED.tasks.find(t => t.id === 'checkup')!} /></ul>
         </article>
@@ -43,7 +43,7 @@ function WeekCard({ data, today, openSession }: { data: Data; today: string; ope
   if (!w) return null;
   return (
     <article className="card">
-      <header><h3>This week’s training</h3><span className="aside">week {w.week} · {w.phase.id === 'brk' ? 'break' : w.phase.label.toLowerCase()} · from {fmtShort(w.from)}</span></header>
+      <header><h2>This week’s training</h2><span className="aside">week {w.week} · {w.phase.id === 'brk' ? 'break' : w.phase.label.toLowerCase()} · from {fmtShort(w.from)}</span></header>
       {w.phase.id === 'brk' ? (
         <p className="fine">Break week: no structured training. Walk everywhere; the travel circuit is there if you want it.</p>
       ) : (
@@ -65,7 +65,7 @@ function FoodCard({ data, today }: { data: Data; today: string }) {
   const max = SEED.money.spendingRules.foodOutPerWeekMax;
   return (
     <article className="card">
-      <header><h3>Food today</h3><span className="aside">{n}/3 meals with protein</span></header>
+      <header><h2>Food today</h2><span className="aside">{n}/3 meals with protein</span></header>
       <ul className="mins">
         {MEALS.map(m => {
           const on = l.meals ? !!l.meals[m.id] : n === 3;
@@ -101,7 +101,7 @@ function WeightCard({ data, today }: { data: Data; today: string }) {
   if (!w) return null;
   return (
     <article className="card">
-      <header><h3>Weekly average</h3><span className="aside">{w.count} weigh-in{w.count === 1 ? '' : 's'} this week · aim {w.perWeek}</span></header>
+      <header><h2>Weekly average</h2><span className="aside">{w.count} weigh-in{w.count === 1 ? '' : 's'} this week · aim {w.perWeek}</span></header>
       <dl className="tiles mini">
         <div className="tile"><dt>This week</dt><dd>{w.avg != null ? r1(w.avg).toFixed(1) : '—'}</dd></div>
         <div className="tile"><dt>Last week</dt><dd>{w.prev != null ? r1(w.prev).toFixed(1) : '—'}</dd></div>
@@ -117,7 +117,7 @@ function WaistCard({ data, today }: { data: Data; today: string }) {
   const all = waists(data), last = all.at(-1), first = all[0];
   return (
     <article className="card">
-      <header><h3>Waist</h3><span className="aside">first of each month</span></header>
+      <header><h2>Waist</h2><span className="aside">first of each month</span></header>
       {last ? (
         <p className="waist"><b>{last.value}</b> in <small>{fmtShort(last.date)}{first && first !== last ? ` · ${sgn(last.value - first.value)} in since ${fmtShort(first.date)}` : ''}</small></p>
       ) : <p className="fine">At the belly button, relaxed, first thing in the morning.</p>}
@@ -146,7 +146,7 @@ function SunRunCard({ data, today }: { data: Data; today: string }) {
   if (days < 0) return null;
   return (
     <article className="card">
-      <header><h3>Sun Run {B.sunRun.distance}</h3><span className="aside">{fmtDay(B.sunRun.date)}</span></header>
+      <header><h2>Sun Run {B.sunRun.distance}</h2><span className="aside">{fmtDay(B.sunRun.date)}</span></header>
       <p className="waist"><b>{days}</b> days <small>after the 10K on Jan 10, it’s the next one</small></p>
       <ul className="tasks"><TaskItem data={data} t={SEED.tasks.find(t => t.id === 'sun-run')!} /></ul>
       <p className="fine">{B.sunRun.note} <a href={B.sunRun.url} target="_blank" rel="noreferrer">Registration details</a></p>
@@ -161,7 +161,7 @@ export function CircuitCard({ data, today, onCircuit }: { data: Data; today: str
   const c = B.travelCircuit;
   return (
     <article className="card">
-      <header><h3>Travel circuit</h3><span className="aside">{done}/{target} this week</span></header>
+      <header><h2>Travel circuit</h2><span className="aside">{done}/{target} this week</span></header>
       <ol className="cx-list">{c.moves.map(m => <li key={m}><b>{m}</b><span>{c.rounds} rounds, 1 min rest between</span></li>)}</ol>
       <div className="actions">
         <button className="btn primary" onClick={() => onCircuit(today)}>Start the circuit</button>

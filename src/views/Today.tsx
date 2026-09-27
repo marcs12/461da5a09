@@ -61,10 +61,10 @@ export function Today({ data, today, now, openSession, openPlan, openReview, ope
 
   return (
     <section className="page">
-      <button className="homehead" onClick={openPlan}>
-        <span className="eyebrow">{parts.join(' · ')}</span>
+      <header className="homehead">
+        <button className="eyebrow linkish" onClick={openPlan}>{parts.join(' · ')}</button>
         <h1>{fmtDay(today)}</h1>
-      </button>
+      </header>
 
       {support.fired && <SupportAlert data={data} today={today} reason={support.reason} compact />}
       {pd.status === 'post' && (
@@ -106,7 +106,7 @@ export function Today({ data, today, now, openSession, openPlan, openReview, ope
           {!travel && <TopThree data={data} today={today} />}
           {s && (
             <article className={`card todo k-${s.kind}`}>
-              <header><h3>Training</h3><span className={`chip k-${s.kind}`}>{s.tag}</span></header>
+              <header><h2>Training</h2><span className={`chip k-${s.kind}`}>{s.tag}</span></header>
               <b className="todo-title">{s.title}</b>
               <p className="fine">{s.lines[0]}</p>
               <div className="actions">

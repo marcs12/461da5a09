@@ -21,7 +21,7 @@ export function TripCard({ data, today, compact = false }: { data: Data; today: 
 
   return (
     <article className="card trip">
-      <header><h3>{SEED.plan.tripDestination} budget</h3>{st.trip && <span className="aside">{fmtShort(st.trip.from)} – {fmtShort(st.trip.to)} · {st.trip.days} days</span>}</header>
+      <header><h2>{SEED.plan.tripDestination} budget</h2>{st.trip && <span className="aside">{fmtShort(st.trip.from)} – {fmtShort(st.trip.to)} · {st.trip.days} days</span>}</header>
       {b ? (
         <>
           <dl className="tiles mini">

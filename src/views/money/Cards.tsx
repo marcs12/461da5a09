@@ -17,7 +17,7 @@ export function RunwayCard({ data }: { data: Data }) {
   const r = runway(data), s = latestSnapshot(data), f = latestFund(data), p = prefs(data);
   return (
     <article className="card">
-      <header><h3>Freedom Fund</h3><span className="aside">runway</span></header>
+      <header><h2>Freedom Fund</h2><span className="aside">runway</span></header>
       <div className="runway">
         <b>{r ?? '—'}</b><span>{r != null ? `month${r === 1 ? '' : 's'}` : ''}</span>
         {p.runwayTarget != null && <small>Day-90 target: {p.runwayTarget} months</small>}
@@ -137,7 +137,7 @@ export function OrderCard({ data }: { data: Data }) {
   const s = latestSnapshot(data);
   return (
     <article className="card">
-      <header><h3>Order of operations</h3>{s && <span className="aside">snapshot {fmtShort(s.date)}</span>}</header>
+      <header><h2>Order of operations</h2>{s && <span className="aside">snapshot {fmtShort(s.date)}</span>}</header>
       <ol className="order">
         {M.orderOfOperations.map((o, i) => (
           <li key={o} className={step === i + 1 ? 'on' : step != null && i + 1 < step ? 'past' : ''}>{o}</li>
@@ -159,7 +159,7 @@ export function PaydayCard({ data, today }: { data: Data; today: string }) {
   const r = raise(data);
   return (
     <article className="card">
-      <header><h3>Pay yourself first</h3><span className="aside">{pct}% of take-home</span></header>
+      <header><h2>Pay yourself first</h2><span className="aside">{pct}% of take-home</span></header>
       <dl className="kv">
         <div><dt>Next payday</dt><dd>{next ? fmtDay(next) : 'set it in Settings'}</dd></div>
         {p.takeHome != null && <div><dt>Transfer</dt><dd>{cad(Math.round((p.takeHome * pct) / 100))} of {cad(p.takeHome)}</dd></div>}
@@ -215,7 +215,7 @@ export function SpendingCard({ data, today, now }: { data: Data; today: string; 
   const monthlySubs = subs.filter(s => !s.cancel).reduce((a, s) => a + s.monthly, 0);
   return (
     <article className="card">
-      <header><h3>Spending rules</h3></header>
+      <header><h2>Spending rules</h2></header>
       <div className="stepper">
         <span>Food out this week <small>max {R.foodOutPerWeekMax}</small></span>
         <div>
@@ -225,7 +225,7 @@ export function SpendingCard({ data, today, now }: { data: Data; today: string; 
         </div>
       </div>
 
-      <h4 className="subhead">Subscriptions{subs.length ? ` · ${cad(monthlySubs)} a month` : ''}</h4>
+      <h3 className="subhead">Subscriptions{subs.length ? ` · ${cad(monthlySubs)} a month` : ''}</h3>
       {subs.length ? (
         <ul className="wins">
           {subs.map(s => {
@@ -244,7 +244,7 @@ export function SpendingCard({ data, today, now }: { data: Data; today: string; 
       ) : <p className="fine">List every subscription. Anything unused for {R.subscriptionUnusedDays} days gets flagged.</p>}
       <div className="actions"><button className="btn" onClick={() => setSheet('sub')}>Add a subscription</button></div>
 
-      <h4 className="subhead">48-hour list</h4>
+      <h3 className="subhead">48-hour list</h3>
       {waits.length ? (
         <ul className="wins">
           {waits.map(w => {

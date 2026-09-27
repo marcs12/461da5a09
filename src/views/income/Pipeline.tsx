@@ -18,7 +18,7 @@ export function Pipeline({ data, today }: { data: Data; today: string }) {
 
   return (
     <article className="card pipeline">
-      <header><h3>Job pipeline</h3><span className="aside">{all.length} total</span></header>
+      <header><h2>Job pipeline</h2><span className="aside">{all.length} total</span></header>
       <div className="stagebar" role="tablist" aria-label="Stages">
         {STAGES.map(s => {
           const n = all.filter(j => j.stage === s.id).length;

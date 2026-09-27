@@ -16,7 +16,7 @@ export function Settings({ data, today }: { data: Data; today: string }) {
       <div className="pagehead"><div><h1>Settings</h1><p>Changes save as you make them.</p></div></div>
       <div className="setgrid">
         <article className="card stack-sm">
-          <h3>Plan dates</h3>
+          <h2>Plan dates</h2>
           <div className="fields">
             <DateField id="s-start" label="Plan starts" value={S.planStart} onChange={v => v && editSettings({ planStart: v })} />
             <DateField id="s-depart" label="Fly out" value={S.departDate} onChange={v => editSettings({ departDate: v, ...(v ? {} : { returnDate: null }) })} hint="Clear it for a plan without a trip." />
@@ -36,7 +36,7 @@ export function Settings({ data, today }: { data: Data; today: string }) {
         </article>
 
         <article className="card stack-sm">
-          <h3>Sleep, training and work</h3>
+          <h2>Sleep, training and work</h2>
           <div className="fields">
             <TimeField id="s-wake" label="Wake up" value={S.wakeTime} onChange={v => editSettings({ wakeTime: v })} />
             <TimeField id="s-lights" label="Lights out" value={S.lightsOut} onChange={v => editSettings({ lightsOut: v })} />
@@ -49,12 +49,12 @@ export function Settings({ data, today }: { data: Data; today: string }) {
         </article>
 
         <article className="card stack-sm">
-          <h3>Pay</h3>
+          <h2>Pay</h2>
           <PayFields value={S.paySchedule ?? DEFAULT_SETTINGS.paySchedule!} onChange={v => editSettings({ paySchedule: v })} />
         </article>
 
         <article className="card stack-sm">
-          <h3>Extras</h3>
+          <h2>Extras</h2>
           <dl className="kv">
             <div><dt>Weight</dt><dd>lb</dd></div>
             <div><dt>Distance</dt><dd>km</dd></div>
@@ -69,7 +69,7 @@ export function Settings({ data, today }: { data: Data; today: string }) {
         </article>
 
         <article className="card stack-sm">
-          <h3>The next 90 days</h3>
+          <h2>The next 90 days</h2>
           <p className="fine">Keeps everything you’ve logged and the plan’s structure, with new dates: starts {fmtDay(next.planStart)}, no trip. It downloads a backup first, then asks you to confirm the dates.</p>
           <div className="actions">
             {armed ? (
@@ -82,7 +82,7 @@ export function Settings({ data, today }: { data: Data; today: string }) {
         </article>
 
         <article className="card stack-sm sync-card">
-          <h3>Sync and backup</h3>
+          <h2>Sync and backup</h2>
           <SyncPanel />
         </article>
       </div>
