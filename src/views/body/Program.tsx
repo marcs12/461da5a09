@@ -60,7 +60,7 @@ export function Program({ data, date, onOpen }: { data: Data; date: string; onOp
             <li>10 reps each: {COMPLEX.map(m => m.name.toLowerCase()).join(', ')} = 1 round</li>
             <li>As many clean rounds as fit in 10–17 min (Huberman’s brief, high-intensity day)</li>
             <li>Rounds ≥ half the minutes → add 5 lb, up to the dumbbell’s 50</li>
-            <li>Weeks 1–3: Mon, Wed and Sat are the complex too, 15–20 min, to drop weight before Vietnam</li>
+            <li>Weeks 1–3: Mon, Wed and Sat are the complex too, 15–20 min, to drop weight before Vietnam (Oct 17–18 are travel days)</li>
             <li>From week 9 it alternates with running intervals</li>
           </ul></article>
           <article className="card"><h3>Resistance</h3><ul>

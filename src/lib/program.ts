@@ -3,6 +3,8 @@ import { addDays, diff, fmtMin, parse } from './dates';
 export const START = '2026-09-28';
 export const END = '2027-01-17';
 export const P1_END = '2026-10-18';
+/** The cut's last weekend, already in Vietnam (flight is the night of Fri, Oct 16). */
+export const TRAVEL_DAYS = new Set(['2026-10-17', '2026-10-18']);
 /** Phase 1 weight target (lb below the first weigh-in), shown as a corridor on Progress. */
 export const P1_TARGET = [6, 9] as const;
 /** The calorie nudge never takes the daily target below this. */
@@ -208,6 +210,11 @@ const CARDIO: Record<'p1' | 'p2' | 'p3', (pw: number, dow: number) => CardioSess
   },
 };
 
+const TRAVEL: Session = {
+  kind: 'break', tag: 'Travel', short: 'Trip', title: 'Travel day',
+  lines: ['No program session — you’re in Vietnam', 'Walk everywhere; do the travel circuit if you can', 'Keep protein high — about 180 g — to hold onto progress'],
+};
+
 function buildSession(phase: Phase, pw: number, week: number, dow: number): Session {
   if (phase.id === 'brk') {
     return {
@@ -266,7 +273,7 @@ export function programDay(ds: string): ProgramDay {
     const dow = parse(ds).getDay();
     const phase = phaseOfWeek(week);
     const pw = week - phase.from + 1;
-    r = { status: 'in', idx, week, dow, phase, pw, session: buildSession(phase, pw, week, dow) };
+    r = { status: 'in', idx, week, dow, phase, pw, session: TRAVEL_DAYS.has(ds) ? TRAVEL : buildSession(phase, pw, week, dow) };
   }
   cache.set(ds, r);
   return r;

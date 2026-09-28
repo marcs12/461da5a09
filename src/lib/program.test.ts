@@ -21,6 +21,12 @@ describe('program calendar', () => {
     expect(sessionOf('2026-10-04')).toMatchObject({ title: 'Long easy run', km: 3 });
     expect(sessionOf('2026-10-26')).toMatchObject({ title: 'Legs', sets: 2 });
   });
+  it('turns the cut’s last weekend into travel days', () => {
+    expect(sessionOf('2026-10-16')).toMatchObject({ title: 'Dumbbell complex' });
+    expect(sessionOf('2026-10-17')).toMatchObject({ kind: 'break', title: 'Travel day' });
+    expect(sessionOf('2026-10-18')).toMatchObject({ kind: 'break', title: 'Travel day' });
+    expect(sessionOf('2026-10-19')).toMatchObject({ title: 'Break week' });
+  });
   it('tapers into the 10K on the last day', () => {
     expect(sessionOf('2027-01-10')).toMatchObject({ km: 9 });
     expect(sessionOf('2027-01-14')).toMatchObject({ title: 'Tempo run', minutes: 28 });
