@@ -6,7 +6,7 @@ Its training log follows a 16-week program (Sep 28, 2026 – Jan 17, 2027): a 3-
 
 The cardio is written for someone who already runs 2.5 km at 7:30/km: continuous running from week 1, no walk-run ramp.
 
-Huberman's Day 6 (brief, high-intensity cardio) is a dumbbell complex adapted from a kettlebell one: 10 reps each of bent-over row, goblet squat, push-up, goblet curl, swing and thruster make a round, done as many rounds as possible in 10–17 minutes with one adjustable 0–50 lb dumbbell. From week 9 it alternates with running intervals.
+Huberman's Day 6 (brief, high-intensity cardio) is a dumbbell complex adapted from a kettlebell AMRAP: 10 bent-over rows, 15 swings, 8 clean + thrusters, 10 alternating reverse lunges, 20 toe taps and 10 close-grip push-ups make a round, done as many rounds as possible in 20 minutes (15 to ease in) with one adjustable 0–50 lb dumbbell. From week 9 it alternates with running intervals.
 
 Live: https://marcs12.github.io/461da5a09/
 

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { addDays, diff, fmtDay, fmtShort, num, parse, r1, sgn, today } from '../../lib/dates';
-import { COMPLEX, COMPLEX_START_LB, DOW, END, EST_NOTE, EX, P1_END, START, WEEKS, programDay, sessionOf, weekStart, type ProgramDay, type Session } from '../../lib/program';
+import { COMPLEX, COMPLEX_REPS, COMPLEX_START_LB, DOW, END, EST_NOTE, EX, P1_END, START, WEEKS, programDay, sessionOf, weekStart, type ProgramDay, type Session } from '../../lib/program';
 import { editDay, editSet, editSettings, type Data, type DayLog } from '../../lib/store';
 import { avg7, calorieNudge, isDone, lastPerf, weights } from '../../lib/stats';
 import { Ribbon } from '../../components/Ribbon';
@@ -151,7 +151,7 @@ function SessionCard({ data, date, pd, log, onTimer }: { data: Data; date: strin
 }
 
 const DB_MAX = 50;
-/** What to load for the complex, from the last logged one: +5 lb once rounds reach half the minutes (≈2 min a round). */
+/** What to load for the complex, from the last logged one: +5 lb once rounds reach a third of the minutes (≈3 min a round). */
 function complexHint(data: Data, date: string): { hint: string; up: boolean; prefW: number } {
   const last = lastPerf(data, 'complex', date);
   if (!last) return { hint: `First complex — start around ${COMPLEX_START_LB} lb`, up: false, prefW: COMPLEX_START_LB };
@@ -159,7 +159,7 @@ function complexHint(data: Data, date: string): { hint: string; up: boolean; pre
   const min = sessionOf(last.date)?.amrap ?? 10;
   const when = fmtShort(last.date);
   if (w == null) return { hint: `Last ${when}: ${r} rounds`, up: false, prefW: COMPLEX_START_LB };
-  if (r >= min / 2) {
+  if (r >= min / 3) {
     return w + 5 <= DB_MAX
       ? { hint: `${r} rounds in ${min} min ${when} → go ${w + 5} lb`, up: true, prefW: w + 5 }
       : { hint: `${r} rounds at ${w} lb — the dumbbell is maxed, chase rounds`, up: true, prefW: w };
@@ -188,9 +188,9 @@ function ComplexFields({ data, date, log, effortHint, set }: { data: Data; date:
 function ComplexCard() {
   return (
     <article className="card">
-      <header><h3>The complex</h3><span className="aside">1 round = 60 reps</span></header>
+      <header><h3>The complex</h3><span className="aside">1 round = {COMPLEX_REPS} reps</span></header>
       <ol className="cx-list">
-        {COMPLEX.map(m => <li key={m.name}><b>10 × {m.name}</b><span>{m.cue}</span></li>)}
+        {COMPLEX.map(m => <li key={m.name}><b>{m.reps} × {m.name}</b><span>{m.cue}</span></li>)}
       </ol>
       <p className="tip"><b>Adjustable dumbbell:</b> check the plates are locked before you start and between rounds — swings shake loose collars. If anything rattles, swap the swings for fast Romanian deadlifts.</p>
     </article>

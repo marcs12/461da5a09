@@ -71,15 +71,16 @@ export const EX: Record<string, Exercise> = {
   complex: { name: 'Dumbbell complex', note: 'rounds' },
 };
 
-/** The reel's kettlebell complex, done with one adjustable dumbbell. 10 reps of each, back to back = 1 round. */
-export const COMPLEX: { name: string; cue: string }[] = [
-  { name: 'Bent-over row', cue: 'Both hands on the handle, hinge to about 45°, row to your belly button' },
-  { name: 'Goblet squat', cue: 'Hold it upright against your chest by the top plate' },
-  { name: 'Push-ups', cue: 'Set the dumbbell down; drop to your knees once form breaks' },
-  { name: 'Goblet curl', cue: 'Cup the top plate in both palms, elbows pinned to your sides' },
-  { name: 'Swing', cue: 'Both hands around the handle, hinge and snap the hips — chest height, never overhead' },
-  { name: 'Thruster', cue: 'Goblet squat, then drive up and press it overhead with both hands' },
+/** A 20-minute kettlebell AMRAP, done with one adjustable dumbbell. Every move back to back = 1 round. */
+export const COMPLEX: { name: string; reps: number; cue: string }[] = [
+  { name: 'Bent-over row', reps: 10, cue: 'Both hands on the handle, hinge to about 45°, pull your elbows toward your back pockets' },
+  { name: 'Swing', reps: 15, cue: 'Both hands around the handle; drive with your hips, not your arms — chest height, never overhead' },
+  { name: 'Clean + thruster', reps: 8, cue: 'Pull it up to a goblet hold, squat, then drive up and press it overhead with both hands. Let your legs make the power' },
+  { name: 'Alternating reverse lunge', reps: 10, cue: 'Goblet hold, 5 per leg. Stay tall and drive through your front heel' },
+  { name: 'Toe taps', reps: 20, cue: 'Alternate feet on the bottom stair or a low step, not the dumbbell (round plates roll). Stay light and keep moving' },
+  { name: 'Close-grip push-ups', reps: 10, cue: 'Replace the kettlebell horn push-ups. Hands under your shoulders, body rigid from head to heels; drop to your knees once form breaks' },
 ];
+export const COMPLEX_REPS = COMPLEX.reduce((a, m) => a + m.reps, 0);
 export const COMPLEX_START_LB = 25;
 /** Keyed by weekday (0 = Sunday). */
 const LIFTS: Record<number, { title: string; short: string; ids: string[] }> = {
@@ -105,12 +106,12 @@ function rounds(n: number, on: number, off: number, onL = 'Hard', offL = 'Easy',
 export const EST_NOTE = 'The source plan gives this phase’s start and end points; weeks in between are filled in evenly.';
 type CardioSession = Omit<Session, 'kind'>;
 
-/** Huberman's Day 6 (brief, high intensity): the dumbbell complex as an AMRAP. */
+/** Huberman's Day 6 (high intensity): the dumbbell complex as an AMRAP. 15 min to ease in, 20 after. */
 const complex = (min: number, extra: string[] = []): CardioSession => {
   const segs = [seg('Warm-up', 5, 'warm'), seg('Complex', min, 'work'), seg('Cool-down', 3, 'easy')];
   return {
     tag: 'HIIT', short: 'HIIT', title: 'Dumbbell complex', minutes: segMin(segs), segments: segs, amrap: min,
-    lines: [`${min}-min AMRAP · 10 reps of each move, back to back`, 'Rest only when form slips — count full rounds', ...extra],
+    lines: [`${min}-min AMRAP · ${COMPLEX.length} moves, ${COMPLEX_REPS} reps a round`, 'Rest as needed, but keep the timer running — count full rounds', ...extra],
   };
 };
 
@@ -136,7 +137,7 @@ const CARDIO: Record<'p1' | 'p2' | 'p3', (pw: number, dow: number) => CardioSess
         lines: [`${j} min of continuous easy jogging`, '5-min walk either side', 'No walk breaks — you already hold this pace'],
       };
     }
-    return complex([10, 10, 12][pw - 1], ['The short, hard one — push the pace', 'Same weight as last time unless the app says go up']);
+    return complex(pw === 1 ? 15 : 20, ['Same weight as last time unless the app says go up']);
   },
   p2(pw, dow) {
     if (dow === 0) {
@@ -164,7 +165,7 @@ const CARDIO: Record<'p1' | 'p2' | 'p3', (pw: number, dow: number) => CardioSess
         lines: [`${fmtMin(t)} tempo, “comfortably hard”`, 'Faster than your 7:30/km easy pace, not a sprint', '8-min easy warm-up, 5-min cool-down'],
       };
     }
-    return complex([10, 12, 15, 15][pw - 1], pw === 1
+    return complex(pw === 1 ? 15 : 20, pw === 1
       ? ['Back from the break — drop 5 lb if the first round feels heavy']
       : ['Same weight as last time unless the app says go up']);
   },
@@ -206,7 +207,7 @@ const CARDIO: Record<'p1' | 'p2' | 'p3', (pw: number, dow: number) => CardioSess
       };
     }
     // Even weeks keep the complex; odd weeks run intervals for 10K speed.
-    return complex(pw === 2 ? 15 : 17, ['Alternates with running intervals through the 10K build']);
+    return complex(20, ['Alternates with running intervals through the 10K build']);
   },
 };
 
@@ -238,10 +239,10 @@ function buildSession(phase: Phase, pw: number, week: number, dow: number): Sess
   }
   const L = LIFTS[dow];
   // The cut runs up to the Vietnam trip: every resistance day is the complex too,
-  // done longer than Friday's, for more work per week while the deficit is on.
+  // for more work per week while the deficit is on.
   if (L && phase.id === 'p1') {
     const extra = week === 1 && dow === 1
-      ? [`First time: start around ${COMPLEX_START_LB} lb — the curl and thruster set the limit`]
+      ? [`First time: start around ${COMPLEX_START_LB} lb — the clean + thruster sets the limit`]
       : dow === 6
         ? ['Second complex in two days — keep the weight, keep every rep clean']
         : ['Same weight as last time unless the app says go up'];
