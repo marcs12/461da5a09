@@ -17,7 +17,7 @@ describe('program calendar', () => {
   it('keeps each session on its weekday', () => {
     expect(sessionOf('2026-09-28')).toMatchObject({ kind: 'strength', title: 'Dumbbell complex' });
     expect(sessionOf('2026-09-29')).toMatchObject({ kind: 'rest' });
-    expect(sessionOf('2026-10-02')).toMatchObject({ title: 'Dumbbell complex', amrap: 15 });
+    expect(sessionOf('2026-10-02')).toMatchObject({ title: 'Dumbbell complex', amrap: 20 });
     expect(sessionOf('2026-10-04')).toMatchObject({ title: 'Long easy run', km: 3 });
     expect(sessionOf('2026-10-26')).toMatchObject({ title: 'Legs', sets: 2 });
   });

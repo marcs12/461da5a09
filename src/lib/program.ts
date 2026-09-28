@@ -106,8 +106,8 @@ function rounds(n: number, on: number, off: number, onL = 'Hard', offL = 'Easy',
 export const EST_NOTE = 'The source plan gives this phase’s start and end points; weeks in between are filled in evenly.';
 type CardioSession = Omit<Session, 'kind'>;
 
-/** Huberman's Day 6 (high intensity): the dumbbell complex as an AMRAP. 15 min to ease in, 20 after. */
-const complex = (min: number, extra: string[] = []): CardioSession => {
+/** Huberman's Day 6 (high intensity): the dumbbell complex as a 20-minute AMRAP. */
+const complex = (extra: string[] = [], min = 20): CardioSession => {
   const segs = [seg('Warm-up', 5, 'warm'), seg('Complex', min, 'work'), seg('Cool-down', 3, 'easy')];
   return {
     tag: 'HIIT', short: 'HIIT', title: 'Dumbbell complex', minutes: segMin(segs), segments: segs, amrap: min,
@@ -137,7 +137,7 @@ const CARDIO: Record<'p1' | 'p2' | 'p3', (pw: number, dow: number) => CardioSess
         lines: [`${j} min of continuous easy jogging`, '5-min walk either side', 'No walk breaks — you already hold this pace'],
       };
     }
-    return complex(pw === 1 ? 15 : 20, ['Same weight as last time unless the app says go up']);
+    return complex(['Same weight as last time unless the app says go up']);
   },
   p2(pw, dow) {
     if (dow === 0) {
@@ -165,7 +165,7 @@ const CARDIO: Record<'p1' | 'p2' | 'p3', (pw: number, dow: number) => CardioSess
         lines: [`${fmtMin(t)} tempo, “comfortably hard”`, 'Faster than your 7:30/km easy pace, not a sprint', '8-min easy warm-up, 5-min cool-down'],
       };
     }
-    return complex(pw === 1 ? 15 : 20, pw === 1
+    return complex(pw === 1
       ? ['Back from the break — drop 5 lb if the first round feels heavy']
       : ['Same weight as last time unless the app says go up']);
   },
@@ -207,7 +207,7 @@ const CARDIO: Record<'p1' | 'p2' | 'p3', (pw: number, dow: number) => CardioSess
       };
     }
     // Even weeks keep the complex; odd weeks run intervals for 10K speed.
-    return complex(20, ['Alternates with running intervals through the 10K build']);
+    return complex(['Alternates with running intervals through the 10K build']);
   },
 };
 
@@ -246,7 +246,7 @@ function buildSession(phase: Phase, pw: number, week: number, dow: number): Sess
       : dow === 6
         ? ['Second complex in two days — keep the weight, keep every rep clean']
         : ['Same weight as last time unless the app says go up'];
-    return { ...complex(pw === 1 ? 15 : 20, extra), kind: 'strength', tag: 'Resistance', short: 'Cmplx', walk: true };
+    return { ...complex(extra), kind: 'strength', tag: 'Resistance', short: 'Cmplx', walk: true };
   }
   if (L) {
     // First lifting week is the one after the break.

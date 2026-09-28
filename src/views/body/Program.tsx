@@ -58,7 +58,7 @@ export function Program({ data, date, onOpen }: { data: Data; date: string; onOp
           </ul></article>
           <article className="card"><h3>Dumbbell complex · Fri</h3><ul>
             <li>{COMPLEX.map(m => `${m.reps} ${m.name.toLowerCase()}`).join(', ')} = 1 round</li>
-            <li>As many rounds as fit in 20 min (15 in week 1 and the week after the break). Rest as needed, but keep the timer running</li>
+            <li>As many rounds as fit in 20 min. Rest as needed, but keep the timer running</li>
             <li>Rounds ≥ a third of the minutes (7 in 20) → add 5 lb, up to the dumbbell’s 50</li>
             <li>Weeks 1–3: Mon, Wed and Sat are the complex too, to drop weight before Vietnam (Oct 17–18 are travel days)</li>
             <li>From week 9 it alternates with running intervals</li>
