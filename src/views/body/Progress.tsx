@@ -69,7 +69,7 @@ export function Progress({ data, goToday }: { data: Data; goToday: () => void })
           </article>
           {nudge && <article className="card"><Nudge {...nudge} /></article>}
           <article className="card">
-            <header><h3>Week by week</h3><span className="aside">Sun – Sat</span></header>
+            <header><h3>Week by week</h3><span className="aside">Mon – Sun</span></header>
             {weeks.length ? (
               <div className="tablewrap"><table>
                 <thead><tr><th>Week</th><th>Starts</th><th>Avg lb</th><th>Δ</th><th>Sessions</th><th>Walks</th><th>Avg kcal</th><th>Avg protein</th></tr></thead>

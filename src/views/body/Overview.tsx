@@ -147,7 +147,7 @@ function SunRunCard({ data, today }: { data: Data; today: string }) {
   return (
     <article className="card">
       <header><h2>Sun Run {B.sunRun.distance}</h2><span className="aside">{fmtDay(B.sunRun.date)}</span></header>
-      <p className="waist"><b>{days}</b> days <small>after the 10K on Jan 10, it’s the next one</small></p>
+      <p className="waist"><b>{days}</b> days <small>after the 10K on Jan 17, it’s the next one</small></p>
       <ul className="tasks"><TaskItem data={data} t={SEED.tasks.find(t => t.id === 'sun-run')!} /></ul>
       <p className="fine">{B.sunRun.note} <a href={B.sunRun.url} target="_blank" rel="noreferrer">Registration details</a></p>
     </article>

@@ -24,13 +24,13 @@ describe('protein at meals', () => {
 });
 
 describe('this week’s training', () => {
-  it('counts program-week sessions and walk days (Sun–Sat)', () => {
-    // Week 1: Sun Sep 27 – Sat Oct 3. Tue is rest; Mon/Wed/Sat are the complex; Thu run; Fri complex; Sun long run.
+  it('counts program-week sessions and walk days (Mon–Sun)', () => {
+    // Week 1: Mon Sep 28 – Sun Oct 4. Tue is rest; Mon/Wed/Sat are the complex; Thu run; Fri complex; Sun long run.
     const d = withDays({
-      '2026-09-27': { done: true }, '2026-09-28': { done: true, walk: true }, '2026-09-29': { done: true }, '2026-09-30': { walkMin: 25 },
+      '2026-09-28': { done: true, walk: true }, '2026-09-29': { done: true }, '2026-09-30': { done: true, walkMin: 25 }, '2026-10-04': { done: true },
     });
-    expect(weekTraining(d, '2026-10-01')).toMatchObject({ week: 1, planned: 6, done: 2, walks: 3 });
-    expect(weekTraining(d, '2026-09-20')).toBeNull();
+    expect(weekTraining(d, '2026-10-01')).toMatchObject({ week: 1, planned: 6, done: 3, walks: 3 });
+    expect(weekTraining(d, '2026-09-27')).toBeNull();
   });
 });
 

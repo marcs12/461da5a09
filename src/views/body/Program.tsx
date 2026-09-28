@@ -11,7 +11,7 @@ export function Program({ data, date, onOpen }: { data: Data; date: string; onOp
   return (
     <section>
       <div className="pagehead">
-        <div><h1>The program</h1><p>Sep 27, 2026 – Jan 16, 2027 · 16 weeks · Huberman’s Day 1 on Sundays</p></div>
+        <div><h1>The program</h1><p>Sep 28, 2026 – Jan 17, 2027 · 16 weeks · Monday to Sunday</p></div>
         <div className="legend">
           <span className="chip k-cardio">Cardio</span><span className="chip k-strength">Resistance</span>
           <span className="chip k-rest">Rest + walk</span><span className="chip k-break">Break</span>
@@ -51,9 +51,9 @@ export function Program({ data, date, onOpen }: { data: Data; date: string; onOp
         </div>
         <div className="guides">
           <article className="card"><h3>Every week</h3><ul>
-            <li><b>Sun</b> long run · <b>Mon</b> legs · <b>Tue</b> rest</li>
-            <li><b>Wed</b> torso · <b>Thu</b> medium cardio · <b>Fri</b> dumbbell complex</li>
-            <li><b>Sat</b> shoulders & arms</li>
+            <li><b>Mon</b> legs · <b>Tue</b> rest · <b>Wed</b> torso</li>
+            <li><b>Thu</b> medium cardio · <b>Fri</b> dumbbell complex · <b>Sat</b> shoulders & arms</li>
+            <li><b>Sun</b> long run</li>
             <li>45-min easy treadmill walk on Mon, Tue, Wed and Sat</li>
           </ul></article>
           <article className="card"><h3>Dumbbell complex · Fri</h3><ul>
@@ -64,7 +64,7 @@ export function Program({ data, date, onOpen }: { data: Data; date: string; onOp
             <li>From week 9 it alternates with running intervals</li>
           </ul></article>
           <article className="card"><h3>Resistance</h3><ul>
-            <li>Starts week 5 (Oct 25), after the break</li>
+            <li>Starts week 5 (Oct 26), after the break</li>
             <li>Week 5: 2 sets, leave 2–3 reps in the tank</li>
             <li>Week 6 on: 3 sets of 8–15 reps</li>
             <li>15 reps on every set → add 5 lb</li>

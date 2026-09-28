@@ -3,8 +3,7 @@ import type { Settings } from './schema';
 
 /**
  * The 90-day life plan, derived from Settings. Separate from the 16-week
- * training program in program.ts, which keeps its own Sunday-start weeks.
- * Life-plan weeks run Monday → Sunday.
+ * training program in program.ts. Both run Monday → Sunday weeks.
  */
 export type LifePhaseId = 'sprint' | 'travel' | 'reentry' | 'build';
 type Dates = Pick<Settings, 'planStart' | 'planDays' | 'departDate' | 'returnDate'>;

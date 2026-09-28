@@ -25,7 +25,7 @@ export function withMeals(l: DayLog, patch: Partial<Record<Meal, boolean>>): Pic
   return { meals: n ? meals : undefined, proMeals: n || undefined };
 }
 
-/** This program week (Sun–Sat): training sessions done against planned, and walk days. */
+/** This program week (Mon–Sun): training sessions done against planned, and walk days. */
 export function weekTraining(d: Data, ds: string) {
   const pd = programDay(ds);
   if (pd.status !== 'in') return null;

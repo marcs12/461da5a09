@@ -1,16 +1,16 @@
-import { addDays, diff, fmtMin } from './dates';
+import { addDays, diff, fmtMin, parse } from './dates';
 
-export const START = '2026-09-27';
-export const END = '2027-01-16';
-export const P1_END = '2026-10-17';
+export const START = '2026-09-28';
+export const END = '2027-01-17';
+export const P1_END = '2026-10-18';
 /** Phase 1 weight target (lb below the first weigh-in), shown as a corridor on Progress. */
 export const P1_TARGET = [6, 9] as const;
 /** The calorie nudge never takes the daily target below this. */
 export const CAL_FLOOR = 1800;
 export const WEEKS = 16;
 export const TOTAL_DAYS = WEEKS * 7;
-/** Program weeks run Sunday → Saturday, so Huberman's Day 1 lands on Sunday. */
-export const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+/** Program weeks run Monday → Sunday, like the life plan's. Sessions still follow the weekday, so the long run closes each week. */
+export const DOW = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 export type Kind = 'cardio' | 'strength' | 'rest' | 'break';
 export type Tone = 'work' | 'easy' | 'warm';
@@ -35,7 +35,7 @@ export interface Phase { id: 'p1' | 'brk' | 'p2' | 'p3'; name: string; label: st
 export type ProgramDay =
   | { status: 'pre'; daysUntil: number }
   | { status: 'post' }
-  | { status: 'in'; idx: number; week: number; dow: number; phase: Phase; pw: number; session: Session };
+  | { status: 'in'; idx: number; week: number; /** 0 = Sunday */ dow: number; phase: Phase; pw: number; session: Session };
 
 export const PHASES: Phase[] = [
   { id: 'p1', name: 'Phase 1', label: 'Cut', from: 1, to: 3 },
@@ -79,7 +79,7 @@ export const COMPLEX: { name: string; cue: string }[] = [
   { name: 'Thruster', cue: 'Goblet squat, then drive up and press it overhead with both hands' },
 ];
 export const COMPLEX_START_LB = 25;
-/** Keyed by day of the program week (0 = Sunday). */
+/** Keyed by weekday (0 = Sunday). */
 const LIFTS: Record<number, { title: string; short: string; ids: string[] }> = {
   1: { title: 'Legs', short: 'Legs', ids: ['goblet', 'rdl', 'rlunge', 'calf', 'bridge'] },
   3: { title: 'Torso', short: 'Torso', ids: ['floor', 'row', 'pushup', 'pullover', 'deadbug'] },
@@ -140,7 +140,7 @@ const CARDIO: Record<'p1' | 'p2' | 'p3', (pw: number, dow: number) => CardioSess
     if (dow === 0) {
       const km = [4, 4.5, 5, 5.5][pw - 1];
       return {
-        ...longRun(km, [pw === 1 ? 'First run back from the break — ease in' : 'Adds 0.5 km a week', 'Still in a deficit — conversational pace only']),
+        ...longRun(km, [pw === 1 ? 'First long run since the break' : 'Adds 0.5 km a week', 'Still in a deficit — conversational pace only']),
         est: pw === 2 || pw === 3,
       };
     }
@@ -151,7 +151,7 @@ const CARDIO: Record<'p1' | 'p2' | 'p3', (pw: number, dow: number) => CardioSess
         return {
           tag: 'Medium cardio', short: `${segMin(segs)}m`, title: 'Continuous easy run', minutes: segMin(segs), segments: segs,
           lines: pw === 1
-            ? ['25 min of continuous easy jogging', 'Back where the cut left off']
+            ? ['25 min of continuous easy jogging', 'First run back from the break — back where the cut left off']
             : ['30 min of continuous easy jogging', 'First full half-hour with no walk breaks'],
         };
       }
@@ -167,42 +167,28 @@ const CARDIO: Record<'p1' | 'p2' | 'p3', (pw: number, dow: number) => CardioSess
       : ['Same weight as last time unless the app says go up']);
   },
   p3(pw, dow) {
-    const race = pw === 8;
+    const taper = pw === 8;
     if (dow === 0) {
-      if (race) {
+      if (taper) {
         return {
           tag: '10K', short: '10k', title: 'The 10K', km: 10,
           lines: ['10 km — the whole point of the block', 'Start slower than feels right; the last 2 km are the test', 'Roughly 75 min at 7:30/km'],
         };
       }
       const km = 6 + 0.5 * (pw - 1);
-      return { ...longRun(km, ['Adds 0.5 km a week; 10 km lands Sun, Jan 10']), est: pw > 1 };
+      return { ...longRun(km, ['Adds 0.5 km a week; 10 km lands Sun, Jan 17']), est: pw > 1 };
     }
     if (dow === 4) {
-      if (race) {
-        const segs = easyRun(25, 5, 5);
-        return {
-          tag: 'Recovery', short: 'Easy', title: 'Recovery jog', minutes: segMin(segs), segments: segs,
-          lines: ['25 min very easy', 'Four days after the 10K — nothing to prove'],
-        };
-      }
-      const t = pw === 7 ? 15 : pw <= 4 ? 20 : 25;
+      const t = taper ? 15 : pw <= 4 ? 20 : 25;
       const segs = tempo(t);
       return {
-        tag: 'Tempo', short: 'Tempo', title: 'Tempo run', minutes: segMin(segs), segments: segs, est: pw > 1 && pw < 7,
-        lines: pw === 7
+        tag: 'Tempo', short: 'Tempo', title: 'Tempo run', minutes: segMin(segs), segments: segs, est: pw > 1 && !taper,
+        lines: taper
           ? ['15 min tempo — cut short on purpose', 'Taper week: sharp legs, not tired ones']
           : [`${fmtMin(t)} tempo, “comfortably hard”`, '8-min easy warm-up, 5-min cool-down'],
       };
     }
-    if (race) {
-      const segs = easyRun(30, 5, 5);
-      return {
-        tag: 'Recovery', short: 'Easy', title: 'Easy run', minutes: segMin(segs), segments: segs,
-        lines: ['30 min easy — last session of the program', 'Whatever you build next starts from here'],
-      };
-    }
-    if (pw === 7) {
+    if (taper) {
       const segs = easyRun(20, 5, 5);
       return {
         tag: 'Shakeout', short: 'Easy', title: 'Shakeout jog', minutes: segMin(segs), segments: segs,
@@ -235,9 +221,9 @@ function buildSession(phase: Phase, pw: number, week: number, dow: number): Sess
       lines: ['45-min easy treadmill walk', 'Nothing else — let the week’s work land'],
     };
   }
-  // Race day is day 1 of week 16, so week 15's last lifting day would land the
-  // evening before the 10K. It becomes an easy walk instead.
-  if (phase.id === 'p3' && pw === 7 && dow === 6) {
+  // The 10K is the last day of week 16, so that Saturday's lifting day would land
+  // the day before it. It becomes an easy walk instead.
+  if (phase.id === 'p3' && pw === 8 && dow === 6) {
     return {
       kind: 'rest', tag: 'Rest', short: 'Rest', title: 'Rest before the 10K', minutes: 30,
       lines: ['30-min easy walk, nothing else', 'The 10K is tomorrow — legs stay fresh', 'Eat normally and get to bed early'],
@@ -277,7 +263,7 @@ export function programDay(ds: string): ProgramDay {
   else if (idx >= TOTAL_DAYS) r = { status: 'post' };
   else {
     const week = Math.floor(idx / 7) + 1;
-    const dow = idx % 7;
+    const dow = parse(ds).getDay();
     const phase = phaseOfWeek(week);
     const pw = week - phase.from + 1;
     r = { status: 'in', idx, week, dow, phase, pw, session: buildSession(phase, pw, week, dow) };
