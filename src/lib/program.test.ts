@@ -17,12 +17,15 @@ describe('program calendar', () => {
   it('keeps each session on its weekday', () => {
     expect(sessionOf('2026-09-28')).toMatchObject({ kind: 'strength', title: 'Dumbbell complex' });
     expect(sessionOf('2026-09-29')).toMatchObject({ kind: 'rest' });
-    expect(sessionOf('2026-10-02')).toMatchObject({ title: 'Dumbbell complex', amrap: 20 });
+    expect(sessionOf('2026-09-30')).toMatchObject({ kind: 'cardio', title: 'Continuous easy run', minutes: 30 });
+    expect(sessionOf('2026-10-01')).toMatchObject({ kind: 'strength', title: 'Dumbbell complex', amrap: 20 });
+    expect(sessionOf('2026-10-02')).toMatchObject({ kind: 'cardio', title: 'Continuous easy run' });
+    expect(sessionOf('2026-10-03')).toMatchObject({ kind: 'strength', title: 'Dumbbell complex' });
     expect(sessionOf('2026-10-04')).toMatchObject({ title: 'Long easy run', km: 3 });
     expect(sessionOf('2026-10-26')).toMatchObject({ title: 'Legs', sets: 2 });
   });
   it('turns the cut’s last weekend into travel days', () => {
-    expect(sessionOf('2026-10-16')).toMatchObject({ title: 'Dumbbell complex', amrap: 20 });
+    expect(sessionOf('2026-10-16')).toMatchObject({ title: 'Continuous easy run', minutes: 35 });
     expect(sessionOf('2026-10-17')).toMatchObject({ kind: 'break', title: 'Travel day' });
     expect(sessionOf('2026-10-18')).toMatchObject({ kind: 'break', title: 'Travel day' });
     expect(sessionOf('2026-10-19')).toMatchObject({ title: 'Break week' });

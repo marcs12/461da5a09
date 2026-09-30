@@ -128,16 +128,14 @@ const CARDIO: Record<'p1' | 'p2' | 'p3', (pw: number, dow: number) => CardioSess
         est: pw === 2,
       };
     }
-    if (dow === 4) {
-      const j = [20, 22, 25][pw - 1];
-      const segs = easyRun(j);
-      return {
-        tag: 'Medium cardio', short: `${segMin(segs)}m`, title: 'Continuous easy run', minutes: segMin(segs), segments: segs,
-        est: pw === 2,
-        lines: [`${j} min of continuous easy jogging`, '5-min walk either side', 'No walk breaks — you already hold this pace'],
-      };
-    }
-    return complex(['Same weight as last time unless the app says go up']);
+    // Wed and Fri: easy runs between the complexes.
+    const j = [20, 22, 25][pw - 1];
+    const segs = easyRun(j);
+    return {
+      tag: 'Medium cardio', short: `${segMin(segs)}m`, title: 'Continuous easy run', minutes: segMin(segs), segments: segs,
+      est: pw === 2,
+      lines: [`${j} min of continuous easy jogging`, '5-min walk either side', 'No walk breaks — you already hold this pace'],
+    };
   },
   p2(pw, dow) {
     if (dow === 0) {
@@ -238,9 +236,9 @@ function buildSession(phase: Phase, pw: number, week: number, dow: number): Sess
     };
   }
   const L = LIFTS[dow];
-  // The cut runs up to the Vietnam trip: every resistance day is the complex too,
-  // for more work per week while the deficit is on.
-  if (L && phase.id === 'p1') {
+  // The cut runs up to the Vietnam trip: the complex (Mon, Thu, Sat) alternates with
+  // easy runs (Wed, Fri) for more work per week while the deficit is on.
+  if (phase.id === 'p1' && (dow === 1 || dow === 4 || dow === 6)) {
     const extra = week === 1 && dow === 1
       ? [`First time: start around ${COMPLEX_START_LB} lb — the clean + thruster sets the limit`]
       : dow === 6
@@ -248,7 +246,7 @@ function buildSession(phase: Phase, pw: number, week: number, dow: number): Sess
         : ['Same weight as last time unless the app says go up'];
     return { ...complex(extra), kind: 'strength', tag: 'Resistance', short: 'Cmplx', walk: true };
   }
-  if (L) {
+  if (L && phase.id !== 'p1') {
     // First lifting week is the one after the break.
     const first = phase.id === 'p2' && pw === 1;
     return {
