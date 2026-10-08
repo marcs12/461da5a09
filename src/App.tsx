@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useData, editDay, editSet } from './lib/store';
 import { useSyncStatus } from './lib/gistSync';
-import { sessionOf } from './lib/program';
+import { COMPLEX, sessionOf } from './lib/program';
 import { circuitSegments } from './lib/body';
 import { iso, parse } from './lib/dates';
 import { useNow } from './lib/useNow';
@@ -133,6 +133,7 @@ export default function App() {
           counter={timerSession?.amrap ? {
             value: data.days[timer.date]?.ex?.complex?.[0]?.r ?? 0,
             onChange: n => editSet(timer.date, 'complex', 0, 'r', n || undefined),
+            moves: COMPLEX,
           } : undefined}
           onClose={() => setTimer(null)} onDone={timerProps.onDone} />
       )}
