@@ -90,7 +90,6 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .bnav .tab svg { width: 23px; height: 23px; }
 .bnav .tab[aria-current="page"] { background: var(--accent-soft); }
 .app { padding-bottom: 104px !important; }
-@media (max-width: 719px) { .brand-sub { display: none; } }
 @media (min-width: 1024px) {
   .shell { display: grid; grid-template-columns: 92px minmax(0, 1fr); }
   .bnav {
@@ -130,16 +129,12 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .ribbon-bar { display: flex; gap: 3px; height: 8px; }
 .ribbon-bar span { border-radius: 3px; background: var(--line); }
 .ribbon-bar span.on { background: var(--accent); }
-.ribbon-bar span.brk { background: var(--break-soft); }
-.ribbon-bar span.brk.on { background: var(--break); }
 .ribbon-marker { position: absolute; top: -4px; width: 3px; height: 16px; border-radius: 2px; background: var(--ink); transform: translateX(-1px); }
 .ribbon-labels { display: flex; gap: 3px; margin-top: 6px; font-size: 11px; color: var(--muted); line-height: 1.25; }
 .ribbon-labels div { min-width: 0; overflow: hidden; }
 .ribbon-labels b { display: block; color: var(--ink); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ribbon-labels .brk b { color: var(--break); }
 .ribbon-labels span { white-space: nowrap; }
-.ribbon-labels .brk span { display: none; }
-@media (max-width: 560px) { .ribbon-labels span { display: none; } .ribbon-labels .brk b { visibility: hidden; } }
+@media (max-width: 560px) { .ribbon-labels span { display: none; } }
 
 /* ---------- Today ---------- */
 .dayhead { display: flex; flex-direction: column; }
@@ -400,18 +395,6 @@ td.wk { font: 600 15px/1 var(--display); }
 .cx-list li::before { content: counter(cx); grid-row: span 2; width: 22px; height: 22px; border-radius: 6px; background: var(--surface-2); display: grid; place-items: center; font-size: 11px; font-weight: 700; color: var(--muted); }
 .cx-list b { font-weight: 600; font-size: 15px; }
 .cx-list span { font-size: 13px; color: var(--muted); }
-.t-count { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 14px; }
-.t-count b { font: 700 clamp(22px, 5vw, 32px)/1 var(--display); text-transform: uppercase; letter-spacing: .06em; min-width: 5.5em; text-align: center; }
-.t-count button { border: 1px solid rgb(255 255 255 / .4); background: rgb(255 255 255 / .1); color: #fff; border-radius: 14px; min-height: 52px; min-width: 52px; padding: 0 16px; font-weight: 600; font-size: 18px; }
-.t-count .t-plus { background: rgb(255 255 255 / .22); padding: 0 22px; }
-.t-move { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; margin-top: 8px; }
-.t-move b { font: 700 clamp(26px, 6.5vw, 48px)/1.05 var(--display); text-transform: uppercase; letter-spacing: .04em; }
-.t-move span { font-size: clamp(15px, 3.2vw, 20px); font-weight: 500; opacity: .85; }
-.t-dots { display: flex; gap: 4px; }
-.t-dots button { width: 32px; height: 28px; border: 0; background: none; padding: 0; display: grid; place-items: center; }
-.t-dots button::after { content: ''; width: 20px; height: 6px; border-radius: 3px; background: rgb(255 255 255 / .3); }
-.t-dots button.d::after { background: rgb(255 255 255 / .75); }
-.t-dots button.c::after { background: #fff; box-shadow: 0 0 0 2px rgb(255 255 255 / .45); }
 
 /* ---------- Life guide ---------- */
 .backbtn { border: 0; background: none; color: var(--muted); display: inline-flex; align-items: center; gap: 4px; padding: 0 8px 0 0; min-height: 44px; margin: -12px 0 4px; font-weight: 600; }
@@ -670,3 +653,36 @@ select.inp { appearance: auto; }
 .hist { flex-direction: column; align-items: stretch !important; }
 .hist .linkish { display: grid; gap: 2px; text-align: left; min-height: 44px; }
 .hist small { color: var(--muted); font-size: 12.5px; }
+
+/* ---------- WinterArc ---------- */
+.weeknote { margin: 12px 0 0; font-size: 13.5px; color: var(--muted); }
+.weeknote b { color: var(--ink); font-weight: 600; }
+.prep { padding-left: 12px; border-left: 3px solid var(--line); }
+.prep.now { border-left-color: var(--accent); }
+.prep > b { font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.prep.now > b { color: var(--accent); }
+.prep .focus { margin-top: 4px; }
+.wlab i { font-style: normal; font-size: 10.5px; color: var(--faint); font-variant-numeric: tabular-nums; }
+.meals { list-style: none; margin: 0; padding: 0; display: grid; }
+.meals li { display: flex; justify-content: space-between; gap: 14px; padding: 10px 0; border-top: 1px solid var(--line); }
+.meals li:first-child { border-top: 0; padding-top: 2px; }
+.meals div { display: grid; gap: 2px; min-width: 0; }
+.meals span { font-size: 13.5px; color: var(--muted); }
+.meals small { flex: none; text-align: right; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.guide .card .fine { margin: 10px 0 0; }
+.guide .card .fine + .focus { margin-top: 6px; }
+.guide .kv dd { text-align: right; white-space: nowrap; }
+.card .kv + .fine, .card .minis + .fine, .card .minis + .msg, .card .fine + .msg { margin-top: 10px; }
+@media (max-width: 480px) { .cell { letter-spacing: 0; font-size: 13px; } }
+.behind { color: var(--warn); }
+.tile dd small { white-space: nowrap; }
+.phase-row p { flex-basis: 100%; margin: 0; font-size: 12.5px; color: var(--muted); }
+.phase-row { gap: 2px 10px; }
+.prow.cur .wlab b { color: var(--accent); }
+.prow.cur .wlab { border-left: 3px solid var(--accent); padding-left: 5px; margin-left: -8px; }
+/* On a phone the morning weigh-in comes right after the session, before the long set list. */
+@media (max-width: 819px) {
+  .cols { display: flex; flex-direction: column; }
+  .cols > .stack { display: contents; }
+  .o-weigh { order: 1; } .o-lifts { order: 2; } .o-fuel { order: 3; } .o-note { order: 4; }
+}

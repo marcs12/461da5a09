@@ -1,37 +1,62 @@
-# Quarter
+# WinterArc
 
-A personal PWA for a 90-day reset across Income, Body, Mind and Money: a quarter, with four areas making the whole. The logo is that ring, with the current quarter in red.
-
-Its training log follows a 16-week program (Sep 28, 2026 – Jan 17, 2027): a 3-week cut, a break week, a 4-week base block, and an 8-week build to a 10K on Sun, Jan 17. Weekly layout follows Huberman's protocol; weeks run Monday to Sunday, with the long run on Sunday. Weight loss is the priority, so the calorie deficit runs through every phase except the break.
-
-The cardio is written for someone who already runs 2.5 km at 7:30/km: continuous running from week 1, no walk-run ramp.
-
-Huberman's Day 6 (brief, high-intensity cardio) is a dumbbell complex adapted from a kettlebell AMRAP: 10 bent-over rows, 15 swings, 8 clean + thrusters, 10 alternating reverse lunges, 20 toe taps and 10 close-grip push-ups make a round, done as many rounds as possible in 20 minutes with one adjustable 0–50 lb dumbbell. From week 9 it alternates with running intervals.
+A personal PWA training guide: 25 weeks from Mon, Oct 26, 2026 to the Vancouver Sun Run 10K on Sun, Apr 18, 2027. The goal is a 10K under 60 minutes (5:59/km) and a body weight around 170 lb, from a start near 238.
 
 Live: https://marcs12.github.io/461da5a09/
 
+## The plan
+
+Weeks run Monday to Sunday.
+
+| Day | Session |
+|---|---|
+| Mon | Strength A (kettlebell) |
+| Tue | Run |
+| Wed | Low-impact cardio, 30 min |
+| Thu | Run, a workout from week 17 |
+| Fri | Strength B (dumbbell) |
+| Sat | Rest |
+| Sun | Long run |
+
+| Phase | Weeks | Running |
+|---|---|---|
+| Rebuild | 1–6 | Run/walk intervals up to 30 minutes non-stop |
+| Base | 7–16 | All easy running, long run from 5 km to 9 km, a 5K time trial in week 12 |
+| Speed | 17–23 | One workout a week (1 km repeats or a tempo), long run to 12 km, a 5K time trial in week 20 |
+| Taper | 24 | Less volume, a few efforts at race pace |
+| Race week | 25 | Two short runs, then the 10K |
+
+Calories and protein step down by week, and each step ends on a weight checkpoint:
+
+| Weeks | Calories | Protein | On track | Floor |
+|---|---|---|---|---|
+| 1–8 | 1,700 | 180 g | 213 lb | 217 lb |
+| 9–16 | 1,600 | 180 g | 194 lb | 200 lb |
+| 17–24 | 1,500 | 170 g | 174 lb | 182 lb |
+| 25 | 2,300 | 150 g | | |
+
+Dec 24 and 25 are at maintenance. 1,500 kcal is the floor while training. 10,000 steps a day run through the whole plan.
+
 ## What it does
 
-The app is a life guide for a 90-day reset (Sep 28 – Dec 26, 2026) across **Income, Body, Mind and Money**. The plan's content lives in `src/data/plan-seed.json`, so it can change without code changes.
-
-- **Today** — day X of 90, the phase and the countdown; the minimum day (five items, three in travel mode) with a never-miss-twice streak; the next gate; the day's time blocks with training at 5:15 or pushed to the evening; this week's top 3; quick logs for weight, workout, walk, applications and check-ins; payday, Sunday-review, waist and support banners when they apply.
-- **Income** — the job pipeline with 7-day follow-ups, weekly targets by phase, tier mix, outreach, the career checklist, the credential, the freelance test and a brag file. A Vancouver ↔ Vietnam time converter in travel mode.
-- **Body** — an overview (the week's training, food checks, weekly weight average, waist, the travel circuit, the Sun Run, the checkup) in front of the original training log:
-  - **Session** — the day's session with week-specific prescription, an interval timer (color flips per segment, beeps, vibrates, keeps the screen awake, counts complex rounds), set logging with "add 5 lb" progression hints, weigh-in, calories, protein and sleep.
-  - **Program** — all 16 weeks at a glance, colored by session type, with done and missed days.
-  - **Progress** — weight chart with a 7-day average and the Phase 1 target corridor, week-by-week table, lift progression, daily targets.
-- **Mind** — the evening check-in, mood and sleep trends, the support trigger with resources (9-8-8 always visible), daily base, connection and fun, the critic tool and the four anchors.
-- **Money** — the trip budget, the money snapshot, the Freedom Fund and runway, payday transfers, the order of operations and the spending rules. General budgeting guidance, not investment advice.
-- **Plan** — the Day-90 scoreboard measured from the logs, the gates, the roadmap, the five rules and the weekly time budget.
-- **Review** — the Sunday review: the week scored from the logs, keep and change, next week's top 3, support and money checks, a backup nudge; history and copy-as-text.
-- **Settings** — plan dates, sleep, training, work and pay, sync and backup, and "start the next 90 days".
+- **Today**: the day's session with its prescription, an interval timer for every timed run (color flips per segment, beeps, vibrates, keeps the screen awake), set logging with "add 5 lb" hints, the morning weigh-in against the plan, and calories, protein, steps and sleep against the day's targets.
+- **Program**: all 25 weeks at a glance, colored by session type, with done and missed days and each week's calories.
+- **Progress**: the weight chart with a 7-day average over the target band (on track to floor), a week-by-week table against the plan, lift progression and the day's targets.
+- **Guide**: the repeat-meal day and how it changes by tier, the food and running rules, the checkpoints, when to ease off, and what to do after the race.
+- **Settings**: starting weight, calorie and protein overrides, sync and backup.
 - Installable PWA that works offline.
 
-## Sync between devices
+## Where the plan lives
 
-Data is stored in the browser. To share it between devices, open **Settings → Sync and backup** and paste a GitHub token with only the `gist` scope. The first device creates a secret gist; others find it with their own token. Days merge last-writer-wins, so edits on either device survive.
+- `src/lib/program.ts`: the calendar, phases, every run and both strength sessions.
+- `src/lib/targets.ts`: calorie tiers, weight checkpoints and the target line.
+- `src/views/Guide.tsx`: the meals and the written rules.
 
-The token is kept in that browser's localStorage and only sent to `api.github.com`. Check-ins, mood, reviews and money never sync; they stay on the device (`twentyone-weeks-private`). Export/Import JSON is the manual backup and includes everything, private data too.
+## Data
+
+Data is stored in the browser under the same keys as the earlier versions of this app (the 16-week training log, then Quarter), so everything logged before still loads: older weigh-ins lead into the chart and older lifts show under Progress. Entries from Quarter's Income, Mind and Money tabs are no longer shown, but they are kept in storage and in exports.
+
+To share the log between devices, open **Settings → Sync and backup** and paste a GitHub token with only the `gist` scope. The first device creates a secret gist; others find it with their own token. Days merge last-writer-wins, so edits on either device survive. The token is kept in that browser's localStorage and only sent to `api.github.com`. The private collections from Quarter (check-ins, mood, money) never sync. Export/Import JSON is the manual backup and includes everything.
 
 ## Develop
 
@@ -42,6 +67,6 @@ npm run build
 npm test         # unit tests, run in Vancouver time
 ```
 
-Pushes to `main` deploy through `.github/workflows/deploy.yml`. One-time setup: repo **Settings → Pages → Source: GitHub Actions**.
+Pushes to `main` deploy through `.github/workflows/deploy.yml`.
 
 `artifact/index.html` is the original single-file version, kept for reference.

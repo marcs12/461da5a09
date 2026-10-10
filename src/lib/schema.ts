@@ -3,7 +3,7 @@
  * so it's safe to unit test; `store.ts` owns localStorage and React.
  */
 
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 
 export interface SetEntry { w?: number; r?: number }
 export interface DayLog {
@@ -16,9 +16,11 @@ export interface DayLog {
   cal?: number;
   pro?: number;
   sleep?: number;
+  /** Steps for the day. */
+  steps?: number;
   note?: string;
   ex?: Record<string, SetEntry[]>;
-  /** Minimum day (life guide). `walk`, `pro` and `done` above also count toward it. */
+  /** From here down: logged by the earlier life-guide version of the app. Kept so nothing saved is lost. */
   career?: boolean;
   walkMin?: number;
   proMeals?: number;
@@ -43,8 +45,15 @@ export interface DayLog {
 
 export type Cadence = 'weekly' | 'biweekly' | 'semimonthly';
 export interface Settings {
+  /** Targets from before the plan; they apply until day 1. */
   calTarget: number;
   proTarget: number;
+  /** Starting weight for the target line. Unset = the weigh-in closest to day 1. */
+  startWeight?: number;
+  /** Daily calories and protein instead of the plan's tier. Unset = follow the plan. */
+  calOverride?: number;
+  proOverride?: number;
+  /** From here down: settings of the earlier life-guide version. Kept so sync and old backups still merge cleanly. */
   cutWeek?: number;
   /** Set once the life-guide onboarding has been confirmed. */
   onboarded?: boolean;
@@ -88,40 +97,7 @@ export interface Data {
   priv: Tables;
 }
 
-export type Tier = 'bridge' | 'stretch' | 'bestbuy' | 'creative';
-export type Stage = 'saved' | 'applied' | 'followup' | 'interview' | 'offer' | 'closed';
-export interface Job extends Rec {
-  company: string;
-  role: string;
-  url?: string;
-  tier: Tier;
-  stage: Stage;
-  savedAt: string;
-  appliedAt?: string;
-  followUpAt?: string;
-  payRange?: string;
-  notes?: string;
-}
-/** Private. `id` is the date. */
-export interface CheckIn extends Rec {
-  date: string;
-  mood: number;
-  win: string;
-  firstTaskTomorrow: string;
-  sleepHours?: number;
-  losingInterest?: boolean;
-}
-/** Progress on a seed task. `id` is the task id. */
-export interface TaskState extends Rec {
-  checklist: boolean[];
-  done: boolean;
-  /** Monday of the week it's in the top 3. */
-  pickedForWeek?: string;
-}
-/** Manual override of a gate criterion. `id` is `gateId:criterionId`. */
-export interface GateOverride extends Rec { done: boolean }
-
-/** Collections kept off the sync gist: the spec says mood and money data stay on the device. */
+/** Collections the earlier life-guide version kept off the sync gist (mood and money). They still never leave the device. */
 export const PRIVATE_COLS = new Set([
   'checkIns', 'reviews', 'weekLife', 'critic',
   'snapshots', 'fund', 'transfers', 'subscriptions', 'waitList', 'tripBudget', 'tripSpend', 'moneyPrefs',
@@ -162,6 +138,7 @@ export function isData(o: unknown): o is Data {
  *   v2: adds life-guide settings, `cols` and `priv`.
  *   v3: adds morning training. An unconfirmed 06:00 wake moves to 05:00 to fit it.
  *   v4: an unconfirmed 22:00 lights-out moves to 22:30.
+ *   v5: WinterArc. Adds steps, a start weight and target overrides; removes nothing.
  */
 export function migrate(raw: unknown): Data | null {
   if (!isData(raw)) return null;

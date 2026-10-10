@@ -12,9 +12,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Quarter',
-        short_name: 'Quarter',
-        description: '90-day reset across Income, Body, Mind and Money, with the 16-week training log.',
+        name: 'WinterArc',
+        short_name: 'WinterArc',
+        description: '25-week training guide to a sub-60 Vancouver Sun Run 10K: runs, strength, calories and weight targets.',
         start_url: base,
         scope: base,
         display: 'standalone',

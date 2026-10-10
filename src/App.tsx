@@ -1,143 +1,103 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useData, editDay, editSet } from './lib/store';
+import { useData, editDay } from './lib/store';
 import { useSyncStatus } from './lib/gistSync';
-import { COMPLEX, sessionOf } from './lib/program';
-import { circuitSegments } from './lib/body';
-import { iso, parse } from './lib/dates';
+import { sessionOf } from './lib/program';
+import { daysToRace } from './lib/targets';
+import { iso, today as todayStr } from './lib/dates';
 import { useNow } from './lib/useNow';
-import { reviewWeek, reviews } from './lib/review';
 import { Icon, Mark } from './components/ui';
 import { IntervalTimer } from './components/IntervalTimer';
 import { label } from './components/SyncPanel';
-import { initialDate } from './views/body/Session';
-import { Body, type BodyView } from './views/Body';
-import { Today } from './views/Today';
-import { Mind } from './views/Mind';
-import { Money } from './views/Money';
-import { Income } from './views/Income';
-import { PlanPage } from './views/PlanPage';
-import { Review } from './views/Review';
+import { SessionDay } from './views/Session';
+import { Program } from './views/Program';
+import { Progress } from './views/Progress';
+import { Guide } from './views/Guide';
 import { Settings } from './views/Settings';
-import { Onboarding } from './views/Onboarding';
 
-type Tab = 'today' | 'income' | 'body' | 'mind' | 'money';
-type Page = 'plan' | 'review' | 'settings';
-const BODY_KEY = 'sixteen-body-view';
+type Tab = 'today' | 'program' | 'progress' | 'guide';
 const TABS: { id: Tab; name: string; icon: () => React.ReactElement }[] = [
   { id: 'today', name: 'Today', icon: Icon.today },
-  { id: 'income', name: 'Income', icon: Icon.income },
-  { id: 'body', name: 'Body', icon: Icon.body },
-  { id: 'mind', name: 'Mind', icon: Icon.mind },
-  { id: 'money', name: 'Money', icon: Icon.money },
+  { id: 'program', name: 'Program', icon: Icon.plan },
+  { id: 'progress', name: 'Progress', icon: Icon.progress },
+  { id: 'guide', name: 'Guide', icon: Icon.guide },
 ];
 
 export default function App() {
   const data = useData();
   const sync = useSyncStatus();
-  const [tab, setTabState] = useState<Tab>('today');
-  const [page, setPage] = useState<Page | null>(null);
-  const [sub, setSubState] = useState<BodyView>(() => {
-    try { return (localStorage.getItem(BODY_KEY) as BodyView) || 'session'; } catch { return 'session'; }
-  });
-  const now = useNow();
-  const today = iso(now);
-  const [date, setDate] = useState(initialDate);
-  const [timer, setTimer] = useState<{ date: string; kind: 'session' | 'circuit' } | null>(null);
+  const [tab, setTab] = useState<Tab>('today');
+  const [settings, setSettings] = useState(false);
+  const today = iso(useNow());
+  const [date, setDate] = useState(todayStr);
+  const [timer, setTimer] = useState<string | null>(null);
 
-  const go = useCallback((t: Tab, p: Page | null = null) => {
-    setTabState(t);
-    setPage(p);
-    window.scrollTo({ top: 0 });
-  }, []);
-  const setSub = useCallback((v: BodyView) => {
-    setSubState(v);
-    try { localStorage.setItem(BODY_KEY, v); } catch { /* storage unavailable */ }
+  const go = useCallback((t: Tab) => {
+    setTab(t);
+    setSettings(false);
     window.scrollTo({ top: 0 });
   }, []);
 
   // Opening the app on a new day jumps to that day.
   useEffect(() => {
-    let last = initialDate();
+    let last = todayStr();
     const onVis = () => {
       if (document.visibilityState !== 'visible') return;
-      const now = initialDate();
+      const now = todayStr();
       if (now !== last) { last = now; setDate(now); }
     };
     document.addEventListener('visibilitychange', onVis);
     return () => document.removeEventListener('visibilitychange', onVis);
   }, []);
 
-  const timerSession = timer?.kind === 'session' ? sessionOf(timer.date) : null;
-  const timerProps = !timer ? null
-    : timer.kind === 'circuit' ? { title: 'Travel circuit', segments: circuitSegments(), onDone: () => editDay(timer.date, d => { d.circuit = true; }) }
-    : timerSession?.segments ? { title: timerSession.title, segments: timerSession.segments, onDone: () => editDay(timer.date, d => { d.done = true; }) }
-    : null;
-  const startCircuit = (date: string) => setTimer({ date, kind: 'circuit' });
-  const isSunday = parse(today).getDay() === 0;
-  const reviewDue = isSunday && !reviews(data).some(r => r.weekOf === reviewWeek(today));
+  const timerSession = timer ? sessionOf(timer) : null;
   const syncIssue = sync.state === 'error' || sync.state === 'offline';
-  const headBtn = (p: Page, name: string, I: () => React.ReactElement, extra?: React.ReactNode) => (
-    <button className="hbtn" onClick={() => (page === p ? setPage(null) : setPage(p))} aria-pressed={page === p} aria-label={name} title={name}>
-      <I />{extra}
-    </button>
-  );
+  const left = daysToRace(today);
+  const settingsName = syncIssue ? `Settings · ${label(sync.state)}` : 'Settings';
 
   return (
     <>
       <header className="top">
         <div className="top-in">
-          <button className="brand" onClick={() => go('today')} title="Today">
+          <button className="brand" onClick={() => { setDate(today); go('today'); }} title="Today">
             <Mark />
             <div>
-              <div className="brand-name">Quarter</div>
-              <div className="brand-sub">90-day reset · Income, Body, Mind, Money</div>
+              <div className="brand-name">WinterArc</div>
+              <div className="brand-sub">{left > 0 ? `${left} days to the Sun Run 10K` : left === 0 ? 'Sun Run 10K today' : 'Sun Run 10K · done'}</div>
             </div>
           </button>
-          <nav className="hnav" aria-label="Plan, review and settings">
-            {headBtn('plan', 'Plan', Icon.map)}
-            {headBtn('review', reviewDue ? 'Sunday review, about 20 minutes' : 'Review', Icon.review, reviewDue && <i className="badge" />)}
-            {headBtn('settings', syncIssue ? `Settings · ${label(sync.state)}` : 'Settings', Icon.settings, syncIssue && <i className="badge dim" />)}
+          <nav className="hnav" aria-label="Settings">
+            <button className="hbtn" onClick={() => { setSettings(!settings); window.scrollTo({ top: 0 }); }} aria-pressed={settings} aria-label={settingsName} title={settingsName}>
+              <Icon.settings />{syncIssue && <i className="badge dim" />}
+            </button>
           </nav>
         </div>
       </header>
 
       <div className="shell">
-        <nav className="bnav" aria-label="Areas">
+        <nav className="bnav" aria-label="Sections">
           {TABS.map(t => (
-            <button key={t.id} className="tab" onClick={() => go(t.id)} aria-current={!page && tab === t.id ? 'page' : undefined}>
+            <button key={t.id} className="tab" onClick={() => go(t.id)} aria-current={!settings && tab === t.id ? 'page' : undefined}>
               <t.icon />{t.name}
             </button>
           ))}
         </nav>
 
         <main className="app">
-          {page && (
-            <button className="backbtn" onClick={() => setPage(null)}><Icon.back />{TABS.find(t => t.id === tab)!.name}</button>
+          {settings ? <Settings data={data} today={today} /> : (
+            <>
+              {tab === 'today' && <SessionDay data={data} date={date} setDate={setDate} onTimer={() => setTimer(date)} openGuide={() => go('guide')} />}
+              {tab === 'program' && <Program data={data} date={date} onOpen={d => { setDate(d); go('today'); }} />}
+              {tab === 'progress' && <Progress data={data} goToday={() => { setDate(today); go('today'); }} />}
+              {tab === 'guide' && <Guide />}
+            </>
           )}
-          {page === 'plan' && <PlanPage data={data} today={today} openSettings={() => setPage('settings')} />}
-          {page === 'review' && <Review data={data} today={today} openIncome={() => go('income')} />}
-          {page === 'settings' && <Settings data={data} today={today} />}
-          {!page && tab === 'today' && (
-            <Today data={data} today={today} now={now} openPlan={() => setPage('plan')} openReview={() => setPage('review')}
-              openIncome={() => go('income')} onCircuit={startCircuit} openBody={() => { setSub('overview'); go('body'); }} openSession={() => { setDate(initialDate()); setSub('session'); go('body'); }} />
-          )}
-          {!page && tab === 'income' && <Income data={data} today={today} />}
-          {!page && tab === 'body' && <Body data={data} today={today} sub={sub} setSub={setSub} date={date} setDate={setDate} onTimer={() => setTimer({ date, kind: 'session' })} onCircuit={startCircuit} />}
-          {!page && tab === 'mind' && <Mind data={data} today={today} />}
-          {!page && tab === 'money' && <Money data={data} today={today} now={now} />}
         </main>
       </div>
 
-      {timer && timerProps && (
-        <IntervalTimer title={timerProps.title} date={timer.date} segments={timerProps.segments}
-          counter={timerSession?.amrap ? {
-            value: data.days[timer.date]?.ex?.complex?.[0]?.r ?? 0,
-            onChange: n => editSet(timer.date, 'complex', 0, 'r', n || undefined),
-            moves: COMPLEX,
-          } : undefined}
-          onClose={() => setTimer(null)} onDone={timerProps.onDone} />
+      {timer && timerSession?.segments && (
+        <IntervalTimer title={timerSession.title} date={timer} segments={timerSession.segments}
+          onClose={() => setTimer(null)} onDone={() => editDay(timer, d => { d.done = true; })} />
       )}
-      {!data.settings.onboarded && <Onboarding settings={data.settings} />}
     </>
   );
 }

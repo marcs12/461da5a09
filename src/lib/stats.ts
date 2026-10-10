@@ -1,5 +1,6 @@
 import { addDays, avg, diff, num, today } from './dates';
-import { CAL_FLOOR, START, phaseOfWeek, programDay, weekStart, type Session } from './program';
+import { START, TOTAL_DAYS, isTraining, programDay, weekStart, type Session } from './program';
+import { STEPS } from './targets';
 import type { Data, SetEntry } from './store';
 
 export interface WeighIn { date: string; w: number }
@@ -18,10 +19,8 @@ export function weekAvg(E: WeighIn[], week: number) {
   const s = weekStart(week);
   return avg(E.filter(e => { const x = diff(e.date, s); return x >= 0 && x < 7; }).map(e => e.w));
 }
-export function isDone(d: Data, ds: string, s: Session) {
-  const l = d.days[ds] || {};
-  return s.kind === 'rest' ? !!(l.done || l.walk) : !!l.done;
-}
+export const isDone = (d: Data, ds: string) => !!d.days[ds]?.done;
+export const hitSteps = (d: Data, ds: string) => (d.days[ds]?.steps ?? 0) >= STEPS;
 
 export function lastPerf(d: Data, exId: string, before: string): { date: string; sets: SetEntry[] } | null {
   const ks = sortedKeys(d);
@@ -34,38 +33,34 @@ export function lastPerf(d: Data, exId: string, before: string): { date: string;
   return null;
 }
 
-/** Plan rule: if the weekly average isn't dropping after week 1, cut ~200 kcal.
- *  Weight loss is the priority, so this runs in every training phase, down to CAL_FLOOR. */
-export function calorieNudge(d: Data) {
-  const pd = programDay(today());
-  if (pd.status !== 'in' || pd.phase.id === 'brk') return null;
-  const w = pd.week - 1;
-  if (w < 2) return null;
-  // Travel week weights don't say anything about the deficit.
-  if (phaseOfWeek(w).id === 'brk' || phaseOfWeek(w - 1).id === 'brk') return null;
-  const E = weights(d);
-  const a = weekAvg(E, w), b = weekAvg(E, w - 1);
-  if (a == null || b == null || a < b - 0.1) return null;
-  if ((d.settings.cutWeek || 0) >= w) return null;
-  const next = Math.max(CAL_FLOOR, d.settings.calTarget - 200);
-  if (next >= d.settings.calTarget) return null;
-  return { week: w, a, b, next };
+/** One program week (Mon–Sun) from the log. */
+export function weekLog(d: Data, week: number) {
+  const ws = weekStart(week);
+  let planned = 0, done = 0, stepDays = 0;
+  const cals: number[] = [], pros: number[] = [];
+  for (let i = 0; i < 7; i++) {
+    const ds = addDays(ws, i), l = d.days[ds] || {};
+    const s = (programDay(ds) as { session?: Session }).session ?? null;
+    if (isTraining(s)) { planned++; if (l.done) done++; }
+    if (hitSteps(d, ds)) stepDays++;
+    if (l.cal != null) cals.push(l.cal);
+    if (l.pro != null) pros.push(l.pro);
+  }
+  return { from: ws, planned, done, stepDays, cal: avg(cals), pro: avg(pros) };
 }
 
+/** Sessions and 10,000-step days so far: everything due before today, plus anything already done today. */
 export function adherence(d: Data) {
   const t = today();
-  let sched = 0, done = 0, wSched = 0, wDone = 0;
-  const last = diff(t, START);
-  for (let i = 0; i <= Math.min(last, 146); i++) {
+  let sched = 0, done = 0, days = 0, stepDays = 0;
+  const last = Math.min(diff(t, START), TOTAL_DAYS - 1);
+  for (let i = 0; i <= last; i++) {
     const ds = addDays(START, i);
     const pd = programDay(ds);
     if (pd.status !== 'in') continue;
-    const s = pd.session, l = d.days[ds] || {};
-    if ((s.kind === 'cardio' || s.kind === 'strength') && (ds < t || l.done)) { sched++; if (l.done) done++; }
-    if ((s.walk || s.kind === 'rest') && (ds < t || l.walk || l.done)) {
-      wSched++;
-      if (s.kind === 'rest' ? l.done || l.walk : l.walk) wDone++;
-    }
+    const l = d.days[ds] || {};
+    if (isTraining(pd.session) && (ds < t || l.done)) { sched++; if (l.done) done++; }
+    if (ds < t || hitSteps(d, ds)) { days++; if (hitSteps(d, ds)) stepDays++; }
   }
-  return { sched, done, wSched, wDone };
+  return { sched, done, days, stepDays };
 }
