@@ -87,12 +87,13 @@ describe('race week', () => {
 });
 
 describe('before Vietnam', () => {
-  it('puts the kettlebell complex on Oct 12 and 14, with a walk between', () => {
+  it('puts the kettlebell complex on Oct 12, 14 and 15, with a walk on the 13th', () => {
     expect(sessionFor('2026-10-11')).toBeNull();
     expect(sessionFor('2026-10-12')).toMatchObject({ title: 'Kettlebell complex', amrap: 20, logAs: 'kbcomplex' });
     expect(sessionFor('2026-10-13')).toMatchObject({ title: 'Brisk walk', minutes: 30 });
     expect(sessionFor('2026-10-14')).toMatchObject({ title: 'Kettlebell complex' });
-    expect(sessionFor('2026-10-15')).toBeNull();
+    expect(sessionFor('2026-10-15')).toMatchObject({ title: 'Kettlebell complex' });
+    expect(sessionFor('2026-10-16')).toBeNull();
     expect(sessionFor(START)).toMatchObject({ title: 'Strength A' });
   });
   it('is a 20-minute AMRAP of six moves, 73 reps a round', () => {

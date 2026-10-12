@@ -85,8 +85,8 @@ function WeekStrip({ data, date, week, setDate }: { data: Data; date: string; we
 
 /** What to do between now and day 1. */
 const PREP: { from: string; to: string; when: string; items: string[] }[] = [
-  { from: '0000-00-00', to: '2026-10-14', when: 'Before Vietnam, to Oct 14', items: ['Kettlebell complex Mon, Oct 12 and Wed, Oct 14, a brisk walk Tue, Oct 13', 'Register for the Sun Run', 'Get fitted for proper running shoes'] },
-  { from: '2026-10-15', to: '2026-10-24', when: 'Vietnam, Oct 15 to 24', items: ['Don’t diet. Walk 10,000 or more steps a day and enjoy the food'] },
+  { from: '0000-00-00', to: '2026-10-15', when: 'Before Vietnam, to Oct 15', items: ['Kettlebell complex Mon, Oct 12, Wed, Oct 14 and Thu, Oct 15 (morning), a brisk walk Tue, Oct 13', 'Register for the Sun Run', 'Get fitted for proper running shoes'] },
+  { from: '2026-10-16', to: '2026-10-24', when: 'Vietnam, Oct 15 to 24', items: ['Don’t diet. Walk 10,000 or more steps a day and enjoy the food'] },
   { from: '2026-10-25', to: '2026-10-25', when: 'Sun, Oct 25', items: ['Grocery shop for your repeat meals', 'Weigh in: it sets your starting number'] },
 ];
 function PreStart({ date, setDate }: { date: string; setDate: (d: string) => void }) {

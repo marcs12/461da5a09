@@ -291,7 +291,7 @@ export const KB_WEIGHTS = [
   { level: 'Advanced', kg: '20–24 kg', lb: '44–53 lb' },
 ];
 
-function kbComplex(first: boolean): Session {
+function kbComplex(note: string): Session {
   const segs = [seg('Warm-up', 5, 'warm'), seg('AMRAP', 20, 'work'), seg('Cool-down', 3, 'easy')];
   return {
     kind: 'strength', tag: 'Kettlebell', short: 'Cmplx', title: 'Kettlebell complex', segments: segs, minutes: segMin(segs),
@@ -299,18 +299,19 @@ function kbComplex(first: boolean): Session {
     lines: [
       `20-minute AMRAP: as many rounds as you can of all ${KB_COMPLEX.length} moves`,
       'Rest as needed, but keep the timer running',
-      first ? `First time: start around ${KB_COMPLEX_START_LB} lb and keep every rep clean` : 'Same weight as Monday unless the app says go up',
+      note,
     ],
   };
 }
-/** Oct 12 to 14, the days left before the trip. The complex twice, with a walk between so Wednesday's is fresh. */
+/** Oct 12 to 15, the days left before the trip: the complex three times, with a walk after the first. The 15th is a morning session before the night flight. */
 const BRIDGE: Record<string, Session> = {
-  '2026-10-12': kbComplex(true),
+  '2026-10-12': kbComplex(`First time: start around ${KB_COMPLEX_START_LB} lb and keep every rep clean`),
   '2026-10-13': {
     kind: 'cardio', tag: 'Walk', short: 'Walk', title: 'Brisk walk', minutes: 30, effort: 4,
     lines: ['30 minutes at a brisk pace', 'Recovery between the two complexes'],
   },
-  '2026-10-14': kbComplex(false),
+  '2026-10-14': kbComplex('Same weight as Monday unless the app says go up'),
+  '2026-10-15': kbComplex('Do it in the morning, before the night flight. Second day in a row: keep the weight, keep every rep clean'),
 };
 export const bridgeSession = (ds: string): Session | null => BRIDGE[ds] ?? null;
 /** The session on any day: the program's, or one of the pre-trip days. */
