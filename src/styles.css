@@ -686,3 +686,27 @@ select.inp { appearance: auto; }
   .cols > .stack { display: contents; }
   .o-weigh { order: 1; } .o-lifts { order: 2; } .o-fuel { order: 3; } .o-note { order: 4; }
 }
+/* AMRAP move panel in the timer */
+.t-move { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; margin-top: 4px; }
+.t-move b { font: 700 clamp(28px, 7vw, 52px)/1.05 var(--display); text-transform: uppercase; letter-spacing: .03em; }
+.t-cue { font-size: clamp(15px, 3.4vw, 20px); font-weight: 500; }
+.t-then { font-size: 14px; opacity: .75; }
+.t-dots { display: flex; gap: 2px; }
+.t-dots button { width: 34px; height: 30px; border: 0; background: none; padding: 0; display: grid; place-items: center; }
+.t-dots button::after { content: ''; width: 22px; height: 6px; border-radius: 3px; background: rgb(255 255 255 / .3); }
+.t-dots button.d::after { background: rgb(255 255 255 / .75); }
+.t-dots button.c::after { background: #fff; box-shadow: 0 0 0 2px rgb(255 255 255 / .45); }
+.t-mctrl { display: flex; gap: 10px; margin-top: 10px; }
+.t-mctrl button, .t-count button { border: 1px solid rgb(255 255 255 / .4); background: rgb(255 255 255 / .1); color: #fff; border-radius: 14px; min-height: 56px; min-width: 56px; padding: 0 18px; font-weight: 600; font-size: 18px; }
+.t-mctrl button:disabled { opacity: .35; }
+.t-mctrl .t-plus { background: #fff; color: #111; border-color: #fff; min-width: 150px; font-size: 19px; }
+.t-count { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 14px; }
+.t-count span { font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; opacity: .75; }
+.t-count b { font: 700 32px/1 var(--display); min-width: 1.6em; text-align: center; }
+.t-count button { min-height: 44px; min-width: 44px; padding: 0; font-size: 20px; }
+.timer[data-moves] .t-clock { font-size: clamp(64px, 19vw, 170px); }
+.timer[data-moves] .t-main { flex: none; padding-top: 2vh; }
+.timer[data-moves] .t-move { flex: 1; justify-content: center; }
+.cx-weights { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.cx-weights + .fine { margin-top: 8px; }
+.t-mctrl button, .t-ctrl button { white-space: nowrap; }

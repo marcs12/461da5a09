@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { addDays } from './dates';
-import { END, PHASES, RACE_PACE, START, WEEKS, isTraining, phaseEnd, phaseStart, programDay, segTotal, sessionOf, weekStart } from './program';
+import { END, KB_COMPLEX_REPS, PHASES, RACE_PACE, START, WEEKS, bridgeSession, isTraining, phaseEnd, phaseStart, programDay, segTotal, sessionFor, sessionOf, weekStart } from './program';
 
 describe('program calendar', () => {
   it('runs Monday to Sunday, from Oct 26 to race day on Apr 18', () => {
@@ -83,5 +83,22 @@ describe('race week', () => {
   });
   it('race pace finishes 10 km under the hour', () => {
     expect(RACE_PACE * 10).toBeLessThan(3600);
+  });
+});
+
+describe('before Vietnam', () => {
+  it('puts the kettlebell complex on Oct 12 and 14, with a walk between', () => {
+    expect(sessionFor('2026-10-11')).toBeNull();
+    expect(sessionFor('2026-10-12')).toMatchObject({ title: 'Kettlebell complex', amrap: 20, logAs: 'kbcomplex' });
+    expect(sessionFor('2026-10-13')).toMatchObject({ title: 'Brisk walk', minutes: 30 });
+    expect(sessionFor('2026-10-14')).toMatchObject({ title: 'Kettlebell complex' });
+    expect(sessionFor('2026-10-15')).toBeNull();
+    expect(sessionFor(START)).toMatchObject({ title: 'Strength A' });
+  });
+  it('is a 20-minute AMRAP of six moves, 73 reps a round', () => {
+    const s = bridgeSession('2026-10-12')!;
+    expect(s.moves!.map(m => m.reps)).toEqual([10, 15, 8, 10, 20, 10]);
+    expect(KB_COMPLEX_REPS).toBe(73);
+    expect(s.segments!.find(x => x.tone === 'work')!.sec).toBe(20 * 60);
   });
 });

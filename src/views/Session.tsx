@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { addDays, fmtDay, fmtShort, num, parse, r1, sgn, today } from '../lib/dates';
-import { DOW, END, EX, START, WEEKS, WEEK_NOTES, programDay, weekStart, type ProgramDay, type Session } from '../lib/program';
+import { DOW, END, EX, KB_COMPLEX, KB_COMPLEX_REPS, KB_COMPLEX_START_LB, KB_WEIGHTS, START, WEEKS, WEEK_NOTES, bridgeSession, programDay, weekStart, type ProgramDay, type Session } from '../lib/program';
 import { AFTER, CAL_FLOOR, CHECKPOINTS, GOAL_WEIGHT, startWeight, targetOn, targetsOn } from '../lib/targets';
 import { editDay, editSet, type Data, type DayLog } from '../lib/store';
 import { avg7, isDone, lastPerf, weights } from '../lib/stats';
@@ -26,7 +26,9 @@ export function SessionDay({ data, date, setDate, onTimer, openGuide }: Props) {
     return () => window.removeEventListener('keydown', onKey);
   }, [date, setDate]);
 
-  const eyebrow = pd.status === 'pre'
+  const bridge = pd.status === 'pre' ? bridgeSession(date) : null;
+  const eyebrow = bridge ? 'Before Vietnam'
+    : pd.status === 'pre'
     ? (pd.daysUntil === 1 ? 'Training starts tomorrow' : `Training starts in ${pd.daysUntil} days`)
     : pd.status === 'post' ? 'Plan complete'
     : `Week ${pd.week} of ${WEEKS} · ${pd.phase.name}`;
@@ -52,9 +54,10 @@ export function SessionDay({ data, date, setDate, onTimer, openGuide }: Props) {
 
       <div className="cols">
         <div className="stack">
+          {bridge && <SessionCard data={data} date={date} s={bridge} log={log} onTimer={onTimer} />}
           {pd.status === 'pre' && <PreStart date={date} setDate={setDate} />}
           {pd.status === 'post' && <AfterRace openGuide={openGuide} />}
-          {pd.status === 'in' && <SessionCard data={data} date={date} pd={pd} log={log} onTimer={onTimer} />}
+          {pd.status === 'in' && <SessionCard data={data} date={date} s={pd.session} log={log} onTimer={onTimer} />}
         </div>
         <aside className="stack"><SideCards data={data} date={date} log={log} /></aside>
       </div>
@@ -82,7 +85,7 @@ function WeekStrip({ data, date, week, setDate }: { data: Data; date: string; we
 
 /** What to do between now and day 1. */
 const PREP: { from: string; to: string; when: string; items: string[] }[] = [
-  { from: '0000-00-00', to: '2026-10-14', when: 'Before Vietnam, to Oct 14', items: ['Register for the Sun Run', 'Get fitted for proper running shoes', 'Two or three brisk 20 to 30 minute walks'] },
+  { from: '0000-00-00', to: '2026-10-14', when: 'Before Vietnam, to Oct 14', items: ['Kettlebell complex Mon, Oct 12 and Wed, Oct 14, a brisk walk Tue, Oct 13', 'Register for the Sun Run', 'Get fitted for proper running shoes'] },
   { from: '2026-10-15', to: '2026-10-24', when: 'Vietnam, Oct 15 to 24', items: ['Don’t diet. Walk 10,000 or more steps a day and enjoy the food'] },
   { from: '2026-10-25', to: '2026-10-25', when: 'Sun, Oct 25', items: ['Grocery shop for your repeat meals', 'Weigh in: it sets your starting number'] },
 ];
@@ -120,8 +123,7 @@ function AfterRace({ openGuide }: { openGuide: () => void }) {
   );
 }
 
-function SessionCard({ data, date, pd, log, onTimer }: { data: Data; date: string; pd: InDay; log: DayLog; onTimer: () => void }) {
-  const s = pd.session;
+function SessionCard({ data, date, s, log, onTimer }: { data: Data; date: string; s: Session; log: DayLog; onTimer: () => void }) {
   const set = (patch: Partial<DayLog>) => editDay(date, d => Object.assign(d, patch));
   const maint = date === '2026-12-24' || date === '2026-12-25';
 
@@ -146,6 +148,7 @@ function SessionCard({ data, date, pd, log, onTimer }: { data: Data; date: strin
               <Check id="f-done" checked={!!log.done} onChange={v => set({ done: v })} label="Session done" />
             </div>
           )}
+          {s.amrap && <ComplexFields data={data} date={date} s={s} log={log} set={set} />}
           {s.kind === 'cardio' && (
             <>
               <div className="fields">
@@ -157,13 +160,63 @@ function SessionCard({ data, date, pd, log, onTimer }: { data: Data; date: strin
                   <NumField className="inp" id="f-rpe" inputMode="numeric" placeholder={String(s.effort ?? 4)} value={log.rpe} onCommit={v => set({ rpe: v })} /></div>
               </div>
               {log.min != null && log.km != null && log.km > 0 && <div className="hint">Pace {fmtPace(log.min / log.km)}</div>}
-              {s.tag !== 'Low impact' && <p className="tip"><b>Shin or knee pain (pain, not soreness)?</b> Swap this run for a treadmill walk.</p>}
+              {s.tag !== 'Low impact' && s.tag !== 'Walk' && <p className="tip"><b>Shin or knee pain (pain, not soreness)?</b> Swap this run for a treadmill walk.</p>}
             </>
           )}
         </div>
       </article>
       {s.lifts && <LiftCard data={data} date={date} s={s} log={log} />}
+      {s.moves && <ComplexCard s={s} />}
     </>
+  );
+}
+
+/** What to load next time, from the last logged complex: up 5 lb once rounds reach a third of the minutes (about 3 minutes a round). */
+function complexHint(data: Data, date: string, s: Session): { hint: string; up: boolean; prefW: number } {
+  const id = s.logAs!, max = EX[id]?.max ?? Infinity, min = s.amrap!;
+  const last = lastPerf(data, id, date);
+  if (!last) return { hint: `First time: start around ${KB_COMPLEX_START_LB} lb`, up: false, prefW: KB_COMPLEX_START_LB };
+  const w = num(last.sets[0].w), r = Number(last.sets[0].r), when = fmtShort(last.date);
+  if (w == null) return { hint: `Last ${when}: ${r} rounds`, up: false, prefW: KB_COMPLEX_START_LB };
+  if (r >= min / 3) {
+    return w + 5 <= max
+      ? { hint: `${r} rounds in ${min} min ${when} → go ${w + 5} lb`, up: true, prefW: w + 5 }
+      : { hint: `${r} rounds at ${w} lb, as heavy as it goes: chase rounds`, up: true, prefW: w };
+  }
+  return { hint: `Last ${when}: ${w} lb × ${r} rounds. Beat it`, up: false, prefW: w };
+}
+
+function ComplexFields({ data, date, s, log, set }: { data: Data; date: string; s: Session; log: DayLog; set: (p: Partial<DayLog>) => void }) {
+  const { hint, up, prefW } = complexHint(data, date, s);
+  const id = s.logAs!, v = log.ex?.[id]?.[0] || {};
+  return (
+    <>
+      <div className="fields">
+        <div className="field"><label htmlFor="f-cxw">Kettlebell (lb)</label>
+          <NumField className="inp" id="f-cxw" inputMode="decimal" placeholder={String(prefW)} value={v.w} onCommit={x => editSet(date, id, 0, 'w', x)} /></div>
+        <div className="field"><label htmlFor="f-cxr">Rounds</label>
+          <NumField className="inp" id="f-cxr" inputMode="numeric" integer placeholder="—" value={v.r} onCommit={x => editSet(date, id, 0, 'r', x)} /></div>
+        <div className="field"><label htmlFor="f-rpe">Effort (1–10)</label>
+          <NumField className="inp" id="f-rpe" inputMode="numeric" placeholder={String(s.effort ?? 8)} value={log.rpe} onCommit={x => set({ rpe: x })} /></div>
+      </div>
+      <div className={`hint ${up ? 'up' : ''}`}>{hint}</div>
+      <p className="fine">The timer counts rounds as you tap through the moves; they land here when you finish.</p>
+    </>
+  );
+}
+
+function ComplexCard({ s }: { s: Session }) {
+  return (
+    <article className="card">
+      <header><h3>One round</h3><span className="aside">{KB_COMPLEX_REPS} reps · {s.amrap}-minute AMRAP</span></header>
+      <ol className="cx-list">
+        {KB_COMPLEX.map(m => <li key={m.name}><b>{m.reps} {m.name}</b><span>{m.cue}{m.note ? `. ${m.note[0].toUpperCase()}${m.note.slice(1)}` : ''}</span></li>)}
+      </ol>
+      <dl className="kv cx-weights">
+        {KB_WEIGHTS.map(w => <div key={w.level}><dt>{w.level}</dt><dd>{w.lb} · {w.kg}</dd></div>)}
+      </dl>
+      <p className="fine">Your kettlebell goes up to 44 lb (20 kg), the weight used in the original workout.</p>
+    </article>
   );
 }
 

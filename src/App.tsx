@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useData, editDay } from './lib/store';
+import { useData, editDay, editSet } from './lib/store';
 import { useSyncStatus } from './lib/gistSync';
-import { sessionOf } from './lib/program';
+import { sessionFor } from './lib/program';
 import { daysToRace } from './lib/targets';
 import { iso, today as todayStr } from './lib/dates';
 import { useNow } from './lib/useNow';
@@ -49,7 +49,7 @@ export default function App() {
     return () => document.removeEventListener('visibilitychange', onVis);
   }, []);
 
-  const timerSession = timer ? sessionOf(timer) : null;
+  const timerSession = timer ? sessionFor(timer) : null;
   const syncIssue = sync.state === 'error' || sync.state === 'offline';
   const left = daysToRace(today);
   const settingsName = syncIssue ? `Settings · ${label(sync.state)}` : 'Settings';
@@ -96,6 +96,11 @@ export default function App() {
 
       {timer && timerSession?.segments && (
         <IntervalTimer title={timerSession.title} date={timer} segments={timerSession.segments}
+          counter={timerSession.moves && timerSession.logAs ? {
+            value: data.days[timer]?.ex?.[timerSession.logAs]?.[0]?.r ?? 0,
+            onChange: n => editSet(timer, timerSession.logAs!, 0, 'r', n || undefined),
+            moves: timerSession.moves,
+          } : undefined}
           onClose={() => setTimer(null)} onDone={() => editDay(timer, d => { d.done = true; })} />
       )}
     </>

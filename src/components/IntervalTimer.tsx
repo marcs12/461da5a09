@@ -1,12 +1,15 @@
-import { useEffect, useReducer, useRef } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import { clock, fmtDay } from '../lib/dates';
-import { segTotal, type Segment } from '../lib/program';
+import { segTotal, type Move, type Segment } from '../lib/program';
 
-interface Props { title: string; date: string; segments: Segment[]; onClose: () => void; onDone: () => void }
+/** Round tally for an AMRAP. With `moves`, step through each move; getting past the last one counts the round. */
+interface Counter { value: number; onChange: (n: number) => void; moves?: Move[] }
+interface Props { title: string; date: string; segments: Segment[]; counter?: Counter; onClose: () => void; onDone: () => void }
 
 /** Full-screen interval timer: color flips per segment, beeps + vibrates on change, keeps the screen awake. */
-export function IntervalTimer({ title, date, segments: segs, onClose, onDone }: Props) {
+export function IntervalTimer({ title, date, segments: segs, counter, onClose, onDone }: Props) {
   const [, force] = useReducer((x: number) => x + 1, 0);
+  const [mv, setMv] = useState(0);
   const T = useRef({ i: 0, left: segs[0].sec * 1000, endAt: 0, run: false, finished: false, pip: '' });
   const ac = useRef<AudioContext | null>(null);
   const wake = useRef<WakeLockSentinel | null>(null);
@@ -117,17 +120,56 @@ export function IntervalTimer({ title, date, segments: segs, onClose, onDone }: 
   const k = segs.slice(0, t.i + 1).filter(x => isWork(x) && x.label === group).length;
   const next = segs[t.i + 1];
   const rest = segs.slice(t.i + 1).reduce((a, x) => a + x.sec, 0) + t.left / 1000;
+  const moves = !t.finished && seg.tone === 'work' ? counter?.moves : undefined;
+  const lastMove = !!moves && mv === moves.length - 1;
+  /** Done and Skip both move on; passing the last move counts the round. */
+  const advance = () => {
+    if (!counter || !moves) return;
+    if (lastMove) { counter.onChange(counter.value + 1); setMv(0); vib([60, 60, 60]); }
+    else { setMv(mv + 1); vib([40]); }
+  };
+  const back = () => {
+    if (!counter || !moves) return;
+    if (mv > 0) setMv(mv - 1);
+    else if (counter.value > 0) { counter.onChange(counter.value - 1); setMv(moves.length - 1); }
+  };
+  const after = moves && (lastMove ? moves[0] : moves[mv + 1]);
 
   return (
-    <div className="timer" data-tone={t.finished ? 'done' : seg.tone} role="dialog" aria-modal="true" aria-labelledby="t-label">
+    <div className="timer" data-moves={moves ? '' : undefined} data-tone={t.finished ? 'done' : seg.tone} role="dialog" aria-modal="true" aria-labelledby="t-label">
       <div className="t-top"><span>{title} · {fmtDay(date)}</span><button className="t-x" onClick={close} aria-label="Close timer">✕</button></div>
       <div className="t-main">
         <div className="t-label" id="t-label">{t.finished ? 'Done' : seg.label}</div>
         <div className="t-clock" aria-live="off">{t.finished ? clock(total) : clock(Math.ceil(t.left / 1000))}</div>
         <div className="t-round">
-          {t.finished ? 'Nice work' : works > 1 ? (seg.tone === 'work' ? `Round ${k} of ${works}` : k ? `${k} of ${works} done` : `${works} rounds ahead`) : ''}
+          {t.finished ? (counter ? `${counter.value} round${counter.value === 1 ? '' : 's'}` : 'Nice work') : moves ? `Round ${counter!.value + 1} · move ${mv + 1} of ${moves.length}` : works > 1 ? (seg.tone === 'work' ? `Round ${k} of ${works}` : k ? `${k} of ${works} done` : `${works} rounds ahead`) : ''}
         </div>
       </div>
+      {moves && (
+        <div className="t-move">
+          <div className="t-dots">
+            {moves.map((m, j) => (
+              <button key={m.name} className={j < mv ? 'd' : j === mv ? 'c' : ''} onClick={() => setMv(j)} aria-label={`Jump to ${m.name}`} aria-current={j === mv ? 'step' : undefined} />
+            ))}
+          </div>
+          <b aria-live="polite">{moves[mv].reps} {moves[mv].name}</b>
+          <span className="t-cue">{moves[mv].cue}{moves[mv].note ? ` · ${moves[mv].note}` : ''}</span>
+          <span className="t-then">{lastMove ? `Then round ${counter!.value + 2}: ` : 'Then: '}{after!.reps} {after!.name.toLowerCase()}</span>
+          <div className="t-mctrl">
+            <button onClick={back} disabled={mv === 0 && counter!.value === 0} aria-label="Previous move">‹</button>
+            <button onClick={advance}>Skip move</button>
+            <button className="t-plus" onClick={advance}>{lastMove ? 'Round done ✓' : 'Done ›'}</button>
+          </div>
+        </div>
+      )}
+      {counter && (t.finished || seg.tone === 'work') && (
+        <div className="t-count">
+          <span>Rounds</span>
+          <button onClick={() => counter.onChange(Math.max(0, counter.value - 1))} aria-label="Remove a round">−</button>
+          <b aria-live="polite">{counter.value}</b>
+          <button onClick={() => counter.onChange(counter.value + 1)} aria-label="Add a round">+</button>
+        </div>
+      )}
       <div className="t-bar">
         {segs.map((x, j) => (
           <i key={j} style={{ flex: x.sec / total }} className={t.finished || j < t.i ? 'd' : j === t.i ? 'c' : x.tone === 'work' ? 'w' : ''} />
@@ -138,11 +180,12 @@ export function IntervalTimer({ title, date, segments: segs, onClose, onDone }: 
         <span>{t.finished ? '' : `${clock(rest)} left of ${clock(total)}`}</span>
       </div>
       <div className="t-ctrl">
+        {/* During an AMRAP the move buttons above do the stepping, so these name what they do to the clock. */}
         <button onClick={() => skip(-1)}>Back</button>
         <button className="t-play" onClick={toggle} autoFocus>
           {t.finished ? 'Mark session done' : t.run ? 'Pause' : t.i === 0 && t.left === segs[0].sec * 1000 ? 'Start' : 'Resume'}
         </button>
-        <button onClick={() => skip(1)}>Skip</button>
+        <button onClick={() => skip(1)}>{moves ? 'End early' : 'Skip'}</button>
       </div>
     </div>
   );

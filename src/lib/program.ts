@@ -28,7 +28,12 @@ export interface Session {
   sets?: number;
   /** Suggested effort (1–10) for the log's placeholder. */
   effort?: number;
+  /** An AMRAP: minutes of work, the moves of one round, and the exercise id its weight and rounds are logged under. */
+  amrap?: number;
+  moves?: Move[];
+  logAs?: string;
 }
+export interface Move { name: string; reps: number; note?: string; cue: string }
 export type PhaseId = 'rebuild' | 'base' | 'speed' | 'taper' | 'race';
 export interface Phase { id: PhaseId; name: string; blurb: string; from: number; to: number }
 export type ProgramDay =
@@ -96,6 +101,7 @@ export const EX: Record<string, Exercise> = {
   triext: { name: 'Overhead triceps extension' },
   sideplank: { name: 'Side plank', bw: true, unit: 'sec', note: 'per side' },
   complex: { name: 'Dumbbell complex', note: 'rounds' },
+  kbcomplex: { name: 'Kettlebell complex', note: 'rounds', max: KB },
 };
 export const STRENGTH = {
   A: { title: 'Strength A', tool: 'Kettlebell', ids: ['goblet', 'swing', 'row', 'pushup', 'plank'] },
@@ -264,3 +270,48 @@ export const sessionOf = (ds: string) => {
 };
 /** Sessions that count toward the week: everything but the rest days. */
 export const isTraining = (s: Session | null) => !!s && s.kind !== 'rest';
+
+/* ---------- Before Vietnam: the kettlebell complex ---------- */
+
+/** One round of the 20-minute kettlebell AMRAP. */
+export const KB_COMPLEX: Move[] = [
+  { name: 'Bent-over rows', reps: 10, cue: 'Pull your elbows toward your back pockets' },
+  { name: 'Swings', reps: 15, cue: 'Drive with your hips, not your arms' },
+  { name: 'Clean + thrusters', reps: 8, cue: 'Let your legs create the power' },
+  { name: 'Alternating reverse lunges', reps: 10, note: '5 per leg', cue: 'Stay tall and drive through your front heel' },
+  { name: 'Kettlebell toe taps', reps: 20, note: 'alternating feet on the bell', cue: 'Stay light and keep moving' },
+  { name: 'Horn push-ups', reps: 10, note: 'hands on the horns', cue: 'Keep your body rigid from head to heels' },
+];
+export const KB_COMPLEX_REPS = KB_COMPLEX.reduce((a, m) => a + m.reps, 0);
+/** 12 kg, the top of the beginner range and the bottom of intermediate. */
+export const KB_COMPLEX_START_LB = 26;
+export const KB_WEIGHTS = [
+  { level: 'Beginner', kg: '8–12 kg', lb: '18–26 lb' },
+  { level: 'Intermediate', kg: '12–16 kg', lb: '26–35 lb' },
+  { level: 'Advanced', kg: '20–24 kg', lb: '44–53 lb' },
+];
+
+function kbComplex(first: boolean): Session {
+  const segs = [seg('Warm-up', 5, 'warm'), seg('AMRAP', 20, 'work'), seg('Cool-down', 3, 'easy')];
+  return {
+    kind: 'strength', tag: 'Kettlebell', short: 'Cmplx', title: 'Kettlebell complex', segments: segs, minutes: segMin(segs),
+    amrap: 20, moves: KB_COMPLEX, logAs: 'kbcomplex', effort: 8,
+    lines: [
+      `20-minute AMRAP: as many rounds as you can of all ${KB_COMPLEX.length} moves`,
+      'Rest as needed, but keep the timer running',
+      first ? `First time: start around ${KB_COMPLEX_START_LB} lb and keep every rep clean` : 'Same weight as Monday unless the app says go up',
+    ],
+  };
+}
+/** Oct 12 to 14, the days left before the trip. The complex twice, with a walk between so Wednesday's is fresh. */
+const BRIDGE: Record<string, Session> = {
+  '2026-10-12': kbComplex(true),
+  '2026-10-13': {
+    kind: 'cardio', tag: 'Walk', short: 'Walk', title: 'Brisk walk', minutes: 30, effort: 4,
+    lines: ['30 minutes at a brisk pace', 'Recovery between the two complexes'],
+  },
+  '2026-10-14': kbComplex(false),
+};
+export const bridgeSession = (ds: string): Session | null => BRIDGE[ds] ?? null;
+/** The session on any day: the program's, or one of the pre-trip days. */
+export const sessionFor = (ds: string) => sessionOf(ds) ?? bridgeSession(ds);
