@@ -1,0 +1,31 @@
+name: Garmin sync
+
+# Pulls runs, steps, sleep, HRV and weigh-ins from Garmin Connect into the
+# app's sync gist. Needs the GARMIN_API_KEY and GIST_TOKEN repository secrets.
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: garmin-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node --experimental-strip-types scripts/garmin-sync.mjs
+        env:
+          GARMIN_API_KEY: ${{ secrets.GARMIN_API_KEY }}
+          GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
