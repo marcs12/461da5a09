@@ -8,6 +8,8 @@ import { Ribbon } from '../components/Ribbon';
 import { Check, Icon, NumField } from '../components/ui';
 import { RecoveryCard, WatchCard } from './Watch';
 import { garminDay, matchActivity, sleepOn, stepsOn, weightOn } from '../lib/garmin';
+import { why } from '../lib/motivation';
+import { ArcCard, DoneBanner, markJustDone } from '../components/Motivate';
 
 interface Props { data: Data; date: string; setDate: (d: string) => void; onTimer: () => void; openGuide: () => void }
 type InDay = Extract<ProgramDay, { status: 'in' }>;
@@ -39,6 +41,7 @@ export function SessionDay({ data, date, setDate, onTimer, openGuide }: Props) {
 
   return (
     <section>
+      {date === t && <ArcCard data={data} today={t} />}
       <div className="dayhead">
         <div className="datenav">
           <button className="iconbtn" onClick={() => setDate(addDays(date, -1))} aria-label="Previous day"><Icon.prev /></button>
@@ -144,6 +147,7 @@ function SessionCard({ data, date, s, log, onTimer }: { data: Data; date: string
           </div>
           <h2>{s.title}</h2>
           <ul className="rx">{s.lines.map(l => <li key={l}>{l}</li>)}{maint && <li>Eat at maintenance today</li>}</ul>
+          <p className="why"><b>Why it matters</b>{why(s, programDay(date))}</p>
         </div>
         <div className="session-body">
           {s.kind === 'rest' ? (
@@ -151,9 +155,10 @@ function SessionCard({ data, date, s, log, onTimer }: { data: Data; date: string
           ) : (
             <div className="actions">
               {s.segments && <button className="btn primary" onClick={onTimer}><Icon.timer />Start interval timer</button>}
-              <Check id="f-done" checked={isDone(data, date)} onChange={v => set({ done: v })} label={log.done == null && isDone(data, date) ? 'Done, from your watch' : 'Session done'} />
+              <Check id="f-done" checked={isDone(data, date)} onChange={v => { if (v) markJustDone(date); set({ done: v }); }} label={log.done == null && isDone(data, date) ? 'Done, from your watch' : 'Session done'} />
             </div>
           )}
+          {s.kind !== 'rest' && isDone(data, date) && <DoneBanner data={data} date={date} />}
           {s.amrap && <ComplexFields data={data} date={date} s={s} log={log} set={set} />}
           {s.kind === 'cardio' && (
             <>
@@ -321,6 +326,7 @@ function SideCards({ data, date, log }: { data: Data; date: string; log: DayLog 
   const planCls = dPlan == null ? '' : dPlan <= 0 ? 'down' : 'behind';
   const set = (patch: Partial<DayLog>) => editDay(date, d => Object.assign(d, patch));
   const cp = CHECKPOINTS.find(c => c.date === date);
+  const lost = a7 != null && date >= START ? startWeight(data) - a7 : null;
 
   const pct = (v: number | undefined, t: number) => Math.min(100, Math.round(((v || 0) / t) * 100));
   const { cal, pro } = log;
@@ -343,6 +349,7 @@ function SideCards({ data, date, log }: { data: Data; date: string; log: DayLog 
         </dl>
         {log.weight == null && g?.weightLb != null && <p className="fine">From your Garmin scale. Type a number to replace it.</p>}
         {plan != null && <p className="fine">The plan has you at {r1(plan).toFixed(1)} lb by tonight. Judge the 7-day average, not one weigh-in.</p>}
+        {lost != null && lost >= 1 && <p className="since"><b>−{r1(lost).toFixed(1)} lb</b> since day 1{a7 != null && a7 > GOAL_WEIGHT ? ` · ${r1(a7 - GOAL_WEIGHT).toFixed(1)} to ${GOAL_WEIGHT}` : ` · ${GOAL_WEIGHT} reached`}</p>}
         {cp && <p className="msg">Checkpoint: {cp.target} lb is on track, {cp.floor} is the floor.</p>}
       </article>
 

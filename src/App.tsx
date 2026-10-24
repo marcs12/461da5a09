@@ -14,6 +14,7 @@ import { Progress } from './views/Progress';
 import { Guide } from './views/Guide';
 import { Food } from './views/Food';
 import { Settings } from './views/Settings';
+import { MilestoneToast, markJustDone } from './components/Motivate';
 
 type Tab = 'today' | 'program' | 'progress' | 'food' | 'guide';
 const TABS: { id: Tab; name: string; icon: () => React.ReactElement }[] = [
@@ -104,8 +105,9 @@ export default function App() {
             onChange: n => editSet(timer, timerSession.logAs!, 0, 'r', n || undefined),
             moves: timerSession.moves,
           } : undefined}
-          onClose={() => setTimer(null)} onDone={() => editDay(timer, d => { d.done = true; })} />
+          onClose={() => setTimer(null)} onDone={() => { markJustDone(timer); editDay(timer, d => { d.done = true; }); }} />
       )}
+      {!timer && <MilestoneToast data={data} today={today} onOpen={() => go('progress')} />}
     </>
   );
 }

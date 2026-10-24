@@ -42,7 +42,7 @@ Dec 24 and 25, and Jan 28 to 30 before the time trial, are at maintenance. 1,500
 
 ## What it does
 
-- **Today**: the day's session with its prescription, an interval timer for every timed run (color flips per segment, beeps, vibrates, keeps the screen awake), set logging with "add 5 lb" hints, the morning weigh-in against the plan, and calories, protein, steps and sleep against the day's targets.
+- **Today**: your arc first (where you started, where you are and Apr 18, with the session streak, a forecast and the next time trial), then the day's session with why it matters with its prescription, an interval timer for every timed run (color flips per segment, beeps, vibrates, keeps the screen awake), set logging with "add 5 lb" hints, the morning weigh-in against the plan, and calories, protein, steps and sleep against the day's targets.
 - **Program**: all 25 weeks at a glance, colored by session type, with done and missed days and each week's calories.
 - **Progress**: one gauge for how far along the whole plan is (body, speed and habits), the next milestone, and a card per goal: Body (pounds down, checkpoints, the weight chart), Speed (the 10K you could run now, predicted from your watch laps with Riegel's formula), Engine (resting heart rate, HRV and distance per heartbeat on easy runs), Habits (sessions, step streak, weekly km), Strength (top sets against the bells' maximum), the time trials and a wall of milestones. The week-by-week table and the day's targets sit underneath.
 - **Food**: the repeat day (bulgogi beef, pork adobo, rotisserie chicken), swaps, recipes, the two-week Costco checklist and Saturday prep.

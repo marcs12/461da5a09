@@ -36,12 +36,19 @@ export function Program({ data, date, onOpen }: { data: Data; date: string; onOp
         <div className="plan">
           <div className="prow hdr"><span />{DOW.map(x => <span key={x}>{x}</span>)}</div>
           {PHASES.map(p => {
+            let planned = 0, done = 0;
+            for (let ds = phaseStart(p); ds <= phaseEnd(p) && ds <= t; ds = addDays(ds, 1)) {
+              if (sessionOf(ds)!.kind === 'rest') continue;
+              planned++; if (isDone(data, ds)) done++;
+            }
+            const over = phaseEnd(p) < t;
             const cps = CHECKPOINTS.filter(c => c.week >= p.from && c.week <= p.to).map(c => `${c.target} lb by ${fmtShort(c.date)}`).join(', ');
             return (
               <Fragment key={p.id}>
                 <div className="phase-row">
                   <b>{p.name}</b>
                   <span>{fmtShort(phaseStart(p))} – {fmtShort(phaseEnd(p))}</span>
+                  {planned > 0 && <em className={over ? (done === planned ? 'all' : 'past') : 'now'}>{over && done === planned ? 'Complete' : `${done} of ${planned} done`}</em>}
                   <p>{p.blurb}{cps && `. Checkpoint: ${cps}`}</p>
                 </div>
                 {Array.from({ length: p.to - p.from + 1 }, (_, k) => {
