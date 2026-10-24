@@ -1,7 +1,7 @@
 import { Fragment, useEffect } from 'react';
 import { addDays, fmtDay, fmtShort, parse, today } from '../lib/dates';
-import { DOW, END, EX, PHASES, RACE_PACE, STRENGTH, START, WEEKS, pace, phaseEnd, phaseStart, programDay, sessionOf, weekStart } from '../lib/program';
-import { CAL_FLOOR, CHECKPOINTS, STEPS, TIERS, daysToRace, tierOfWeek } from '../lib/targets';
+import { DOW, END, EX, PHASES, RACE_GOAL, RACE_PACE, STRENGTH, SUB60_PACE, START, WEEKS, pace, phaseEnd, phaseStart, programDay, sessionOf, weekStart } from '../lib/program';
+import { CAL_FLOOR, CHECKPOINTS, TIERS, daysToRace, tierOfWeek } from '../lib/targets';
 import { isDone } from '../lib/stats';
 import type { Data } from '../lib/store';
 import { Ribbon } from '../components/Ribbon';
@@ -69,10 +69,10 @@ export function Program({ data, date, onOpen }: { data: Data; date: string; onOp
         </div>
         <div className="guides">
           <article className="card"><h3>Every week</h3><ul>
-            <li><b>Mon</b> strength A · <b>Tue</b> run · <b>Wed</b> low-impact cardio</li>
-            <li><b>Thu</b> run (a workout from week 17) · <b>Fri</b> strength B</li>
-            <li><b>Sat</b> rest · <b>Sun</b> long run, the one never to skip</li>
-            <li>{STEPS.toLocaleString()} steps every day, on top of workouts</li>
+            <li><b>Mon</b> strength A · <b>Tue</b> run · <b>Wed</b> low-impact cardio, an easy run from week 6</li>
+            <li><b>Thu</b> run (a workout from week 7) · <b>Fri</b> strength B</li>
+            <li><b>Sat</b> rest · <b>Sun</b> long run or time trial, the one never to skip</li>
+            <li>{TIERS[0].steps.toLocaleString()} steps a day to January, {TIERS[2].steps.toLocaleString()} from February</li>
             <li>In a busy week, Wednesday is the first thing to drop</li>
           </ul></article>
           <article className="card"><h3>Strength A · Monday · kettlebell</h3><ul>{lifts(STRENGTH.A.ids)}</ul></article>
@@ -81,13 +81,15 @@ export function Program({ data, date, onOpen }: { data: Data; date: string; onOp
           </ul></article>
           <article className="card"><h3>Calories and protein</h3><ul>
             {TIERS.map(x => <li key={x.from}><b>{x.from === x.to ? `Week ${x.from}` : `Weeks ${x.from}–${x.to}`}</b> {x.cal.toLocaleString()} kcal · {x.pro} g protein</li>)}
+            <li>Maintenance on Dec 24 and 25, and Jan 28 to 30 before the time trial</li>
             <li>Never under {CAL_FLOOR.toLocaleString()} kcal while training</li>
             <li>The small number under each week is that week’s calories</li>
           </ul></article>
           <article className="card"><h3>Paces</h3><ul>
             <li><b>Easy</b> you can talk in full sentences</li>
-            <li><b>Race pace</b> {pace(RACE_PACE)} for a 10K just under 60 minutes</li>
-            <li><b>Time trials</b> 5K under 34 min in week 12, under 30 in week 20</li>
+            <li><b>Sub-60</b> {pace(SUB60_PACE)} for the 10K time trial on Jan 31</li>
+            <li><b>Sun Run goal</b> {pace(RACE_PACE)} for {RACE_GOAL}</li>
+            <li><b>5K time trials</b> under 31:00 on Dec 20, under 28:45 on Jan 17, under 26:30 on Mar 14</li>
             <li>Never raise your weekly running time by more than about 10%</li>
           </ul></article>
         </div>

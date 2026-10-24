@@ -1,6 +1,6 @@
 # WinterArc
 
-A personal PWA training guide: 25 weeks from Mon, Oct 26, 2026 to the Vancouver Sun Run 10K on Sun, Apr 18, 2027. The goal is a 10K under 60 minutes (5:59/km) and a body weight around 170 lb, from a start near 238.
+A personal PWA training guide: 25 weeks from Mon, Oct 26, 2026 to the Vancouver Sun Run 10K on Sun, Apr 18, 2027. The goals are a 10K under 60 minutes by the end of January, about 55 minutes at the Sun Run, and a body weight of 165 lb by race day, from a start near 238.
 
 Live: https://marcs12.github.io/461da5a09/
 
@@ -12,30 +12,33 @@ Weeks run Monday to Sunday.
 |---|---|
 | Mon | Strength A (kettlebell) |
 | Tue | Run |
-| Wed | Low-impact cardio, 30 min |
-| Thu | Run, a workout from week 17 |
+| Wed | Low-impact cardio, an easy run from week 6 |
+| Thu | Run, a workout from week 7 |
 | Fri | Strength B (dumbbell) |
 | Sat | Rest |
-| Sun | Long run |
+| Sun | Long run or time trial |
 
 | Phase | Weeks | Running |
 |---|---|---|
-| Rebuild | 1–6 | Run/walk intervals up to 30 minutes non-stop |
-| Base | 7–16 | All easy running, long run from 5 km to 9 km, a 5K time trial in week 12 |
-| Speed | 17–23 | One workout a week (1 km repeats or a tempo), long run to 12 km, a 5K time trial in week 20 |
-| Taper | 24 | Less volume, a few efforts at race pace |
-| Race week | 25 | Two short runs, then the 10K |
+| Rebuild | 1–3 | Run/walk intervals up to 30 minutes non-stop |
+| Base | 4–8 | Easy running, a fourth run from week 6, first workouts, a 5K time trial on Dec 20 (under 31:00) |
+| Speed | 9–13 | 1 km and 2–3 km repeats, tempos, long run to 11 km, a 5K time trial on Jan 17 (under 28:45) |
+| Sub-60 | 14 | Lighter week, then a 10K time trial on Jan 31 (under 60:00); Feb 28 is the fallback |
+| Push | 15–23 | Faster repeats and tempos toward 5:30/km, long run to 14 km, a 5K time trial on Mar 14 (under 26:30) |
+| Taper | 24 | Less volume, a few efforts at goal pace |
+| Race week | 25 | Two short runs, then the 10K, goal 55:00 |
 
-Calories and protein step down by week, and each step ends on a weight checkpoint:
+Calories, protein and steps step down by week, and each step ends on a weight checkpoint:
 
-| Weeks | Calories | Protein | On track | Floor |
-|---|---|---|---|---|
-| 1–8 | 1,700 | 180 g | 213 lb | 217 lb |
-| 9–16 | 1,600 | 180 g | 194 lb | 200 lb |
-| 17–24 | 1,500 | 170 g | 174 lb | 182 lb |
-| 25 | 2,300 | 150 g | | |
+| Weeks | Calories | Protein | Steps | On track | Fallback |
+|---|---|---|---|---|---|
+| 1–8 | 1,600 | 190 g | 12,000 | 210 lb | 214 lb |
+| 9–14 | 1,600 | 190 g | 12,000 | 193 lb | 199 lb |
+| 15–20 | 1,500 | 180 g | 15,000 | 177 lb | 184 lb |
+| 21–24 | 1,500 | 180 g | 15,000 | 165 lb | 172 lb |
+| 25 | 2,400 | 150 g | 10,000 | | |
 
-Dec 24 and 25 are at maintenance. 1,500 kcal is the floor while training. 10,000 steps a day run through the whole plan.
+Dec 24 and 25, and Jan 28 to 30 before the time trial, are at maintenance. 1,500 kcal is the floor while training.
 
 ## What it does
 

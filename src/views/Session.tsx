@@ -115,7 +115,7 @@ function AfterRace({ openGuide }: { openGuide: () => void }) {
       <ul className="focus">
         <li>Still above {GOAL_WEIGHT} lb? Keep the last tier going, never under {CAL_FLOOR.toLocaleString()} kcal</li>
         <li>At your weight: add 150 kcal a week until it holds steady, around {AFTER.cal.toLocaleString()}</li>
-        <li>Keep the weekly average. Five pounds up means two weeks back at 1,700</li>
+        <li>Keep the weekly average. Five pounds up means two weeks back at 1,600</li>
         <li>Keep the protein and both strength days, and book the next race</li>
       </ul>
       <div><button className="btn" onClick={openGuide}>Keeping it off</button></div>

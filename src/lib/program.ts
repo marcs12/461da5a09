@@ -7,8 +7,13 @@ export const RACE = END;
 export const WEEKS = 25;
 export const TOTAL_DAYS = WEEKS * 7;
 export const DOW = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-/** Sub-60 pace, seconds per km (5:59 → 59:50). */
-export const RACE_PACE = 359;
+/** Sub-60 pace for the Jan 31 time trial, seconds per km (5:57 → 59:30). */
+export const SUB60_PACE = 357;
+/** Sun Run goal pace, seconds per km (5:30 → 55:00). */
+export const RACE_PACE = 330;
+export const RACE_GOAL = '55:00';
+export const TT_DATE = '2027-01-31';
+export const TT_RETRY = '2027-02-28';
 export const pace = (sec: number) => `${clock(sec)}/km`;
 
 export type Kind = 'cardio' | 'strength' | 'rest';
@@ -34,7 +39,7 @@ export interface Session {
   logAs?: string;
 }
 export interface Move { name: string; reps: number; note?: string; cue: string }
-export type PhaseId = 'rebuild' | 'base' | 'speed' | 'taper' | 'race';
+export type PhaseId = 'rebuild' | 'base' | 'speed' | 'tt' | 'push' | 'taper' | 'race';
 export interface Phase { id: PhaseId; name: string; blurb: string; from: number; to: number }
 export type ProgramDay =
   | { status: 'pre'; daysUntil: number }
@@ -42,11 +47,13 @@ export type ProgramDay =
   | { status: 'in'; idx: number; week: number; /** 0 = Sunday */ dow: number; phase: Phase; pw: number; session: Session };
 
 export const PHASES: Phase[] = [
-  { id: 'rebuild', name: 'Rebuild', blurb: 'Run/walk back to 30 minutes non-stop', from: 1, to: 6 },
-  { id: 'base', name: 'Base', blurb: 'All easy running, long run to 9 km', from: 7, to: 16 },
-  { id: 'speed', name: 'Speed', blurb: 'One workout a week, long run to 12 km', from: 17, to: 23 },
+  { id: 'rebuild', name: 'Rebuild', blurb: 'Run/walk back to 30 minutes non-stop', from: 1, to: 3 },
+  { id: 'base', name: 'Base', blurb: 'Easy running, a fourth run from week 6, first workouts', from: 4, to: 8 },
+  { id: 'speed', name: 'Speed', blurb: 'One workout a week, long run to 11 km', from: 9, to: 13 },
+  { id: 'tt', name: 'Sub-60', blurb: '10K time trial on Sunday, Jan 31', from: 14, to: 14 },
+  { id: 'push', name: 'Push', blurb: 'Faster workouts toward 55:00, long run to 14 km', from: 15, to: 23 },
   { id: 'taper', name: 'Taper', blurb: 'Less volume, keep the pace', from: 24, to: 24 },
-  { id: 'race', name: 'Race week', blurb: 'Sun Run 10K on Sunday', from: 25, to: 25 },
+  { id: 'race', name: 'Race week', blurb: `Sun Run 10K on Sunday, goal ${RACE_GOAL}`, from: 25, to: 25 },
 ];
 export const weekStart = (week: number) => addDays(START, (week - 1) * 7);
 export const phaseStart = (p: Phase) => weekStart(p.from);
@@ -55,17 +62,21 @@ export const phaseOfWeek = (w: number) => PHASES.find(p => w >= p.from && w <= p
 
 /** What the week is for, shown under the week strip. */
 export const WEEK_NOTES: Record<number, string> = {
-  1: 'The first 4 to 6 lb is mostly water. Start counting calories on day 1.',
-  6: 'Milestone: 30 minutes without walking.',
-  8: 'Checkpoint on Sunday: 213 lb is on track, 217 is the floor.',
-  9: 'Calories drop to 1,600. Dec 24 and 25 are at maintenance, then straight back to plan.',
-  12: 'Lighter week, with a 5K time trial on Sunday. Target: under 34 minutes.',
-  16: 'Lighter week. Checkpoint on Sunday: 194 lb is on track, 200 is the floor.',
-  17: 'Calories drop to 1,500, the floor. Eat carbs before the Thursday workout.',
-  20: 'Lighter week, with a 5K time trial on Sunday. Target: under 30 minutes.',
-  22: 'Longest run of the plan on Sunday.',
-  24: 'Checkpoint on Sunday: 174 lb is on track, 182 is the floor.',
-  25: 'Eat at maintenance all week, with extra carbs on Friday and Saturday. One strength session, on Monday.',
+  1: 'The first 4 to 6 lb is mostly water. Count calories from day 1, and walk 12,000 steps a day.',
+  3: 'Thirty minutes non-stop by Sunday. Shins or knees complaining: repeat week 2 instead.',
+  6: 'Wednesday becomes a fourth run: short and easy, and the first thing to drop in a busy week.',
+  7: 'First speed workout on Thursday. Eat your carbs before it.',
+  8: 'Lighter week, with a 5K time trial on Sunday: under 31:00. Checkpoint: 210 lb on track, 214 the fallback.',
+  9: 'Christmas week: Dec 24 and 25 at maintenance. Thursday is Christmas Eve, so swap the workout to Wednesday if that’s easier.',
+  12: '5K time trial on Sunday: under 28:45 means sub-60 is on for Jan 31. Miss it and Jan 31 becomes a hard tempo; the attempt moves to Feb 28.',
+  14: 'Time trial week. No Friday strength. Eat at maintenance Thursday to Saturday. Sunday: 10K under 60:00. Checkpoint: 193 lb on track, 199 the fallback.',
+  15: 'Recovery week after the time trial. Calories drop to 1,500 and steps go up to 15,000.',
+  18: 'Missed sub-60 on Jan 31? Make Sunday a 10K time trial instead of the long run.',
+  19: 'Lighter week.',
+  20: '5K time trial on Sunday: under 26:30. Checkpoint: 177 lb on track, 184 the fallback.',
+  22: 'Longest run of the plan on Sunday: 14 km.',
+  24: 'Taper. Checkpoint on Sunday: 165 lb on track, 172 the fallback.',
+  25: `Eat at maintenance all week, with extra carbs on Friday and Saturday. One strength session, on Monday. Race goal: ${RACE_GOAL}.`,
 };
 
 export interface Exercise {
@@ -148,10 +159,11 @@ const long = (km: number, lines: string[] = []): Run => ({
   tag: 'Long run', short: `${km}k`, title: `${km} km long run`, km, effort: 5,
   lines: [`${km} km at easy pace`, '5-min walk before and after', EASY, ...lines],
 });
-const timeTrial = (goalMin: number): Run => ({
-  tag: 'Time trial', short: 'TT', title: '5K time trial', km: 5, effort: 9,
-  lines: [`5 km as fast as you can hold evenly. Target: under ${goalMin} minutes`, '10-min easy jog first, 5-min walk after', 'Log the time in minutes so the next one has something to beat'],
+const timeTrial = (km: 5 | 10, goal: string, lines: string[] = []): Run => ({
+  tag: 'Time trial', short: 'TT', title: `${km}K time trial`, km, effort: 9,
+  lines: [`${km} km as fast as you can hold evenly. Target: under ${goal}`, '10-min easy jog first, 5-min walk after', 'Log the time in minutes so the next one has something to beat', ...lines],
 });
+const PACE_NAMES: Record<number, string> = { [SUB60_PACE]: 'sub-60 pace', [RACE_PACE]: 'Sun Run goal pace' };
 /** `n` repeats of `km` at `p` seconds per km. The timer runs each repeat for the time that pace takes. */
 function reps(n: number, km: number, p: number, rest: number, restLabel: 'Walk' | 'Jog'): Run {
   const segs = [JOG_IN];
@@ -162,7 +174,7 @@ function reps(n: number, km: number, p: number, rest: number, restLabel: 'Walk' 
   segs.push(JOG_OUT);
   return timed({
     tag: 'Intervals', short: `${n}×${km}k`, title: `${n} × ${km} km at ${pace(p)}`, segments: segs, effort: 8,
-    lines: [`${n} × ${km} km at ${pace(p)}${p === RACE_PACE - 1 ? ', race pace' : ''}`, `${rest} min ${restLabel.toLowerCase()} between`, '10-min easy jog first, 5 min after', 'Eat carbs before this one'],
+    lines: [`${n} × ${km} km at ${pace(p)}${PACE_NAMES[p] ? `, ${PACE_NAMES[p]}` : ''}`, `${rest} min ${restLabel.toLowerCase()} between`, '10-min easy jog first, 5 min after', 'Eat carbs before this one'],
   });
 }
 function tempo(min: number, p: number): Run {
@@ -172,47 +184,52 @@ function tempo(min: number, p: number): Run {
     lines: [`${min} min at ${pace(p)}, comfortably hard`, '10-min easy jog first, 5 min after', 'Eat carbs before this one'],
   });
 }
-function sharpener(): Run {
-  const segs = [WALK_IN, seg('Easy run', 6, 'work')];
-  for (let i = 0; i < 3; i++) segs.push(seg(`Race pace ${clock(RACE_PACE)}`, 2, 'work'), seg('Easy run', 2, 'easy'));
-  segs.push(seg('Easy run', 2, 'easy'), WALK_OUT);
+/** 20 minutes easy with a few short efforts at goal pace, a few days before a time trial or the race. */
+function sharpener(n: number, p: number, when: string): Run {
+  const segs = [WALK_IN, seg('Easy run', 4, 'work')];
+  for (let i = 0; i < n; i++) segs.push(seg(`Goal pace ${clock(p)}`, 2, 'work'), seg('Easy run', 2, 'easy'));
+  segs.push(seg('Easy run', Math.max(2, 16 - 4 * n), 'easy'), WALK_OUT);
   return timed({
-    tag: 'Easy run', short: '20m', title: '20 min easy with 3 × 2 min at race pace', segments: segs, effort: 5,
-    lines: ['20 min easy', `3 × 2 min at ${pace(RACE_PACE)} in the middle, 2 min easy between`, 'Three days out: sharp legs, not tired ones'],
+    tag: 'Easy run', short: '20m', title: `20 min easy with ${n} × 2 min at ${pace(p)}`, segments: segs, effort: 5,
+    lines: ['20 min easy', `${n} × 2 min at ${pace(p)} in the middle, 2 min easy between`, `${when}: sharp legs, not tired ones`],
   });
 }
+const SUB60_TT: Run = {
+  ...timeTrial(10, '60:00', [`That is ${pace(SUB60_PACE)} on average: run the first km a few seconds slower, then settle in`]),
+  short: '10K TT', title: 'Sub-60 10K time trial', effort: 9,
+};
 const RACE_DAY: Run = {
   tag: 'Race', short: 'RACE', title: 'Sun Run 10K', km: 10, effort: 9,
-  lines: [`Under 60:00 is ${pace(RACE_PACE)} on average`, 'Run the first 2 km a few seconds slower than that, then settle in', 'The last 2 km are the test'],
+  lines: [`Goal ${RACE_GOAL}: ${pace(RACE_PACE)} on average`, 'Run the first 2 km a few seconds slower than that, then settle in', 'The last 2 km are the test'],
 };
 
-/** Tuesday, Thursday and Sunday of each week. */
-const RUNS: [Run, Run, Run][] = [
-  [runWalk(6, 2, 2), runWalk(6, 2, 2), runWalk(7, 2, 2)],
-  [runWalk(6, 3, 2), runWalk(6, 3, 2), runWalk(7, 3, 2)],
-  [runWalk(5, 4, 2), runWalk(5, 4, 2), runWalk(6, 4, 2)],
-  [runWalk(4, 6, 2), runWalk(4, 6, 2), runWalk(4, 7, 2)],
-  [runWalk(3, 9, 1), runWalk(3, 9, 1), runWalk(2, 14, 2)],
-  [easy(25, false, ['First run with no walk breaks']), easy(25), easy(30, false, ['Thirty minutes non-stop: the rebuild is done'])],
-  [easy(30), easy(30), long(5)],
-  [easy(30, true), easy(30), long(5.5)],
-  [easy(35, true), easy(30), long(6)],
-  [easy(35, true), easy(35), long(6.5)],
-  [easy(35, true), easy(35), long(7)],
-  [easy(30), easy(30), timeTrial(34)],
-  [easy(40, true), easy(35), long(7.5)],
-  [easy(40, true), easy(35), long(8)],
-  [easy(40, true), easy(40), long(9)],
-  [easy(35), easy(35), long(8)],
-  [easy(40, true), reps(4, 1, 360, 2, 'Walk'), long(9)],
-  [easy(40), tempo(20, 375), long(10)],
-  [easy(40, true), reps(5, 1, 355, 2, 'Walk'), long(10)],
-  [easy(35), easy(30), timeTrial(30)],
-  [easy(40, true), tempo(25, 370), long(11)],
-  [easy(40), reps(6, 1, 355, 2, 'Walk'), long(12, ['Longest run of the plan'])],
-  [easy(40, true), reps(3, 2, 358, 3, 'Jog'), long(10)],
-  [easy(35, true), reps(4, 1, 355, 2, 'Walk'), long(8, ['Last long run before the race'])],
-  [easy(30, true), sharpener(), RACE_DAY],
+/** Tuesday, Wednesday, Thursday and Sunday of each week. A null Wednesday is low-impact cardio instead of a run. */
+const RUNS: [Run, Run | null, Run, Run][] = [
+  [runWalk(6, 3, 2), null, runWalk(5, 4, 2), runWalk(4, 6, 2)],
+  [runWalk(3, 8, 2), null, runWalk(3, 8, 2), runWalk(2, 12, 2)],
+  [easy(20, false, ['First run with no walk breaks']), null, easy(20), easy(30, false, ['Thirty minutes non-stop: the rebuild is done'])],
+  [easy(30), null, easy(30), long(5)],
+  [easy(30, true), null, easy(30), long(6)],
+  [easy(35, true), easy(20, false, ['The new fourth run: keep it truly easy']), easy(35), long(7)],
+  [easy(35, true), easy(25), reps(4, 1, 380, 2, 'Walk'), long(8)],
+  [easy(35), easy(25), tempo(20, 390), timeTrial(5, '31:00')],
+  [easy(40, true), easy(25), reps(5, 1, 365, 2, 'Walk'), long(9)],
+  [easy(40), easy(30), tempo(25, 375), long(10)],
+  [easy(40, true), easy(30), reps(6, 1, 355, 2, 'Walk'), long(10)],
+  [easy(35), easy(25), reps(3, 2, 360, 3, 'Jog'), timeTrial(5, '28:45', ['Under 28:45 predicts a 10K just under an hour'])],
+  [easy(40, true), easy(30), reps(2, 3, 355, 3, 'Jog'), long(11)],
+  [easy(30), easy(20), sharpener(4, 350, 'Three days out'), SUB60_TT],
+  [easy(35, false, ['Recovery week: easy only']), easy(25), easy(30), long(9)],
+  [easy(40, true), easy(30), reps(5, 1, 330, 2, 'Walk'), long(11)],
+  [easy(40, true), easy(30), tempo(25, 350), long(12)],
+  [easy(40), easy(30), reps(6, 1, 325, 2, 'Walk'), long(12, ['Missed sub-60 on Jan 31? Run a 10K time trial today instead'])],
+  [easy(35), easy(25), easy(30), long(10)],
+  [easy(40, true), easy(30), reps(3, 2, 335, 3, 'Jog'), timeTrial(5, '26:30')],
+  [easy(45, true), easy(35), tempo(30, 345), long(13)],
+  [easy(45), easy(35), reps(6, 1, 320, 2, 'Walk'), long(14, ['Longest run of the plan'])],
+  [easy(40, true), easy(30), reps(2, 3, 330, 3, 'Jog'), long(12)],
+  [easy(35, true), easy(25), reps(4, 1, 325, 2, 'Walk'), long(8, ['Last long run before the race'])],
+  [easy(30, true), null, sharpener(3, RACE_PACE, 'Three days out'), RACE_DAY],
 ];
 
 function strength(which: 'A' | 'B'): Session {
@@ -225,12 +242,12 @@ function strength(which: 'A' | 'B'): Session {
 const rest = (title: string, lines: string[]): Session => ({ kind: 'rest', tag: 'Rest', short: 'Rest', title, lines });
 
 function buildSession(week: number, dow: number): Session {
-  const raceWeek = week === WEEKS;
-  const [tue, thu, sun] = RUNS[week - 1];
+  const raceWeek = week === WEEKS, ttWeek = week === 14;
+  const [tue, wed, thu, sun] = RUNS[week - 1];
   switch (dow) {
     case 1: return strength('A');
     case 2: return { kind: 'cardio', ...tue };
-    case 3: return {
+    case 3: return wed ? { kind: 'cardio', ...wed } : {
       kind: 'cardio', tag: 'Low impact', short: 'Walk', title: 'Low-impact cardio', minutes: 30, effort: 4,
       lines: raceWeek
         ? ['20 to 30 min easy treadmill walk', 'Nothing hard this week']
@@ -239,9 +256,11 @@ function buildSession(week: number, dow: number): Session {
     case 4: return { kind: 'cardio', ...thu };
     case 5: return raceWeek
       ? rest('Rest', ['No strength today: Monday was the only session this week', 'Extra carbs today and tomorrow'])
+      : ttWeek ? rest('Rest', ['No strength this week after Monday: fresh legs for Sunday', 'Maintenance calories today'])
       : strength('B');
     case 6: return raceWeek
       ? rest('Rest before the race', ['Easy walk only', 'Extra carbs, and lay your kit out tonight'])
+      : ttWeek ? rest('Rest before the time trial', ['Easy walk only', 'Maintenance calories, with extra carbs at dinner'])
       : rest('Rest', ['Rest, or an easy walk', 'Still hit your steps']);
     default: return { kind: 'cardio', ...sun };
   }

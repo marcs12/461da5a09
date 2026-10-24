@@ -710,3 +710,6 @@ select.inp { appearance: auto; }
 .cx-weights { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
 .cx-weights + .fine { margin-top: 8px; }
 .t-mctrl button, .t-ctrl button { white-space: nowrap; }
+.ribbon-labels b i { font-style: normal; }
+.rl-short { display: none; }
+@media (max-width: 560px) { .rl-long { display: none; } .rl-short { display: inline; } }

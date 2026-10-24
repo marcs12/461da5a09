@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { addDays, diff, fmtDay, fmtShort, num, r1, sgn, today } from '../lib/dates';
 import { END, EX, START, WEEKS, phaseOfWeek, programDay } from '../lib/program';
-import { GOAL_WEIGHT, STEPS, floorAfter, floorOn, nextCheckpoint, startWeight, targetAfter, targetOn, targetsOn, weeksBy } from '../lib/targets';
+import { GOAL_WEIGHT, floorAfter, floorOn, nextCheckpoint, startWeight, targetAfter, targetOn, targetsOn, weeksBy } from '../lib/targets';
 import { adherence, avg7, sortedKeys, weekAvg, weekLog, weights, type WeighIn } from '../lib/stats';
 import type { Data } from '../lib/store';
 
@@ -65,7 +65,7 @@ export function Progress({ data, goToday }: { data: Data; goToday: () => void })
           </dd>
           <p>{plan != null ? `plan says ${r1(plan).toFixed(1)} · floor ${r1(floorOn(start, last!.date)).toFixed(1)}` : cp ? `first checkpoint ${cp.target} lb · ${fmtShort(cp.date)}` : ''}</p></div>
         <div className="tile"><dt>Sessions done</dt><dd>{adh.done}<small>/ {adh.sched}</small></dd>
-          <p>{STEPS.toLocaleString()}-step days {adh.stepDays} / {adh.days}</p></div>
+          <p>step-goal days {adh.stepDays} / {adh.days}</p></div>
       </dl>
 
       <div className="prog-grid">

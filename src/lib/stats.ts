@@ -1,6 +1,6 @@
 import { addDays, avg, diff, num, today } from './dates';
 import { START, TOTAL_DAYS, isTraining, programDay, weekStart, type Session } from './program';
-import { STEPS } from './targets';
+import { targetsOn } from './targets';
 import type { Data, SetEntry } from './store';
 
 export interface WeighIn { date: string; w: number }
@@ -20,7 +20,7 @@ export function weekAvg(E: WeighIn[], week: number) {
   return avg(E.filter(e => { const x = diff(e.date, s); return x >= 0 && x < 7; }).map(e => e.w));
 }
 export const isDone = (d: Data, ds: string) => !!d.days[ds]?.done;
-export const hitSteps = (d: Data, ds: string) => (d.days[ds]?.steps ?? 0) >= STEPS;
+export const hitSteps = (d: Data, ds: string) => (d.days[ds]?.steps ?? 0) >= targetsOn(d.settings, ds).steps;
 
 export function lastPerf(d: Data, exId: string, before: string): { date: string; sets: SetEntry[] } | null {
   const ks = sortedKeys(d);
