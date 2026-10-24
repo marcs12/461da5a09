@@ -6,6 +6,8 @@ import { editDay, editSet, type Data, type DayLog } from '../lib/store';
 import { avg7, isDone, lastPerf, weights } from '../lib/stats';
 import { Ribbon } from '../components/Ribbon';
 import { Check, Icon, NumField } from '../components/ui';
+import { RecoveryCard, WatchCard } from './Watch';
+import { garminDay, matchActivity, sleepOn, stepsOn, weightOn } from '../lib/garmin';
 
 interface Props { data: Data; date: string; setDate: (d: string) => void; onTimer: () => void; openGuide: () => void }
 type InDay = Extract<ProgramDay, { status: 'in' }>;
@@ -127,6 +129,8 @@ function AfterRace({ openGuide }: { openGuide: () => void }) {
 
 function SessionCard({ data, date, s, log, onTimer }: { data: Data; date: string; s: Session; log: DayLog; onTimer: () => void }) {
   const set = (patch: Partial<DayLog>) => editDay(date, d => Object.assign(d, patch));
+  const a = matchActivity(data, date, s);
+  const aMin = a?.durS ? Math.round(a.durS / 6) / 10 : undefined, aKm = a?.distM ? Math.round(a.distM / 10) / 100 : undefined;
   const maint = date === '2026-12-24' || date === '2026-12-25';
 
   return (
@@ -147,7 +151,7 @@ function SessionCard({ data, date, s, log, onTimer }: { data: Data; date: string
           ) : (
             <div className="actions">
               {s.segments && <button className="btn primary" onClick={onTimer}><Icon.timer />Start interval timer</button>}
-              <Check id="f-done" checked={!!log.done} onChange={v => set({ done: v })} label="Session done" />
+              <Check id="f-done" checked={isDone(data, date)} onChange={v => set({ done: v })} label={log.done == null && isDone(data, date) ? 'Done, from your watch' : 'Session done'} />
             </div>
           )}
           {s.amrap && <ComplexFields data={data} date={date} s={s} log={log} set={set} />}
@@ -155,9 +159,9 @@ function SessionCard({ data, date, s, log, onTimer }: { data: Data; date: string
             <>
               <div className="fields">
                 <div className="field"><label htmlFor="f-min">Minutes</label>
-                  <NumField className="inp" id="f-min" inputMode="decimal" placeholder={s.minutes ? String(s.minutes) : '—'} value={log.min} onCommit={v => set({ min: v })} /></div>
+                  <NumField className="inp" id="f-min" inputMode="decimal" placeholder={aMin != null ? String(aMin) : s.minutes ? String(s.minutes) : '—'} value={log.min} onCommit={v => set({ min: v })} /></div>
                 <div className="field"><label htmlFor="f-km">Distance (km)</label>
-                  <NumField className="inp" id="f-km" inputMode="decimal" placeholder={s.km ? String(s.km) : '—'} value={log.km} onCommit={v => set({ km: v })} /></div>
+                  <NumField className="inp" id="f-km" inputMode="decimal" placeholder={aKm != null ? String(aKm) : s.km ? String(s.km) : '—'} value={log.km} onCommit={v => set({ km: v })} /></div>
                 <div className="field"><label htmlFor="f-rpe">Effort (1–10)</label>
                   <NumField className="inp" id="f-rpe" inputMode="numeric" placeholder={String(s.effort ?? 4)} value={log.rpe} onCommit={v => set({ rpe: v })} /></div>
               </div>
@@ -167,6 +171,7 @@ function SessionCard({ data, date, s, log, onTimer }: { data: Data; date: string
           )}
         </div>
       </article>
+      <WatchCard data={data} date={date} s={s} />
       {s.lifts && <LiftCard data={data} date={date} s={s} log={log} />}
       {s.moves && <ComplexCard s={s} />}
     </>
@@ -305,7 +310,8 @@ function SideCards({ data, date, log }: { data: Data; date: string; log: DayLog 
   const T = targetsOn(data.settings, date);
   const E = weights(data);
   const prev = [...E].reverse().find(e => e.date < date);
-  const w = log.weight;
+  const g = garminDay(data, date);
+  const w = weightOn(data, date);
   const a7 = w != null ? avg7(E, date) : null;
   const inPlan = programDay(date).status === 'in';
   const plan = inPlan ? targetOn(startWeight(data), date) : null;
@@ -317,15 +323,17 @@ function SideCards({ data, date, log }: { data: Data; date: string; log: DayLog 
   const cp = CHECKPOINTS.find(c => c.date === date);
 
   const pct = (v: number | undefined, t: number) => Math.min(100, Math.round(((v || 0) / t) * 100));
-  const { cal, pro, sleep, steps } = log;
+  const { cal, pro } = log;
+  const steps = stepsOn(data, date), sleep = sleepOn(data, date);
+  const fromWatch = (k: 'steps' | 'sleep') => log[k] == null && (k === 'steps' ? g?.steps : g?.sleepH) != null;
 
   return (
     <>
       <article className="card o-weigh">
         <header><h3>Morning weigh-in</h3><span className="aside">{prev ? `last ${prev.w} lb · ${fmtShort(prev.date)}` : 'before breakfast'}</span></header>
         <div className="weigh-row">
-          <NumField id="f-weight" inputMode="decimal" aria-label="Body weight in pounds" placeholder="—"
-            value={w} onCommit={v => set({ weight: v })} />
+          <NumField id="f-weight" inputMode="decimal" aria-label="Body weight in pounds" placeholder={g?.weightLb != null ? String(g.weightLb) : '—'}
+            value={log.weight} onCommit={v => set({ weight: v })} />
           <span className="u">lb</span>
         </div>
         <dl className="minis">
@@ -333,9 +341,12 @@ function SideCards({ data, date, log }: { data: Data; date: string; log: DayLog 
           <div><dt>7-day avg</dt><dd>{a7 != null ? r1(a7).toFixed(1) : '—'}</dd></div>
           <div><dt>avg vs plan</dt><dd className={planCls}>{dPlan != null ? sgn(dPlan) : '—'}</dd></div>
         </dl>
+        {log.weight == null && g?.weightLb != null && <p className="fine">From your Garmin scale. Type a number to replace it.</p>}
         {plan != null && <p className="fine">The plan has you at {r1(plan).toFixed(1)} lb by tonight. Judge the 7-day average, not one weigh-in.</p>}
         {cp && <p className="msg">Checkpoint: {cp.target} lb is on track, {cp.floor} is the floor.</p>}
       </article>
+
+      <RecoveryCard data={data} date={date} />
 
       <article className="card o-fuel">
         <header><h3>Fuel and steps</h3><span className="aside">{T.note}</span></header>
@@ -347,14 +358,14 @@ function SideCards({ data, date, log }: { data: Data; date: string; log: DayLog 
         <Meter id="f-pro" label="Protein" unit="g" integer value={pro} placeholder={T.pro} onCommit={v => set({ pro: v })}
           pct={pct(pro, T.pro)} tone={pro != null && pro < T.pro * 0.8 ? 'warn' : ''}
           note={`Target ${T.pro} g · keeps the loss from being muscle`} />
-        <Meter id="f-steps" label="Steps" unit="" integer value={steps} placeholder={T.steps} onCommit={v => set({ steps: v })}
+        <Meter id="f-steps" label="Steps" unit="" integer value={log.steps} placeholder={g?.steps ?? T.steps} onCommit={v => set({ steps: v })}
           pct={pct(steps, T.steps)} tone=""
           note={steps != null && steps < T.steps
-            ? `${(T.steps - steps).toLocaleString()} to go · at least ${T.steps.toLocaleString()} every day`
-            : `At least ${T.steps.toLocaleString()}, every day, on top of workouts`} />
-        <Meter id="f-sleep" label="Sleep" unit="h" value={sleep} placeholder={7.5} onCommit={v => set({ sleep: v })}
+            ? `${(T.steps - steps).toLocaleString()} to go${fromWatch('steps') ? ' · from your watch' : ''} · at least ${T.steps.toLocaleString()} every day`
+            : `${fromWatch('steps') ? 'From your watch · ' : ''}At least ${T.steps.toLocaleString()}, every day, on top of workouts`} />
+        <Meter id="f-sleep" label="Sleep" unit="h" value={log.sleep} placeholder={g?.sleepH ?? 7.5} onCommit={v => set({ sleep: v })}
           pct={pct(sleep, 8)} tone={sleep != null && sleep < 7 ? 'warn' : ''}
-          note="7 to 8 h · bad sleep two weeks running is a signal to ease off" />
+          note={`${fromWatch('sleep') ? `From your watch${g?.sleepScore ? `, sleep score ${g.sleepScore}` : ''} · ` : ''}7 to 8 h · bad sleep two weeks running is a signal to ease off`} />
       </article>
 
       <article className="card o-note">

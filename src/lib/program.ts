@@ -15,6 +15,8 @@ export const RACE_GOAL = '55:00';
 export const TT_DATE = '2027-01-31';
 export const TT_RETRY = '2027-02-28';
 export const pace = (sec: number) => `${clock(sec)}/km`;
+/** "55:00" → 3300. */
+export const toSec = (mmss: string) => { const [m, s] = mmss.split(':').map(Number); return m * 60 + (s || 0); };
 
 export type Kind = 'cardio' | 'strength' | 'rest';
 export type Tone = 'work' | 'easy' | 'warm';
@@ -33,6 +35,14 @@ export interface Session {
   sets?: number;
   /** Suggested effort (1–10) for the log's placeholder. */
   effort?: number;
+  /** An easy run: its heart rate should stay out of zone 3. */
+  easy?: boolean;
+  /** Time trial or race: the time to beat, seconds. */
+  goalSec?: number;
+  /** Target pace for the hard part, seconds per km, and the length of each repeat. */
+  pace?: number;
+  repKm?: number;
+  repN?: number;
   /** An AMRAP: minutes of work, the moves of one round, and the exercise id its weight and rounds are logged under. */
   amrap?: number;
   moves?: Move[];
@@ -139,7 +149,7 @@ function runWalk(n: number, run: number, walk: number): Run {
   }
   segs.push(WALK_OUT);
   return timed({
-    tag: 'Run/walk', short: `${n}×${run}`, title: `${n} × ${run} min run, ${walk} min walk`, segments: segs, effort: 4,
+    tag: 'Run/walk', short: `${n}×${run}`, title: `${n} × ${run} min run, ${walk} min walk`, segments: segs, effort: 4, easy: true,
     lines: [`${n} rounds: ${run} min running, ${walk} min walking`, '5-min walk before and after', EASY],
   });
 }
@@ -149,7 +159,7 @@ function easy(min: number, strides = false, lines: string[] = []): Run {
   if (strides) for (let i = 0; i < 4; i++) segs.push(seg('Stride', 1 / 3, 'work'), seg('Walk', 1, 'easy'));
   segs.push(WALK_OUT);
   return timed({
-    tag: 'Easy run', short: `${min}m`, title: strides ? `${min} min easy, then 4 strides` : `${min} min easy`, segments: segs, effort: 4,
+    tag: 'Easy run', short: `${min}m`, title: strides ? `${min} min easy, then 4 strides` : `${min} min easy`, segments: segs, effort: 4, easy: true,
     lines: [
       `${min} min of continuous easy running`, '5-min walk before and after', EASY,
       ...(strides ? ['Strides: 20 seconds fast but relaxed, 1 min walk between each'] : []), ...lines,
@@ -157,11 +167,11 @@ function easy(min: number, strides = false, lines: string[] = []): Run {
   });
 }
 const long = (km: number, lines: string[] = []): Run => ({
-  tag: 'Long run', short: `${km}k`, title: `${km} km long run`, km, effort: 5,
+  tag: 'Long run', short: `${km}k`, title: `${km} km long run`, km, effort: 5, easy: true,
   lines: [`${km} km at easy pace`, '5-min walk before and after', EASY, ...lines],
 });
 const timeTrial = (km: 5 | 10, goal: string, lines: string[] = []): Run => ({
-  tag: 'Time trial', short: 'TT', title: `${km}K time trial`, km, effort: 9,
+  tag: 'Time trial', short: 'TT', title: `${km}K time trial`, km, effort: 9, goalSec: toSec(goal),
   lines: [`${km} km as fast as you can hold evenly. Target: under ${goal}`, '10-min easy jog first, 5-min walk after', 'Log the time in minutes so the next one has something to beat', ...lines],
 });
 const PACE_NAMES: Record<number, string> = { [SUB60_PACE]: 'sub-60 pace', [RACE_PACE]: 'Sun Run goal pace' };
@@ -174,14 +184,14 @@ function reps(n: number, km: number, p: number, rest: number, restLabel: 'Walk' 
   }
   segs.push(JOG_OUT);
   return timed({
-    tag: 'Intervals', short: `${n}×${km}k`, title: `${n} × ${km} km at ${pace(p)}`, segments: segs, effort: 8,
+    tag: 'Intervals', short: `${n}×${km}k`, title: `${n} × ${km} km at ${pace(p)}`, segments: segs, effort: 8, pace: p, repKm: km, repN: n,
     lines: [`${n} × ${km} km at ${pace(p)}${PACE_NAMES[p] ? `, ${PACE_NAMES[p]}` : ''}`, `${rest} min ${restLabel.toLowerCase()} between`, '10-min easy jog first, 5 min after', 'Eat carbs before this one'],
   });
 }
 function tempo(min: number, p: number): Run {
   const segs = [JOG_IN, seg(`Tempo at ${clock(p)}`, min, 'work'), JOG_OUT];
   return timed({
-    tag: 'Tempo', short: 'Tempo', title: `${min} min tempo at ${pace(p)}`, segments: segs, effort: 7,
+    tag: 'Tempo', short: 'Tempo', title: `${min} min tempo at ${pace(p)}`, segments: segs, effort: 7, pace: p,
     lines: [`${min} min at ${pace(p)}, comfortably hard`, '10-min easy jog first, 5 min after', 'Eat carbs before this one'],
   });
 }
@@ -200,7 +210,7 @@ const SUB60_TT: Run = {
   short: '10K TT', title: 'Sub-60 10K time trial', effort: 9,
 };
 const RACE_DAY: Run = {
-  tag: 'Race', short: 'RACE', title: 'Sun Run 10K', km: 10, effort: 9,
+  tag: 'Race', short: 'RACE', title: 'Sun Run 10K', km: 10, effort: 9, goalSec: toSec(RACE_GOAL),
   lines: [`Goal ${RACE_GOAL}: ${pace(RACE_PACE)} on average`, 'Run the first 2 km a few seconds slower than that, then settle in', 'The last 2 km are the test'],
 };
 

@@ -4,6 +4,7 @@ import { DEFAULT_START_WEIGHT, startWeight, tierOfWeek } from '../lib/targets';
 import { editSettings, type Data } from '../lib/store';
 import { NumField } from '../components/ui';
 import { SyncPanel } from '../components/SyncPanel';
+import { GarminPanel } from './Watch';
 
 export function Settings({ data, today }: { data: Data; today: string }) {
   const S = data.settings;
@@ -38,6 +39,11 @@ export function Settings({ data, today }: { data: Data; today: string }) {
             <div className="field"><label htmlFor="s-pro">Protein (g)</label>
               <NumField className="inp" id="s-pro" inputMode="numeric" placeholder={String(tier.pro)} value={S.proOverride} onCommit={v => editSettings({ proOverride: whole(v) })} /></div>
           </div>
+        </article>
+
+        <article className="card stack-sm">
+          <h2>Garmin</h2>
+          <GarminPanel data={data} />
         </article>
 
         <article className="card stack-sm sync-card">

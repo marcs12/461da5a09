@@ -50,6 +50,19 @@ Dec 24 and 25, and Jan 28 to 30 before the time trial, are at maintenance. 1,500
 - **Settings**: starting weight, calorie and protein overrides, sync and backup.
 - Installable PWA that works offline.
 
+## Garmin
+
+A scheduled GitHub Action (`.github/workflows/garmin-sync.yml`, every 30 minutes, or by hand from the Actions tab) runs `scripts/garmin-sync.mjs`. It uses the Garmin Connect Personal API to pull activities (with laps from the FIT file for runs), steps, sleep, overnight HRV, resting heart rate, weigh-ins and heart rate zones, and merges them into the sync gist as `garminActs`, `garminDays` and `garminSync`. Devices pick them up on their next sync.
+
+It needs two repository secrets: `GARMIN_API_KEY` (from Garmin Connect, Personal API Key) and `GIST_TOKEN` (a GitHub token with only the gist scope). The repo is public, so the job's log shows counts and response shapes, never values. `DRY_RUN=1` fetches without writing.
+
+In the app:
+- A run, strength session or walk from the watch ticks the day off when it covers the session. Unticking by hand overrides it.
+- Steps, sleep and Garmin-scale weigh-ins fill in where nothing was typed.
+- Time trials and the race are timed from the activity, or from the fastest stretch of 1 km laps when the warm-up was recorded too. Interval days count the repeats run at the target pace.
+- Easy runs in heart rate zone 3 or above get flagged.
+- Recovery compares the last 7 days of HRV, resting heart rate and sleep, plus heartbeats per km on easy runs, with the 4 weeks before. Two warning signs together say ease off, the plan's own rule.
+
 ## Where the plan lives
 
 - `src/lib/program.ts`: the calendar, phases, every run and both strength sessions.

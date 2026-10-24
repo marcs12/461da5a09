@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { addDays, diff, fmtDay, fmtShort, num, r1, sgn, today } from '../lib/dates';
-import { END, EX, START, WEEKS, phaseOfWeek, programDay } from '../lib/program';
+import { END, EX, START, TOTAL_DAYS, WEEKS, phaseOfWeek, programDay, sessionOf } from '../lib/program';
+import { hasGarmin, matchActivity, trialTime } from '../lib/garmin';
 import { GOAL_WEIGHT, floorAfter, floorOn, nextCheckpoint, startWeight, targetAfter, targetOn, targetsOn, weeksBy } from '../lib/targets';
 import { adherence, avg7, sortedKeys, weekAvg, weekLog, weights, type WeighIn } from '../lib/stats';
 import type { Data } from '../lib/store';
@@ -84,13 +85,14 @@ export function Progress({ data, goToday }: { data: Data; goToday: () => void })
             <header><h3>Week by week</h3><span className="aside">Mon – Sun</span></header>
             {weeks.length ? (
               <div className="tablewrap"><table>
-                <thead><tr><th>Week</th><th>Starts</th><th>Avg lb</th><th>Target</th><th>vs target</th><th>Sessions</th><th>Step days</th><th>Avg kcal</th><th>Avg protein</th></tr></thead>
+                <thead><tr><th>Week</th><th>Starts</th><th>Avg lb</th><th>Target</th><th>vs target</th><th>Sessions</th><th>Run km</th><th>Step days</th><th>Avg kcal</th><th>Avg protein</th></tr></thead>
                 <tbody>{weeks.map(w => <WeekRow key={w} data={data} E={all} w={w} start={start} />)}</tbody>
               </table></div>
             ) : <div className="empty">Weekly averages start filling in on {fmtDay(START)}.</div>}
           </article>
         </div>
         <div className="stack">
+          <TimeTrials data={data} />
           <article className="card">
             <header><h3>Targets today</h3><span className="aside">{T.note}</span></header>
             <dl className="kv">
@@ -125,6 +127,7 @@ function WeekRow({ data, E, w, start }: { data: Data; E: WeighIn[]; w: number; s
       <td data-l="Target">{r1(tgt).toFixed(1)}</td>
       <td data-l="vs target" className={d == null ? '' : d <= 0 ? 'down' : 'behind'}>{d != null ? sgn(d) : '—'}</td>
       <td data-l="Sessions">{L.planned ? `${L.done}/${L.planned}` : '—'}</td>
+      <td data-l="Run km">{L.km != null ? L.km.toFixed(1) : '—'}</td>
       <td data-l="Step days">{L.stepDays}/7</td>
       <td data-l="Avg kcal">{L.cal != null ? Math.round(L.cal).toLocaleString() : '—'}</td>
       <td data-l="Avg protein">{L.pro != null ? `${Math.round(L.pro)} g` : '—'}</td>
@@ -209,5 +212,37 @@ function WeightChart({ E, start }: { E: WeighIn[]; start: number }) {
         <text className="endl" x={lp[0]} y={lp[1] - 11} textAnchor={lp[0] > W - m.r - 30 ? 'end' : 'middle'}>{r1(la).toFixed(1)}</text>
       </svg>
     </div>
+  );
+}
+
+const hms = (sec: number) => `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`;
+
+/** Every time trial and the race: the target, and the result from the watch or typed in by hand. */
+function TimeTrials({ data }: { data: Data }) {
+  const rows: { date: string; km: number; goal: number; result?: number; title: string }[] = [];
+  for (let i = 0; i < TOTAL_DAYS; i++) {
+    const ds = addDays(START, i), s = sessionOf(ds);
+    if (!s?.goalSec || !s.km) continue;
+    const log = data.days[ds];
+    const typed = log?.min != null && (log.km == null || Math.abs(log.km - s.km) < 0.3) ? log.min * 60 : undefined;
+    const fromWatch = hasGarmin(data) ? trialTime(matchActivity(data, ds, s), s.km)?.sec : undefined;
+    rows.push({ date: ds, km: s.km, goal: s.goalSec, result: typed ?? fromWatch, title: s.tag === 'Race' ? 'Sun Run' : `${s.km}K time trial` });
+  }
+  return (
+    <article className="card">
+      <header><h3>Time trials</h3><span className="aside">target → result</span></header>
+      <dl className="kv tt">
+        {rows.map(r => (
+          <div key={r.date}>
+            <dt>{r.title} · {fmtShort(r.date)}</dt>
+            <dd>
+              {hms(r.goal)}
+              {r.result != null && <span className={r.result <= r.goal ? 'down' : 'behind'}> → {hms(r.result)}</span>}
+            </dd>
+          </div>
+        ))}
+      </dl>
+      <p className="fine">Results come from your watch, or from the minutes you type in on the day.</p>
+    </article>
   );
 }
