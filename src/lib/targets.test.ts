@@ -6,7 +6,9 @@ const S = DEFAULT_SETTINGS;
 
 describe('daily targets', () => {
   it('step calories down by tier', () => {
-    expect(targetsOn(S, '2026-10-26')).toMatchObject({ cal: 1600, pro: 190, steps: 12000 });
+    expect(targetsOn(S, '2026-10-26')).toMatchObject({ cal: 1450, pro: 190, steps: 12000 });
+    expect(targetsOn(S, '2026-12-20')).toMatchObject({ cal: 1450 });
+    expect(targetsOn(S, '2026-12-21')).toMatchObject({ cal: 1600 });
     expect(targetsOn(S, '2027-01-31')).toMatchObject({ cal: 1600, steps: 12000 });
     expect(targetsOn(S, '2027-02-01')).toMatchObject({ cal: 1500, pro: 180, steps: 15000 });
     expect(targetsOn(S, '2027-04-11')).toMatchObject({ cal: 1500 });
@@ -29,6 +31,11 @@ describe('daily targets', () => {
     expect(targetsOn(o, '2027-01-05')).toMatchObject({ cal: 1700, pro: 200 });
     expect(targetsOn(o, '2026-12-25')).toMatchObject({ cal: 2700, pro: 200 });
     expect(targetsOn(o, '2026-10-20').cal).toBe(S.calTarget);
+  });
+  it('stay at 1,500 after the race until the end of April, for Hawaii', () => {
+    expect(targetsOn(S, '2027-04-19')).toMatchObject({ cal: 1500, pro: 180, steps: 12000 });
+    expect(targetsOn(S, '2027-04-30')).toMatchObject({ cal: 1500 });
+    expect(targetsOn(S, '2027-05-01')).toMatchObject({ cal: 2400, pro: 150 });
   });
   it('cover every week with a tier', () => {
     for (let w = 1; w <= 25; w++) expect(tierOfWeek(w)).toBeDefined();

@@ -713,3 +713,44 @@ select.inp { appearance: auto; }
 .ribbon-labels b i { font-style: normal; }
 .rl-short { display: none; }
 @media (max-width: 560px) { .rl-long { display: none; } .rl-short { display: inline; } }
+/* Food tab */
+.food .meals li { align-items: flex-start; }
+.swaps div { align-items: baseline; }
+.swaps dt { display: grid; gap: 1px; color: var(--ink); }
+.swaps dt span { font-size: 12.5px; color: var(--muted); }
+.swaps dd { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.recipe { margin: 0; padding-left: 20px; display: grid; gap: 6px; font-size: 14px; }
+.cartbar { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--top-h)); box-shadow: 0 0 0 8px var(--bg); z-index: 4; display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: var(--r); background: var(--ink); color: var(--bg); }
+.cartbar b { font: 700 20px/1 var(--display); font-variant-numeric: tabular-nums; }
+.cartbar span { flex: 1; font-size: 13px; opacity: .8; }
+.cartbar button { border: 1px solid color-mix(in srgb, var(--bg) 45%, transparent); background: none; color: inherit; border-radius: 10px; min-height: 40px; padding: 0 12px; font-weight: 600; font-size: 13px; }
+.cartbar button.armed { background: var(--accent-fill); border-color: var(--accent-fill); color: var(--accent-ink); }
+.zone { display: grid; gap: 8px; }
+.zone-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 0 2px; }
+.zone-head h3 { font: 700 19px/1.1 var(--display); text-transform: uppercase; letter-spacing: .03em; }
+.zone-head small { font-size: 12px; color: var(--muted); }
+ul.items { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+ul.items li + li { border-top: 1px solid var(--line); }
+label.item { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 3px 12px; align-items: start; padding: 12px 14px; cursor: pointer; }
+label.item input { width: 22px; height: 22px; margin: 1px 0 0; accent-color: var(--accent-fill); }
+.item .name { font-weight: 600; }
+.item .why { grid-column: 2 / 4; font-size: 13px; color: var(--muted); }
+.item .qty { font: 600 16px/1.3 var(--display); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.item .every { display: inline-block; margin-left: 6px; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 99px; background: var(--cardio-soft); color: var(--cardio); vertical-align: 1px; white-space: nowrap; }
+label.item:has(input:checked) { background: var(--surface-2); }
+label.item:has(input:checked) .name, label.item:has(input:checked) .qty { text-decoration: line-through; color: var(--muted); }
+.prep-steps { margin: 0; padding: 0; list-style: none; counter-reset: p; display: grid; }
+.prep-steps li { counter-increment: p; display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 2px 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+.prep-steps li:first-child { border-top: 0; padding-top: 2px; }
+.prep-steps li::before { content: counter(p); grid-row: span 2; width: 22px; height: 22px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font-size: 11px; font-weight: 700; }
+.prep-steps span { font-size: 13.5px; color: var(--muted); }
+.card .subtabs { margin-bottom: 10px; max-width: none; }
+.food .card + .fine, .food .stack > .fine { padding: 0 2px; }
+/* On a phone the Costco list comes right after the repeat day, before the recipes. */
+@media (max-width: 819px) {
+  .food { display: flex; flex-direction: column; }
+  .food > .stack { display: contents; }
+  .food > .stack > * { order: 3; }
+  .food .f-day { order: 1; }
+  .food .f-shop { display: flex; order: 2; }
+}

@@ -12,13 +12,15 @@ import { SessionDay } from './views/Session';
 import { Program } from './views/Program';
 import { Progress } from './views/Progress';
 import { Guide } from './views/Guide';
+import { Food } from './views/Food';
 import { Settings } from './views/Settings';
 
-type Tab = 'today' | 'program' | 'progress' | 'guide';
+type Tab = 'today' | 'program' | 'progress' | 'food' | 'guide';
 const TABS: { id: Tab; name: string; icon: () => React.ReactElement }[] = [
   { id: 'today', name: 'Today', icon: Icon.today },
   { id: 'program', name: 'Program', icon: Icon.plan },
   { id: 'progress', name: 'Progress', icon: Icon.progress },
+  { id: 'food', name: 'Food', icon: Icon.food },
   { id: 'guide', name: 'Guide', icon: Icon.guide },
 ];
 
@@ -88,6 +90,7 @@ export default function App() {
               {tab === 'today' && <SessionDay data={data} date={date} setDate={setDate} onTimer={() => setTimer(date)} openGuide={() => go('guide')} />}
               {tab === 'program' && <Program data={data} date={date} onOpen={d => { setDate(d); go('today'); }} />}
               {tab === 'progress' && <Progress data={data} goToday={() => { setDate(today); go('today'); }} />}
+              {tab === 'food' && <Food />}
               {tab === 'guide' && <Guide />}
             </>
           )}

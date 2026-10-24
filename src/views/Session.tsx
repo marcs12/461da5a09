@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { addDays, fmtDay, fmtShort, num, parse, r1, sgn, today } from '../lib/dates';
 import { DOW, END, EX, KB_COMPLEX, KB_COMPLEX_REPS, KB_COMPLEX_START_LB, KB_WEIGHTS, START, WEEKS, WEEK_NOTES, bridgeSession, programDay, weekStart, type ProgramDay, type Session } from '../lib/program';
-import { AFTER, CAL_FLOOR, CHECKPOINTS, GOAL_WEIGHT, startWeight, targetOn, targetsOn } from '../lib/targets';
+import { AFTER, BEACH, CAL_FLOOR, CHECKPOINTS, GOAL_WEIGHT, startWeight, targetOn, targetsOn } from '../lib/targets';
 import { editDay, editSet, type Data, type DayLog } from '../lib/store';
 import { avg7, isDone, lastPerf, weights } from '../lib/stats';
 import { Ribbon } from '../components/Ribbon';
@@ -113,7 +113,9 @@ function AfterRace({ openGuide }: { openGuide: () => void }) {
       <div className="eyebrow">{fmtShort(END)} · done</div>
       <h2>{WEEKS} weeks complete</h2>
       <ul className="focus">
-        <li>Still above {GOAL_WEIGHT} lb? Keep the last tier going, never under {CAL_FLOOR.toLocaleString()} kcal</li>
+        <li>Until Hawaii: {BEACH.cal.toLocaleString()} kcal, {BEACH.pro} g protein, {BEACH.steps.toLocaleString()} steps, and both strength days</li>
+        <li>The last three days before you fly: easy on salt and alcohol, plenty of water. Less water under the skin, so more definition shows</li>
+        <li>After Hawaii and still above {GOAL_WEIGHT} lb? Keep the last tier going, never under {CAL_FLOOR.toLocaleString()} kcal</li>
         <li>At your weight: add 150 kcal a week until it holds steady, around {AFTER.cal.toLocaleString()}</li>
         <li>Keep the weekly average. Five pounds up means two weeks back at 1,600</li>
         <li>Keep the protein and both strength days, and book the next race</li>

@@ -9,7 +9,7 @@ import type { Data, Settings } from './schema';
  */
 export interface Tier { from: number; to: number; cal: number; pro: number; steps: number; target: number; floor: number }
 export const TIERS: Tier[] = [
-  { from: 1, to: 8, cal: 1600, pro: 190, steps: 12000, target: 210, floor: 214 },
+  { from: 1, to: 8, cal: 1450, pro: 190, steps: 12000, target: 210, floor: 214 },
   { from: 9, to: 14, cal: 1600, pro: 190, steps: 12000, target: 193, floor: 199 },
   { from: 15, to: 20, cal: 1500, pro: 180, steps: 15000, target: 177, floor: 184 },
   { from: 21, to: 24, cal: 1500, pro: 180, steps: 15000, target: 165, floor: 172 },
@@ -29,6 +29,9 @@ export const MAINTENANCE_DAYS: Record<string, number> = {
 };
 /** After the race: roughly where weight holds steady. */
 export const AFTER = { cal: 2400, pro: 150 };
+/** The race to the end of April is a short beach block before Hawaii: still cutting, at the floor. */
+export const BEACH_END = '2027-04-30';
+export const BEACH = { cal: 1500, pro: 180, steps: 12000 };
 
 export const tierOfWeek = (w: number) => TIERS.find(t => w >= t.from && w <= t.to)!;
 
@@ -37,6 +40,7 @@ export interface DayTargets { cal: number; pro: number; steps: number; note: str
 export function targetsOn(s: Settings, ds: string): DayTargets {
   const pd = programDay(ds);
   if (pd.status === 'pre') return { cal: s.calTarget, pro: s.proTarget, steps: STEPS, note: 'plan targets start on day 1' };
+  if (pd.status === 'post' && ds <= BEACH_END) return { ...BEACH, note: 'until Hawaii, then add 150 a week' };
   if (pd.status === 'post') return { cal: AFTER.cal, pro: AFTER.pro, steps: STEPS, note: 'add 150 a week until weight holds' };
   const t = tierOfWeek(pd.week);
   const pro = s.proOverride ?? t.pro;

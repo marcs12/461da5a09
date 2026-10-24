@@ -76,7 +76,7 @@ export const WEEK_NOTES: Record<number, string> = {
   20: '5K time trial on Sunday: under 26:30. Checkpoint: 177 lb on track, 184 the fallback.',
   22: 'Longest run of the plan on Sunday: 14 km.',
   24: 'Taper. Checkpoint on Sunday: 165 lb on track, 172 the fallback.',
-  25: `Eat at maintenance all week, with extra carbs on Friday and Saturday. One strength session, on Monday. Race goal: ${RACE_GOAL}.`,
+  25: `Eat at maintenance all week, with extra carbs on Friday and Saturday. One strength session, on Monday. Race goal: ${RACE_GOAL}. From Monday, back to 1,500 until Hawaii.`,
 };
 
 export interface Exercise {
@@ -102,11 +102,12 @@ export const EX: Record<string, Exercise> = {
   ohp: { name: 'One-arm overhead press', note: 'per side', target: 8, max: DB },
   calf: { name: 'Single-leg calf raise', note: 'per side', target: 15, max: DB },
   farmer: { name: 'Suitcase carry', unit: 'sec', note: 'per side', target: 40, max: DB },
-  // Earlier program only.
+  // Earlier program only (dead bugs and floor press are back in the current one).
   bridge: { name: 'Glute bridge' },
-  floor: { name: 'Floor press' },
+  floor: { name: 'Dumbbell floor press', note: 'per side', target: 10, max: DB },
+  crunch: { name: 'Weighted crunch', note: 'dumbbell on your chest', target: 12, max: DB },
   pullover: { name: 'Pullover' },
-  deadbug: { name: 'Dead bugs', bw: true, note: 'per side' },
+  deadbug: { name: 'Dead bugs', bw: true, note: 'per side', target: 10 },
   lateral: { name: 'Lateral raise' },
   hammer: { name: 'Hammer curl' },
   triext: { name: 'Overhead triceps extension' },
@@ -115,8 +116,8 @@ export const EX: Record<string, Exercise> = {
   kbcomplex: { name: 'Kettlebell complex', note: 'rounds', max: KB },
 };
 export const STRENGTH = {
-  A: { title: 'Strength A', tool: 'Kettlebell', ids: ['goblet', 'swing', 'row', 'pushup', 'plank'] },
-  B: { title: 'Strength B', tool: 'Dumbbell', ids: ['rdl', 'rlunge', 'ohp', 'calf', 'farmer'] },
+  A: { title: 'Strength A', tool: 'Kettlebell', ids: ['goblet', 'swing', 'row', 'pushup', 'deadbug', 'plank'] },
+  B: { title: 'Strength B', tool: 'Dumbbell', ids: ['rdl', 'rlunge', 'floor', 'ohp', 'calf', 'crunch', 'farmer'] },
 };
 
 const seg = (label: string, min: number, tone: Tone): Segment => ({ label, sec: Math.round(min * 60), tone });
@@ -235,8 +236,8 @@ const RUNS: [Run, Run | null, Run, Run][] = [
 function strength(which: 'A' | 'B'): Session {
   const s = STRENGTH[which];
   return {
-    kind: 'strength', tag: s.tool, short: `Str ${which}`, title: s.title, minutes: 35, lifts: s.ids, sets: 3,
-    lines: ['3 sets of each, 60 to 90 seconds rest between sets', 'Hit every rep on every set, then add weight next time'],
+    kind: 'strength', tag: s.tool, short: `Str ${which}`, title: s.title, minutes: 45, lifts: s.ids, sets: 3,
+    lines: ['3 sets of each, 60 to 90 seconds rest between sets', 'Hit every rep on every set, then add weight next time', 'Finish with the core moves: they build the abs that show once you’re lean enough'],
   };
 }
 const rest = (title: string, lines: string[]): Session => ({ kind: 'rest', tag: 'Rest', short: 'Rest', title, lines });

@@ -1,40 +1,13 @@
 import { fmtDay } from '../lib/dates';
 import { AFTER, CAL_FLOOR, CHECKPOINTS, GOAL_WEIGHT, TIERS } from '../lib/targets';
 
-/** A repeat day at the first calorie tier. Label estimates: weigh portions for the first two weeks. */
-const MEALS: [string, string, number, number][] = [
-  ['Breakfast', '250 g 0% Greek yogurt, berries, 1 scoop protein powder', 320, 49],
-  ['Lunch', '200 g cooked chicken breast, bagged salad with light dressing, ¾ cup cooked rice', 580, 66],
-  ['Snack', 'Protein shake made with water', 130, 25],
-  ['Dinner', '200 g lean meat or fish, vegetables, a small carb portion', 560, 50],
-];
-const sum = (i: 2 | 3) => MEALS.reduce((a, m) => a + m[i], 0);
-
-/** The food plan, the rules and what happens after the race. */
+/** The rules, the checkpoints and what happens after the race. Meals and groceries are on the Food tab. */
 export function Guide() {
   return (
     <section>
-      <div className="pagehead"><div><h1>Guide</h1><p>The food plan, the rules, and how to keep the weight off.</p></div></div>
+      <div className="pagehead"><div><h1>Guide</h1><p>The rules, the checkpoints, and how to keep the weight off. Meals and groceries are on the Food tab.</p></div></div>
       <div className="areagrid guide">
         <div className="stack">
-          <article className="card">
-            <header><h3>A repeat day</h3><span className="aside">{sum(2).toLocaleString()} kcal · {sum(3)} g protein</span></header>
-            <ul className="meals">
-              {MEALS.map(([name, what, kcal, pro]) => (
-                <li key={name}><div><b>{name}</b><span>{what}</span></div><small>{kcal} kcal<br />{pro} g</small></li>
-              ))}
-            </ul>
-            <p className="fine">Eat the same meals on repeat so you only work the numbers out once. Calories and protein here are label estimates: weigh portions for the first two weeks.</p>
-          </article>
-          <article className="card">
-            <header><h3>Adjust it by tier</h3></header>
-            <ul className="focus">
-              <li><b>{TIERS[0].cal.toLocaleString()} kcal, weeks 1–14.</b> The day above. On non-run days, skip the rice at lunch (about 150 kcal) and spend it where you like</li>
-              <li><b>{TIERS[2].cal.toLocaleString()} kcal, weeks 15–24.</b> Rice at lunch only on run days</li>
-              <li><b>Maintenance days.</b> About 2,600 to 2,700 kcal: add rice, potatoes or oats to each meal, and keep the protein the same</li>
-              <li><b>Race week.</b> {TIERS[4].cal.toLocaleString()} kcal, with extra carbs on Friday and Saturday</li>
-            </ul>
-          </article>
           <article className="card">
             <header><h3>Food rules</h3></header>
             <ul className="focus">
@@ -79,7 +52,7 @@ export function Guide() {
             <header><h3>Keeping it off</h3><span className="aside">from Apr 19</span></header>
             <ul className="focus">
               <li>Don’t stop on April 19. Still above {GOAL_WEIGHT} lb: keep the last tier a few more weeks. At {GOAL_WEIGHT}: add 150 kcal a week until your weight holds steady, around {AFTER.cal.toLocaleString()}</li>
-              <li>Keep the weekly weigh-in average. Five pounds above your finish weight means two weeks back at {TIERS[0].cal.toLocaleString()}</li>
+              <li>Keep the weekly weigh-in average. Five pounds above your finish weight means two weeks back at {TIERS[1].cal.toLocaleString()}</li>
               <li>Book the next race before this one: a summer 10K or a fall half marathon</li>
               <li>Keep the protein and both strength days for good</li>
             </ul>

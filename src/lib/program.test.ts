@@ -17,6 +17,11 @@ describe('program calendar', () => {
     expect(phaseStart(PHASES[2])).toBe('2026-12-21');
     expect(phaseEnd(PHASES.find(p => p.id === 'tt')!)).toBe(TT_DATE);
   });
+  it('ends both strength sessions with core work', () => {
+    expect(sessionOf('2026-10-26')!.lifts).toEqual(['goblet', 'swing', 'row', 'pushup', 'deadbug', 'plank']);
+    expect(sessionOf('2026-10-30')!.lifts).toContain('crunch');
+    expect(sessionOf('2026-10-30')!.lifts).toContain('floor');
+  });
   it('keeps each session on its weekday', () => {
     expect(sessionOf('2026-10-26')).toMatchObject({ kind: 'strength', title: 'Strength A', sets: 3 });
     expect(sessionOf('2026-10-27')).toMatchObject({ kind: 'cardio', tag: 'Run/walk' });

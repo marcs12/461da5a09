@@ -1,6 +1,6 @@
 # WinterArc
 
-A personal PWA training guide: 25 weeks from Mon, Oct 26, 2026 to the Vancouver Sun Run 10K on Sun, Apr 18, 2027. The goals are a 10K under 60 minutes by the end of January, about 55 minutes at the Sun Run, and a body weight of 165 lb by race day, from a start near 238.
+A personal PWA training guide: 25 weeks from Mon, Oct 26, 2026 to the Vancouver Sun Run 10K on Sun, Apr 18, 2027. The goals are a 10K under 60 minutes by the end of January, about 55 minutes at the Sun Run, and a body weight of 165 lb by race day, from a start near 238, then as lean as possible for Hawaii at the end of April.
 
 Live: https://marcs12.github.io/461da5a09/
 
@@ -10,11 +10,11 @@ Weeks run Monday to Sunday.
 
 | Day | Session |
 |---|---|
-| Mon | Strength A (kettlebell) |
+| Mon | Strength A (kettlebell), ending with core |
 | Tue | Run |
 | Wed | Low-impact cardio, an easy run from week 6 |
 | Thu | Run, a workout from week 7 |
-| Fri | Strength B (dumbbell) |
+| Fri | Strength B (dumbbell), ending with core |
 | Sat | Rest |
 | Sun | Long run or time trial |
 
@@ -32,20 +32,21 @@ Calories, protein and steps step down by week, and each step ends on a weight ch
 
 | Weeks | Calories | Protein | Steps | On track | Fallback |
 |---|---|---|---|---|---|
-| 1–8 | 1,600 | 190 g | 12,000 | 210 lb | 214 lb |
+| 1–8 | 1,450 | 190 g | 12,000 | 210 lb | 214 lb |
 | 9–14 | 1,600 | 190 g | 12,000 | 193 lb | 199 lb |
 | 15–20 | 1,500 | 180 g | 15,000 | 177 lb | 184 lb |
 | 21–24 | 1,500 | 180 g | 15,000 | 165 lb | 172 lb |
 | 25 | 2,400 | 150 g | 10,000 | | |
 
-Dec 24 and 25, and Jan 28 to 30 before the time trial, are at maintenance. 1,500 kcal is the floor while training.
+Dec 24 and 25, and Jan 28 to 30 before the time trial, are at maintenance. 1,500 kcal is the floor while training, except weeks 1–8 at 1,450 by choice. From the race to Apr 30 (Hawaii) it stays at 1,500 kcal, 180 g protein and 12,000 steps.
 
 ## What it does
 
 - **Today**: the day's session with its prescription, an interval timer for every timed run (color flips per segment, beeps, vibrates, keeps the screen awake), set logging with "add 5 lb" hints, the morning weigh-in against the plan, and calories, protein, steps and sleep against the day's targets.
 - **Program**: all 25 weeks at a glance, colored by session type, with done and missed days and each week's calories.
 - **Progress**: the weight chart with a 7-day average over the target band (on track to floor), a week-by-week table against the plan, lift progression and the day's targets.
-- **Guide**: the repeat-meal day and how it changes by tier, the food and running rules, the checkpoints, when to ease off, and what to do after the race.
+- **Food**: the repeat day (bulgogi beef, pork adobo, rotisserie chicken), swaps, recipes, the two-week Costco checklist and Saturday prep.
+- **Guide**: the food and running rules, the checkpoints, when to ease off, and what to do after the race.
 - **Settings**: starting weight, calorie and protein overrides, sync and backup.
 - Installable PWA that works offline.
 
