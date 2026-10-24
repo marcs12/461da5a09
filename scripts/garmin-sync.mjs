@@ -185,6 +185,7 @@ async function main() {
   }
   const weights = await attempt('weight', () => garmin('weight', `/weight-service/weight/range/${from}/${today}`, { includeAll: 'true' }));
   for (const [d, weightLb] of Object.entries(P.parseWeights(weights))) put(d, { weightLb });
+  for (const [d, bodyFat] of Object.entries(P.parseBodyFat(weights))) put(d, { bodyFat });
   const zones = P.parseZones(await attempt('zones', () => garmin('zones', '/biometric-service/heartRateZones/v2')));
 
   let changedDays = 0;

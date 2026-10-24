@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { addDays, diff, fmtDay, fmtShort, num, r1, sgn, today } from '../lib/dates';
-import { END, EX, START, TOTAL_DAYS, WEEKS, phaseOfWeek, programDay, sessionOf } from '../lib/program';
+import { addDays, diff, fmtDay, fmtShort, r1, sgn, today } from '../lib/dates';
+import { END, START, TOTAL_DAYS, WEEKS, phaseOfWeek, programDay, sessionOf, weekStart } from '../lib/program';
 import { hasGarmin, matchActivity, trialTime } from '../lib/garmin';
-import { GOAL_WEIGHT, floorAfter, floorOn, nextCheckpoint, startWeight, targetAfter, targetOn, targetsOn, weeksBy } from '../lib/targets';
-import { adherence, avg7, sortedKeys, weekAvg, weekLog, weights, type WeighIn } from '../lib/stats';
+import { floorAfter, floorOn, nextCheckpoint, targetAfter, targetOn, targetsOn, weeksBy } from '../lib/targets';
+import { avg7, weekAvg, weekLog, weights, type WeighIn } from '../lib/stats';
+import { BASE_10K, GOAL_10K, SUB60, body, engine, habits, milestones, overall, raceDayLeft, speed, strength } from '../lib/progress';
+import { Arc, Bar, Columns, LineChart } from '../components/Charts';
 import type { Data } from '../lib/store';
 
 /** Weigh-ins from the month before day 1 give the chart its run-in. */
@@ -11,105 +13,212 @@ const CHART_FROM = addDays(START, -28);
 
 export function Progress({ data, goToday }: { data: Data; goToday: () => void }) {
   const t = today();
-  const all = weights(data);
-  const E = all.filter(e => e.date >= CHART_FROM);
-  const start = startWeight(data);
-  const last = all.length ? all[all.length - 1] : null;
-  const a7 = last ? avg7(all, last.date) : null;
   const pdT = programDay(t);
-  const started = pdT.status !== 'pre';
-  const change = a7 != null && started ? a7 - start : null;
-  const plan = started && last ? targetOn(start, last.date) : null;
-  const vsPlan = a7 != null && plan != null ? a7 - plan : null;
-  const adh = adherence(data);
-  const T = targetsOn(data.settings, t);
-  const cp = nextCheckpoint(t);
-
+  const B = body(data, t), S = speed(data, t), Hb = habits(data, t), En = engine(data, t), St = strength(data);
+  const O = overall(data, t);
+  const M = milestones(data, t);
+  const got = M.filter(m => m.at).sort((a, b) => b.at!.localeCompare(a.at!));
+  const next = M.filter(m => !m.at).sort((a, b) => b.progress - a.progress);
   const curWeek = pdT.status === 'pre' ? 0 : pdT.status === 'post' ? WEEKS : pdT.week;
   const weeks = Array.from({ length: curWeek }, (_, i) => curWeek - i);
-
-  const liftRows = Object.entries(EX).map(([id, ex]) => {
-    const hist: { w: number | null; r: number }[] = [];
-    for (const k of sortedKeys(data)) {
-      const sets = (data.days[k].ex?.[id] || []).filter(s => s && num(s.r) != null);
-      if (!sets.length) continue;
-      const ws = sets.map(s => num(s.w)).filter((x): x is number => x != null);
-      hist.push({ w: ws.length ? Math.max(...ws) : null, r: Math.max(...sets.map(s => Number(s.r))) });
-    }
-    if (!hist.length) return null;
-    const cx = id === 'complex';
-    const val = (h: { w: number | null; r: number }) =>
-      cx ? `${h.w ?? '?'} lb × ${h.r}` : ex.bw || h.w == null ? `${h.r}${ex.unit === 'sec' ? ' s' : ' reps'}` : `${h.w} lb`;
-    return (
-      <div className="lift-row" key={id}>
-        <div>{ex.name}<br /><span>{hist.length} session{hist.length > 1 ? 's' : ''}{cx && ' · lb × rounds'}</span></div>
-        <b>{val(hist[0])} → {val(hist[hist.length - 1])}</b>
-      </div>
-    );
-  }).filter(Boolean);
-
-  const cls = (v: number | null) => (v == null ? '' : v < 0 ? 'down' : v > 0 ? 'upc' : '');
-  // Within a tenth of a pound counts as on plan.
-  const onPlan = vsPlan != null && Math.abs(vsPlan) < 0.05;
+  const all = weights(data);
+  const left = raceDayLeft(t);
+  const vsPlan = B.now != null && B.plan != null ? B.now - B.plan : null;
+  const garmin = hasGarmin(data);
 
   return (
-    <section>
-      <div className="pagehead"><div><h1>Progress</h1><p>Judge the trend by weekly averages, not single weigh-ins.</p></div></div>
-      <dl className="tiles">
-        <div className="tile"><dt>7-day average</dt><dd>{a7 != null ? r1(a7).toFixed(1) : '—'}<small>lb</small></dd>
-          <p>{last ? `latest ${last.w} lb · ${fmtShort(last.date)}` : 'no weigh-ins yet'}</p></div>
-        <div className="tile"><dt>Since day 1</dt><dd className={cls(change)}>{change != null ? sgn(change) : '—'}<small>lb</small></dd>
-          <p>{started ? `from ${r1(start)} lb · goal ${GOAL_WEIGHT}` : `starts ${fmtShort(START)} · goal ${GOAL_WEIGHT} lb`}</p></div>
-        <div className="tile"><dt>Against the plan</dt>
-          <dd className={vsPlan == null ? '' : vsPlan <= 0 || onPlan ? 'down' : 'behind'}>
-            {vsPlan == null ? '—' : onPlan ? 'On plan' : <>{Math.abs(vsPlan).toFixed(1)}<small>lb {vsPlan > 0 ? 'behind' : 'ahead'}</small></>}
-          </dd>
-          <p>{plan != null ? `plan says ${r1(plan).toFixed(1)} · floor ${r1(floorOn(start, last!.date)).toFixed(1)}` : cp ? `first checkpoint ${cp.target} lb · ${fmtShort(cp.date)}` : ''}</p></div>
-        <div className="tile"><dt>Sessions done</dt><dd>{adh.done}<small>/ {adh.sched}</small></dd>
-          <p>step-goal days {adh.stepDays} / {adh.days}</p></div>
-      </dl>
+    <section className="prog">
+      <div className="pagehead"><div><h1>Progress</h1><p>How far you’ve come, and how close the goals are.</p></div></div>
 
-      <div className="prog-grid">
-        <div className="stack">
-          <article className="card">
-            <header><h3>Body weight</h3><span className="aside">lb</span></header>
-            {E.length ? <WeightChart E={E} start={start} /> : (
-              <div className="empty">Log a weigh-in on the Today tab. Your 7-day average appears here against the plan’s target band.
-                <button className="btn" onClick={goToday}>Log a weigh-in</button></div>
-            )}
-            <div className="chart-legend">
-              <span><i className="lg-dot" />Daily weigh-in</span><span><i className="lg-line" />7-day average</span><span><i className="lg-band" />On track to floor</span>
-            </div>
-          </article>
-          <article className="card">
-            <header><h3>Week by week</h3><span className="aside">Mon – Sun</span></header>
-            {weeks.length ? (
-              <div className="tablewrap"><table>
-                <thead><tr><th>Week</th><th>Starts</th><th>Avg lb</th><th>Target</th><th>vs target</th><th>Sessions</th><th>Run km</th><th>Step days</th><th>Avg kcal</th><th>Avg protein</th></tr></thead>
-                <tbody>{weeks.map(w => <WeekRow key={w} data={data} E={all} w={w} start={start} />)}</tbody>
-              </table></div>
-            ) : <div className="empty">Weekly averages start filling in on {fmtDay(START)}.</div>}
-          </article>
+      <article className="hero-card">
+        <Arc pct={O.pct}>
+          <div className="arc-pct">{pctText(O.pct)}</div>
+          <div className="arc-sub">of the way</div>
+        </Arc>
+        <div className="hero-side">
+          <p className="hero-line">{heroLine(O.pct, B.lost, left)}</p>
+          <ul className="parts">
+            <PartRow name="Body" pct={B.pct} detail={B.now == null ? 'log a weigh-in' : B.lost > 0 ? `${r1(B.lost).toFixed(1)} of ${Math.round(B.start - B.goal)} lb` : `${Math.round(B.start - B.goal)} lb to go`} />
+            <PartRow name="Speed" pct={S.pct} detail={S.est != null ? `10K about ${hms(S.est)}` : 'first time trial Dec 20'} muted={S.est == null} />
+            <PartRow name="Habits" pct={Hb.sessions} detail={Hb.sched ? `${Hb.done} of ${Hb.sched} sessions` : 'starts Oct 26'} muted={!Hb.sched} />
+          </ul>
+          <dl className="hero-facts">
+            <div><dt>Sun Run</dt><dd>{left > 0 ? `${left} days` : left === 0 ? 'today' : 'done'}</dd></div>
+            <div><dt>Phase</dt><dd>{pdT.status === 'in' ? `${pdT.phase.name} · week ${pdT.week}` : pdT.status === 'pre' ? 'starts Oct 26' : 'complete'}</dd></div>
+            <div><dt>Plan</dt><dd className={vsPlan == null ? '' : vsPlan <= 0.05 ? 'down' : 'behind'}>{vsPlan == null ? '—' : Math.abs(vsPlan) < 0.05 ? 'on plan' : vsPlan < 0 ? `${r1(-vsPlan).toFixed(1)} lb ahead` : `${r1(vsPlan).toFixed(1)} lb behind`}</dd></div>
+          </dl>
         </div>
-        <div className="stack">
-          <TimeTrials data={data} />
-          <article className="card">
-            <header><h3>Targets today</h3><span className="aside">{T.note}</span></header>
-            <dl className="kv">
-              <div><dt>Calories</dt><dd>{T.cal.toLocaleString()} kcal</dd></div>
-              <div><dt>Protein</dt><dd>{T.pro} g</dd></div>
-              <div><dt>Steps</dt><dd>{T.steps.toLocaleString()}</dd></div>
-              {cp && <div><dt>Next checkpoint</dt><dd>{cp.target} lb · {fmtShort(cp.date)}</dd></div>}
-            </dl>
-            <p className="fine">To hold a different number for a while, set it in Settings.</p>
-          </article>
-          <article className="card">
-            <header><h3>Lifts</h3><span className="aside">first → latest top set</span></header>
-            {liftRows.length ? <div className="lifts-list">{liftRows}</div> : <div className="empty">Log sets on Monday or Friday to see each lift climb.</div>}
-          </article>
-        </div>
+      </article>
+
+      {next[0] && (
+        <article className="nextup">
+          <span className="nextup-k">Next milestone</span>
+          <b>{next[0].title}</b>
+          <Bar pct={next[0].progress} />
+          <span className="nextup-p">{pctText(next[0].progress)} there · {next[0].detail}</span>
+        </article>
+      )}
+
+      <div className="goal-grid">
+        <article className="card goal">
+          <header><h3>Body</h3><span className="aside">goal {B.goal} lb by Apr 18</span></header>
+          <div className="big-row">
+            <div className="big"><b className={B.lost > 0 ? 'down' : ''}>{B.lost > 0 ? '−' : ''}{r1(Math.abs(B.lost)).toFixed(1)}</b><span>lb since day 1</span></div>
+            <div className="big right"><b>{B.now != null ? r1(B.toGo).toFixed(1) : '—'}</b><span>lb to go</span></div>
+          </div>
+          <Bar pct={B.pct} marks={B.checkpoints.map(c => ({ at: (B.start - c.target) / (B.start - B.goal), label: String(c.target), hit: c.reached }))} />
+          <dl className="stats4">
+            <div><dt>7-day average</dt><dd>{B.now != null ? r1(B.now).toFixed(1) : '—'}</dd></div>
+            <div><dt>Pace</dt><dd>{B.perWeek != null ? `${sgn(B.perWeek)} lb/wk` : '—'}</dd></div>
+            <div><dt>Race day at this pace</dt><dd>{B.projected != null ? `${r1(B.projected).toFixed(0)} lb` : '—'}</dd></div>
+            <div><dt>Body fat</dt><dd>{B.bodyFat != null ? `${B.bodyFat}%` : '—'}</dd></div>
+          </dl>
+          {all.length ? <WeightChart E={all.filter(e => e.date >= CHART_FROM)} start={B.start} /> : (
+            <div className="empty">Log a weigh-in on Today to start the chart.<button className="btn" onClick={goToday}>Log a weigh-in</button></div>
+          )}
+          <div className="chart-legend">
+            <span><i className="lg-dot" />Daily weigh-in</span><span><i className="lg-line" />7-day average</span><span><i className="lg-band" />On track to floor</span>
+          </div>
+        </article>
+
+        <article className="card goal">
+          <header><h3>Speed</h3><span className="aside">10K: {hms(BASE_10K)} in April → {hms(GOAL_10K)}</span></header>
+          <div className="big-row">
+            <div className="big"><b>{S.est != null ? hms(S.est) : '—'}</b><span>10K you could run now</span></div>
+            <div className="big right"><b>{pctText(S.pct)}</b><span>to {hms(GOAL_10K)}</span></div>
+          </div>
+          <Bar pct={S.pct} marks={[{ at: (BASE_10K - SUB60) / (BASE_10K - GOAL_10K), label: '60:00', hit: S.est != null && S.est <= SUB60 }]} />
+          <dl className="stats4">
+            <div><dt>Best 5K</dt><dd>{S.best5k ? hms(S.best5k.sec) : '—'}</dd></div>
+            <div><dt>Best 10K</dt><dd>{S.best10k ? hms(S.best10k.sec) : '—'}</dd></div>
+            <div><dt>Sub-60 attempt</dt><dd>Jan 31</dd></div>
+            <div><dt>Total run</dt><dd>{garmin ? `${Math.round(Hb.totalKm)} km` : '—'}</dd></div>
+          </dl>
+          <p className="chart-title">Predicted 10K, best effort each week</p>
+          <LineChart points={S.series} refs={[{ y: SUB60, label: '60:00', tone: 'mark' }, { y: GOAL_10K, label: hms(GOAL_10K), tone: 'goal' }]}
+            fmt={hms} unit={60} label="Predicted 10K time" color="var(--cardio)" />
+          <p className="fine">Predicted from your fastest stretch of laps each week with Riegel’s formula, so hard sessions count most. Time trials make it sharpest.</p>
+        </article>
+
+        <article className="card goal">
+          <header><h3>Engine</h3><span className="aside">what the training is doing inside</span></header>
+          <div className="big-row">
+            <div className="big"><b className={En.rhr && En.rhr.last < En.rhr.first ? 'down' : ''}>{En.rhr ? `${sgn(En.rhr.last - En.rhr.first).replace('.0', '')}` : '—'}</b><span>resting heart rate, bpm</span></div>
+            <div className="big right"><b className={En.efficiency && En.efficiency.change > 0 ? 'down' : ''}>{En.efficiency ? `${En.efficiency.change >= 0 ? '+' : '−'}${Math.abs(Math.round(En.efficiency.change * 100))}%` : '—'}</b><span>distance per heartbeat</span></div>
+          </div>
+          <dl className="stats4">
+            <div><dt>Resting HR now</dt><dd>{En.rhr ? `${Math.round(En.rhr.last)} bpm` : '—'}</dd></div>
+            <div><dt>HRV now</dt><dd>{En.hrv ? `${Math.round(En.hrv.last)} ms` : '—'}</dd></div>
+            <div><dt>At the start</dt><dd>{En.rhr ? `${Math.round(En.rhr.first)} bpm` : '—'}</dd></div>
+            <div><dt>Easy-run HR</dt><dd>{En.easyPace?.avgHR ? `${En.easyPace.avgHR} bpm` : '—'}</dd></div>
+          </dl>
+          <p className="chart-title">Resting heart rate, weekly average</p>
+          {garmin ? <LineChart points={En.rhrWeekly} fmt={v => String(Math.round(v))} label="Resting heart rate" color="var(--strength)" /> : <WatchNote />}
+          <p className="fine">A falling resting heart rate and more distance per heartbeat on easy runs mean your heart is getting fitter, often weeks before race times show it.</p>
+        </article>
+
+        <article className="card goal">
+          <header><h3>Habits</h3><span className="aside">what gets you there</span></header>
+          <div className="big-row">
+            <div className="big"><b>{pctText(Hb.sessions)}</b><span>sessions done</span></div>
+            <div className="big right"><b>{Hb.stepStreak}</b><span>day step streak</span></div>
+          </div>
+          <div className="habit-bars">
+            <div><span>Sessions</span><Bar pct={Hb.sessions} /><b>{Hb.done}/{Hb.sched}</b></div>
+            <div><span>Step goal</span><Bar pct={Hb.steps} /><b>{Hb.stepDays}/{Hb.days}</b></div>
+          </div>
+          <p className="chart-title">Running per week, km</p>
+          {garmin ? <Columns bars={Hb.weeks} fmt={v => (v >= 10 ? String(Math.round(v)) : v.toFixed(1).replace('.0', ''))} label="Running per week" current={pdT.status === 'in' ? weekStart(pdT.week) : undefined} /> : <WatchNote />}
+        </article>
+
+        <article className="card goal">
+          <header><h3>Strength</h3><span className="aside">top set, first session → latest</span></header>
+          {St.lifts.length ? (
+            <>
+              <div className="big-row">
+                <div className="big"><b className={St.gain && St.gain > 0 ? 'down' : ''}>{St.gain != null ? `+${Math.round(St.gain * 100)}%` : '—'}</b><span>average gain</span></div>
+                <div className="big right"><b>{St.improved}/{St.lifts.length}</b><span>lifts heavier</span></div>
+              </div>
+              <ul className="lift-bars">
+                {St.lifts.map(l => (
+                  <li key={l.id}>
+                    <span>{l.name}</span>
+                    <Bar pct={l.max ? l.now / l.max : 1} />
+                    <b>{l.first === l.now ? `${l.now} lb` : `${l.first} → ${l.now} lb`}</b>
+                  </li>
+                ))}
+              </ul>
+              <p className="fine">Bars fill toward the heaviest your kettlebell (44 lb) or dumbbell (50 lb) goes.</p>
+            </>
+          ) : <div className="empty">Log your sets on Monday and Friday to see each lift climb.</div>}
+        </article>
+
+        <TimeTrials data={data} />
       </div>
+
+      <section className="miles" aria-labelledby="miles-h">
+        <div className="zone-head"><h2 id="miles-h">Milestones</h2><small>{got.length} of {M.length} unlocked</small></div>
+        <ul className="badges">
+          {[...got, ...next].map(m => (
+            <li key={m.id} className={m.at ? 'got' : ''}>
+              <span className="badge-k">{m.group}</span>
+              <b>{m.title}</b>
+              {m.at ? <span className="badge-d">{fmtShort(m.at)}</span> : <><Bar pct={m.progress} /><span className="badge-d">{pctText(m.progress)}</span></>}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <details className="card more">
+        <summary>Week by week, targets and the details</summary>
+        <div className="more-in">
+          <TargetsCard data={data} t={t} />
+          {weeks.length ? (
+            <div className="tablewrap"><table>
+              <thead><tr><th>Week</th><th>Starts</th><th>Avg lb</th><th>Target</th><th>vs target</th><th>Sessions</th><th>Run km</th><th>Step days</th><th>Avg kcal</th><th>Avg protein</th></tr></thead>
+              <tbody>{weeks.map(w => <WeekRow key={w} data={data} E={all} w={w} start={B.start} />)}</tbody>
+            </table></div>
+          ) : <div className="empty">Weekly averages start filling in on {fmtDay(START)}.</div>}
+        </div>
+      </details>
     </section>
+  );
+}
+
+const pctText = (p: number) => `${Math.round(Math.max(0, Math.min(1, p)) * 100)}%`;
+function heroLine(pct: number, lost: number, left: number) {
+  if (left < 0) return 'The Sun Run is done. Look at what you built.';
+  if (pct >= 0.99) return 'Every goal reached. Now it’s about keeping it.';
+  if (lost <= 0) return 'Day 1 is the hardest number to move. Everything below fills in from here.';
+  if (pct < 0.25) return `${r1(lost).toFixed(1)} lb gone already. The first quarter is the slowest; it speeds up from here.`;
+  if (pct < 0.5) return `Closing in on halfway, with ${left} days left to finish the job.`;
+  if (pct < 0.75) return `Past halfway. Every week from here is a week closer than the last.`;
+  return `The last stretch. ${left} days to bring it home.`;
+}
+
+function PartRow({ name, pct, detail, muted }: { name: string; pct: number; detail: string; muted?: boolean }) {
+  return (
+    <li className={muted ? 'muted' : ''}>
+      <div className="part-top"><span>{name}</span><b>{pctText(pct)}</b></div>
+      <Bar pct={pct} />
+      <small>{detail}</small>
+    </li>
+  );
+}
+
+function WatchNote() {
+  return <div className="empty chart-empty">Connect the Garmin sync to fill this in. Settings has the steps.</div>;
+}
+
+function TargetsCard({ data, t }: { data: Data; t: string }) {
+  const T = targetsOn(data.settings, t), cp = nextCheckpoint(t);
+  return (
+    <dl className="kv">
+      <div><dt>Calories today</dt><dd>{T.cal.toLocaleString()} kcal</dd></div>
+      <div><dt>Protein</dt><dd>{T.pro} g</dd></div>
+      <div><dt>Steps</dt><dd>{T.steps.toLocaleString()}</dd></div>
+      {cp && <div><dt>Next checkpoint</dt><dd>{cp.target} lb · {fmtShort(cp.date)}</dd></div>}
+    </dl>
   );
 }
 

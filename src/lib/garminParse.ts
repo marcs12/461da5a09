@@ -45,6 +45,8 @@ export interface GDay {
   sleepH?: number;
   sleepScore?: number;
   weightLb?: number;
+  /** Body fat percentage, from a Garmin Index scale or entered in Garmin Connect. */
+  bodyFat?: number;
 }
 /** Heart rate zone floors, bpm. */
 export interface GZones { z2: number; z3: number; z4: number; z5: number; max?: number }
@@ -192,6 +194,19 @@ export function parseWeights(json: J): Record<string, number> {
     if (!d) continue;
     const lb = w > 1000 ? w / 453.59237 : w > 30 && w < 300 ? w * 2.20462 : undefined;
     if (lb != null && lb > 70 && lb < 600) out[d] = r1(lb);
+  }
+  return out;
+}
+
+/** Body fat percentages by date, from the same weight response. */
+export function parseBodyFat(json: J): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const o of objects(json)) {
+    const f = num(o.bodyFat);
+    if (f == null || f < 3 || f > 60) continue;
+    let d = dateOf(o);
+    if (!d) { const ms = num(o.date) ?? num(o.timestampGMT); if (ms != null) d = new Date(ms).toISOString().slice(0, 10); }
+    if (d) out[d] = r1(f);
   }
   return out;
 }
