@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { addDays, fmtDay, fmtShort, num, parse, r1, sgn, today } from '../lib/dates';
 import { DOW, END, EX, KB_COMPLEX, KB_COMPLEX_REPS, KB_COMPLEX_START_LB, KB_WEIGHTS, START, WEEKS, WEEK_NOTES, bridgeSession, programDay, weekStart, type ProgramDay, type Session } from '../lib/program';
 import { AFTER, BEACH, CAL_FLOOR, CHECKPOINTS, GOAL_WEIGHT, startWeight, targetOn, targetsOn } from '../lib/targets';
@@ -337,17 +337,12 @@ function SideCards({ data, date, log }: { data: Data; date: string; log: DayLog 
     <>
       <article className="card o-weigh">
         <header><h3>Morning weigh-in</h3><span className="aside">{prev ? `last ${prev.w} lb · ${fmtShort(prev.date)}` : 'before breakfast'}</span></header>
-        <div className="weigh-row">
-          <NumField id="f-weight" inputMode="decimal" aria-label="Body weight in pounds" placeholder={g?.weightLb != null ? String(g.weightLb) : '—'}
-            value={log.weight} onCommit={v => set({ weight: v })} />
-          <span className="u">lb</span>
-        </div>
+        <WeighIn date={date} log={log} scale={g?.weightLb} hint={prev?.w} />
         <dl className="minis">
           <div><dt>vs last</dt><dd className={cls(dPrev)}>{dPrev != null ? sgn(dPrev) : '—'}</dd></div>
           <div><dt>7-day avg</dt><dd>{a7 != null ? r1(a7).toFixed(1) : '—'}</dd></div>
           <div><dt>avg vs plan</dt><dd className={planCls}>{dPlan != null ? sgn(dPlan) : '—'}</dd></div>
         </dl>
-        {log.weight == null && g?.weightLb != null && <p className="fine">From your Garmin scale. Type a number to replace it.</p>}
         {plan != null && <p className="fine">The plan has you at {r1(plan).toFixed(1)} lb by tonight. Judge the 7-day average, not one weigh-in.</p>}
         {lost != null && lost >= 1 && <p className="since"><b>−{r1(lost).toFixed(1)} lb</b> since day 1{a7 != null && a7 > GOAL_WEIGHT ? ` · ${r1(a7 - GOAL_WEIGHT).toFixed(1)} to ${GOAL_WEIGHT}` : ` · ${GOAL_WEIGHT} reached`}</p>}
         {cp && <p className="msg">Checkpoint: {cp.target} lb is on track, {cp.floor} is the floor.</p>}
@@ -381,6 +376,51 @@ function SideCards({ data, date, log }: { data: Data; date: string; log: DayLog 
           value={log.note ?? ''} onChange={e => set({ note: e.target.value })} />
       </article>
     </>
+  );
+}
+
+/** Type a weight and press Log: it then shows as logged, with Edit to change it. */
+function WeighIn({ date, log, scale, hint }: { date: string; log: DayLog; scale?: number; hint?: number }) {
+  const [editing, setEditing] = useState(false);
+  const [text, setText] = useState('');
+  const [fresh, setFresh] = useState(false);
+  useEffect(() => { setEditing(false); setText(''); setFresh(false); }, [date]);
+  useEffect(() => { if (!fresh) return; const id = setTimeout(() => setFresh(false), 1500); return () => clearTimeout(id); }, [fresh]);
+  const v = num(text);
+  const valid = v != null && v > 70 && v < 600;
+  const shown = log.weight ?? scale;
+  const save = () => {
+    if (!valid) return;
+    editDay(date, d => { d.weight = r1(v); d.wAt = Date.now(); });
+    setEditing(false); setText(''); setFresh(true);
+  };
+
+  if (shown != null && !editing) {
+    const when = log.weight == null ? 'From your Garmin scale'
+      : log.wAt ? `Logged at ${new Date(log.wAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : 'Logged';
+    return (
+      <div className={`weigh-done ${fresh ? 'pop' : ''} ${log.weight == null ? 'scale' : ''}`} role="status">
+        <span className="wd-check"><Icon.check /></span>
+        <div className="grow"><b>{r1(shown).toFixed(1)}<u>lb</u></b><small>{when}</small></div>
+        <button className="btn sm" onClick={() => { setText(log.weight != null ? String(log.weight) : ''); setEditing(true); }}>{log.weight == null ? 'Change' : 'Edit'}</button>
+      </div>
+    );
+  }
+  return (
+    <form className="weigh-form" onSubmit={e => { e.preventDefault(); save(); }}>
+      <div className="weigh-row">
+        <input id="f-weight" inputMode="decimal" autoComplete="off" aria-label="Body weight in pounds" autoFocus={editing}
+          placeholder={scale != null ? String(scale) : hint != null ? String(hint) : '—'} value={text} onChange={e => setText(e.target.value)} />
+        <span className="u">lb</span>
+      </div>
+      <div className="weigh-actions">
+        <button className="btn primary" type="submit" disabled={!valid}><Icon.check />Log weight</button>
+        {editing && <button className="btn ghost" type="button" onClick={() => { setEditing(false); setText(''); }}>Cancel</button>}
+        {editing && log.weight != null && (
+          <button className="btn ghost clear" type="button" onClick={() => { editDay(date, d => { delete d.weight; delete d.wAt; }); setEditing(false); setText(''); }}>Remove</button>
+        )}
+      </div>
+    </form>
   );
 }
 

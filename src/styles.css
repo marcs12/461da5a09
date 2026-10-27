@@ -957,3 +957,21 @@ table.lap-table { min-width: 0; width: 100%; font-size: 13px; }
 .phase-row em { font: 700 13px/1 var(--display); font-style: normal; letter-spacing: .05em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; background: var(--surface-2); color: var(--muted); margin-left: auto; }
 .phase-row em.now { color: var(--accent); background: var(--accent-soft); }
 .phase-row em.all { color: var(--good); background: color-mix(in srgb, var(--good) 14%, transparent); }
+
+/* Weigh-in: log, then a confirmed state with Edit */
+.weigh-form .weigh-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.weigh-form .btn.primary:disabled { opacity: .45; }
+.btn.ghost.clear { color: var(--bad); margin-left: auto; }
+.weigh-done { display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 12px; border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--good) 12%, var(--surface)); border: 1px solid color-mix(in srgb, var(--good) 40%, transparent); }
+.weigh-done.scale { background: var(--surface-2); border-color: var(--line); }
+.weigh-done b { display: block; font: 700 40px/1 var(--display); letter-spacing: .01em; }
+.weigh-done b u { text-decoration: none; font-size: 17px; color: var(--muted); margin-left: 4px; letter-spacing: .06em; text-transform: uppercase; }
+.weigh-done small { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); }
+.wd-check { width: 34px; height: 34px; flex: none; border-radius: 50%; display: grid; place-items: center; background: var(--good); color: var(--surface); }
+.weigh-done.scale .wd-check { background: var(--faint); }
+.wd-check svg { width: 19px; height: 19px; }
+.weigh-done.pop .wd-check { animation: db-pop .6s cubic-bezier(.3,1.6,.5,1) both; }
+.weigh-done.pop { animation: wd-glow 1.4s ease-out both; }
+@keyframes wd-glow { from { box-shadow: 0 0 0 0 color-mix(in srgb, var(--good) 45%, transparent); } to { box-shadow: 0 0 0 14px transparent; } }
+.weigh-done .grow { flex: 1; min-width: 0; }

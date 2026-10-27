@@ -8,6 +8,8 @@ export const SCHEMA_VERSION = 5;
 export interface SetEntry { w?: number; r?: number }
 export interface DayLog {
   weight?: number;
+  /** When the weight was logged, ms. */
+  wAt?: number;
   done?: boolean;
   walk?: boolean;
   min?: number;
