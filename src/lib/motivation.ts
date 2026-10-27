@@ -1,7 +1,7 @@
 import { addDays, diff } from './dates';
 import { END, RACE_PACE, START, SUB60_PACE, TOTAL_DAYS, TT_DATE, pace, programDay, sessionOf, type ProgramDay, type Session } from './program';
 import { GOAL_WEIGHT, startWeight } from './targets';
-import { isDone } from './stats';
+import { isDone, weights } from './stats';
 import { BASE_10K, GOAL_10K, body, overall, speed } from './progress';
 import type { Data } from './schema';
 
@@ -102,7 +102,8 @@ export function arc(d: Data, t: string) {
   return {
     day, days: TOTAL_DAYS, pct: pd.status === 'post' ? Math.max(O.pct, 1) : O.pct,
     start: { w: B.start, tenK: BASE_10K },
-    now: { w: B.now ?? undefined, tenK: S.est },
+    // The number you stood on most recently, with the 7-day average the percentages use alongside it.
+    now: { w: [...weights(d)].reverse().find(e => e.date <= t)?.w, avg: B.now ?? undefined, tenK: S.est },
     goal: { w: GOAL_WEIGHT, tenK: GOAL_10K },
     forecast, status: pd.status,
   };

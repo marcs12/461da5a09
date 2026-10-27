@@ -76,3 +76,15 @@ describe('why, by session', () => {
     expect(rw.status === 'in' && why(rw.session, rw)).toMatch(/non-stop/);
   });
 });
+
+describe('arc, now', () => {
+  it('shows the latest weigh-in, with the 7-day average beside it', () => {
+    const d = emptyData();
+    d.days[day(-3)] = { weight: 242 } as never;
+    d.days[day(-1)] = { weight: 240 } as never;
+    d.days[day(0)] = { weight: 238 } as never;
+    const a = arc(d, day(0));
+    expect(a.now.w).toBe(238);
+    expect(a.now.avg).toBe(240);
+  });
+});

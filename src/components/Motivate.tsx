@@ -39,7 +39,8 @@ export function ArcCard({ data, today }: { data: Data; today: string }) {
   const [vref, VW] = useWidth();
   const VH = VW < 500 ? 70 : 92;
   const G = geometry(VW, VH), dot = G.at(p), s0 = G.at(0), s1 = G.at(1);
-  const w = (v?: number) => (v != null ? `${r1(v).toFixed(v >= 100 ? 0 : 1)}` : '—');
+  const w = (v?: number) => (v == null ? '—' : Number.isInteger(r1(v)) ? String(r1(v)) : r1(v).toFixed(1));
+  const avgNote = A.now.w != null && A.now.avg != null && Math.abs(A.now.avg - A.now.w) >= 0.3 ? ` · avg ${r1(A.now.avg).toFixed(1)}` : '';
 
   return (
     <article className="arccard" aria-label="Your arc">
@@ -67,7 +68,7 @@ export function ArcCard({ data, today }: { data: Data; today: string }) {
 
       <div className="arc-cols">
         <div><small>Start</small><b>{w(A.start.w)}<u>lb</u></b><span>{clock(A.start.tenK)} 10K</span></div>
-        <div className="now"><small>Now</small><b>{w(A.now.w ?? (A.status === 'pre' ? A.start.w : undefined))}<u>lb</u></b><span>{A.now.tenK != null ? `${clock(A.now.tenK)} 10K` : 'first trial Dec 20'}</span></div>
+        <div className="now"><small title="Your latest weigh-in. The percentages use the 7-day average, which smooths out water weight.">Now{avgNote}</small><b>{w(A.now.w ?? (A.status === 'pre' ? A.start.w : undefined))}<u>lb</u></b><span>{A.now.tenK != null ? `${clock(A.now.tenK)} 10K` : 'first trial Dec 20'}</span></div>
         <div className="goal"><small>{fmtShort(END)}</small><b>{A.goal.w}<u>lb</u></b><span>{clock(A.goal.tenK)} 10K</span></div>
       </div>
 
