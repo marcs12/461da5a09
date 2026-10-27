@@ -10,6 +10,7 @@ import { RecoveryCard, WatchCard } from './Watch';
 import { garminDay, matchActivity, sleepOn, stepsOn, weightOn } from '../lib/garmin';
 import { why } from '../lib/motivation';
 import { ArcCard, DoneBanner, markJustDone } from '../components/Motivate';
+import { Effort, FoodCard, LogValue, NotesCard, RunLog } from '../components/Log';
 
 interface Props { data: Data; date: string; setDate: (d: string) => void; onTimer: () => void; openGuide: () => void }
 type InDay = Extract<ProgramDay, { status: 'in' }>;
@@ -38,6 +39,7 @@ export function SessionDay({ data, date, setDate, onTimer, openGuide }: Props) {
     : `Week ${pd.week} of ${WEEKS} · ${pd.phase.name}`;
   const rel = date === t ? 'Today' : date === addDays(t, 1) ? 'Tomorrow' : date === addDays(t, -1) ? 'Yesterday' : '';
   const note = pd.status === 'in' ? WEEK_NOTES[pd.week] : undefined;
+  const T = targetsOn(data.settings, date);
 
   return (
     <section>
@@ -63,6 +65,7 @@ export function SessionDay({ data, date, setDate, onTimer, openGuide }: Props) {
           {pd.status === 'pre' && <PreStart date={date} setDate={setDate} />}
           {pd.status === 'post' && <AfterRace openGuide={openGuide} />}
           {pd.status === 'in' && <SessionCard data={data} date={date} s={pd.session} log={log} onTimer={onTimer} />}
+          <FoodCard data={data} date={date} log={log} cal={T.cal} pro={T.pro} note={T.note} floor={pd.status === 'in' ? CAL_FLOOR : undefined} />
         </div>
         <aside className="stack"><SideCards data={data} date={date} log={log} /></aside>
       </div>
@@ -159,18 +162,10 @@ function SessionCard({ data, date, s, log, onTimer }: { data: Data; date: string
             </div>
           )}
           {s.kind !== 'rest' && isDone(data, date) && <DoneBanner data={data} date={date} />}
-          {s.amrap && <ComplexFields data={data} date={date} s={s} log={log} set={set} />}
+          {s.amrap && <ComplexFields data={data} date={date} s={s} log={log} />}
           {s.kind === 'cardio' && (
             <>
-              <div className="fields">
-                <div className="field"><label htmlFor="f-min">Minutes</label>
-                  <NumField className="inp" id="f-min" inputMode="decimal" placeholder={aMin != null ? String(aMin) : s.minutes ? String(s.minutes) : '—'} value={log.min} onCommit={v => set({ min: v })} /></div>
-                <div className="field"><label htmlFor="f-km">Distance (km)</label>
-                  <NumField className="inp" id="f-km" inputMode="decimal" placeholder={aKm != null ? String(aKm) : s.km ? String(s.km) : '—'} value={log.km} onCommit={v => set({ km: v })} /></div>
-                <div className="field"><label htmlFor="f-rpe">Effort (1–10)</label>
-                  <NumField className="inp" id="f-rpe" inputMode="numeric" placeholder={String(s.effort ?? 4)} value={log.rpe} onCommit={v => set({ rpe: v })} /></div>
-              </div>
-              {log.min != null && log.km != null && log.km > 0 && <div className="hint">Pace {fmtPace(log.min / log.km)}</div>}
+              <RunLog date={date} log={log} s={s} watch={a ? { min: aMin, km: aKm } : undefined} />
               {s.tag !== 'Low impact' && s.tag !== 'Walk' && <p className="tip"><b>Shin or knee pain (pain, not soreness)?</b> Swap this run for a treadmill walk.</p>}
             </>
           )}
@@ -198,7 +193,7 @@ function complexHint(data: Data, date: string, s: Session): { hint: string; up: 
   return { hint: `Last ${when}: ${w} lb × ${r} rounds. Beat it`, up: false, prefW: w };
 }
 
-function ComplexFields({ data, date, s, log, set }: { data: Data; date: string; s: Session; log: DayLog; set: (p: Partial<DayLog>) => void }) {
+function ComplexFields({ data, date, s, log }: { data: Data; date: string; s: Session; log: DayLog }) {
   const { hint, up, prefW } = complexHint(data, date, s);
   const id = s.logAs!, v = log.ex?.[id]?.[0] || {};
   return (
@@ -208,9 +203,8 @@ function ComplexFields({ data, date, s, log, set }: { data: Data; date: string; 
           <NumField className="inp" id="f-cxw" inputMode="decimal" placeholder={String(prefW)} value={v.w} onCommit={x => editSet(date, id, 0, 'w', x)} /></div>
         <div className="field"><label htmlFor="f-cxr">Rounds</label>
           <NumField className="inp" id="f-cxr" inputMode="numeric" integer placeholder="—" value={v.r} onCommit={x => editSet(date, id, 0, 'r', x)} /></div>
-        <div className="field"><label htmlFor="f-rpe">Effort (1–10)</label>
-          <NumField className="inp" id="f-rpe" inputMode="numeric" placeholder={String(s.effort ?? 8)} value={log.rpe} onCommit={x => set({ rpe: x })} /></div>
       </div>
+      <Effort date={date} value={log.rpe} suggested={s.effort ?? 8} />
       <div className={`hint ${up ? 'up' : ''}`}>{hint}</div>
       <p className="fine">The timer counts rounds as you tap through the moves; they land here when you finish.</p>
     </>
@@ -230,12 +224,6 @@ function ComplexCard({ s }: { s: Session }) {
       <p className="fine">Your kettlebell goes up to 44 lb (20 kg), the weight used in the original workout.</p>
     </article>
   );
-}
-
-/** Minutes per km as m:ss. */
-function fmtPace(minPerKm: number) {
-  const sec = Math.round(minPerKm * 60);
-  return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}/km`;
 }
 
 function LiftCard({ data, date, s, log }: { data: Data; date: string; s: Session; log: DayLog }) {
@@ -298,6 +286,21 @@ function LiftCard({ data, date, s, log }: { data: Data; date: string; s: Session
                       <NumField id={`s-${id}-${i}-r`} inputMode="numeric" aria-label={`${ex.name} set ${i + 1} ${unit}`}
                         placeholder={ex.target ? String(ex.target) : unit === 'sec' ? 'sec' : 'reps'} value={v.r} onCommit={x => setEntry(id, i, 'r', x)} />
                       <span className="u">{unit === 'sec' ? 's' : 'reps'}</span>
+                      {(() => {
+                        const lastR = last ? Number(last.sets[i]?.r ?? last.sets.at(-1)?.r) || undefined : undefined;
+                        const planR = v.r ?? ex.target ?? lastR;
+                        const planW = ex.bw ? undefined : v.w ?? num(prefW) ?? undefined;
+                        const logged = v.r != null && (ex.bw || v.w != null);
+                        const can = !logged && planR != null && (ex.bw || planW != null);
+                        return (
+                          <button className={`setok ${logged ? 'on' : ''}`} disabled={!can}
+                            aria-label={logged ? `Set ${i + 1} logged` : `Log set ${i + 1}${planW != null ? ` at ${planW} lb` : ''} × ${planR ?? ''}`}
+                            title={logged ? 'Logged' : can ? `Log ${planW != null ? `${planW} lb × ` : ''}${planR}` : 'Type the weight first'}
+                            onClick={() => { if (planW != null && v.w == null) setEntry(id, i, 'w', planW); if (v.r == null) setEntry(id, i, 'r', planR); }}>
+                            <Icon.check />
+                          </button>
+                        );
+                      })()}
                     </div>
                   );
                 })}
@@ -329,15 +332,13 @@ function SideCards({ data, date, log }: { data: Data; date: string; log: DayLog 
   const lost = a7 != null && date >= START ? startWeight(data) - a7 : null;
 
   const pct = (v: number | undefined, t: number) => Math.min(100, Math.round(((v || 0) / t) * 100));
-  const { cal, pro } = log;
   const steps = stepsOn(data, date), sleep = sleepOn(data, date);
-  const fromWatch = (k: 'steps' | 'sleep') => log[k] == null && (k === 'steps' ? g?.steps : g?.sleepH) != null;
 
   return (
     <>
       <article className="card o-weigh">
         <header><h3>Morning weigh-in</h3><span className="aside">{prev ? `last ${prev.w} lb · ${fmtShort(prev.date)}` : 'before breakfast'}</span></header>
-        <WeighIn date={date} log={log} scale={g?.weightLb} hint={prev?.w} />
+        <WeighIn date={date} log={log} scale={g?.weightLb} />
         <dl className="minis">
           <div><dt>vs last</dt><dd className={cls(dPrev)}>{dPrev != null ? sgn(dPrev) : '—'}</dd></div>
           <div><dt>7-day avg</dt><dd>{a7 != null ? r1(a7).toFixed(1) : '—'}</dd></div>
@@ -345,42 +346,29 @@ function SideCards({ data, date, log }: { data: Data; date: string; log: DayLog 
         </dl>
         {plan != null && <p className="fine">The plan has you at {r1(plan).toFixed(1)} lb by tonight. Judge the 7-day average, not one weigh-in.</p>}
         {lost != null && lost >= 1 && <p className="since"><b>−{r1(lost).toFixed(1)} lb</b> since day 1{a7 != null && a7 > GOAL_WEIGHT ? ` · ${r1(a7 - GOAL_WEIGHT).toFixed(1)} to ${GOAL_WEIGHT}` : ` · ${GOAL_WEIGHT} reached`}</p>}
+        <Waist data={data} date={date} log={log} onSave={v => set({ waist: v })} />
         {cp && <p className="msg">Checkpoint: {cp.target} lb is on track, {cp.floor} is the floor.</p>}
       </article>
 
       <RecoveryCard data={data} date={date} />
 
       <article className="card o-fuel">
-        <header><h3>Fuel and steps</h3><span className="aside">{T.note}</span></header>
-        <Meter id="f-cal" label="Calories" unit="kcal" integer value={cal} placeholder={T.cal} onCommit={v => set({ cal: v })}
-          pct={pct(cal, T.cal)} tone={cal != null && cal > T.cal * 1.05 ? 'bad' : ''}
-          note={`Target ${T.cal.toLocaleString()} · ${cal != null
-            ? (T.cal - cal >= 0 ? `${(T.cal - cal).toLocaleString()} left` : `${(cal - T.cal).toLocaleString()} over`)
-            : 'no liquid calories'}${inPlan && cal != null && cal < CAL_FLOOR ? ` · under the ${CAL_FLOOR.toLocaleString()} floor` : ''}`} />
-        <Meter id="f-pro" label="Protein" unit="g" integer value={pro} placeholder={T.pro} onCommit={v => set({ pro: v })}
-          pct={pct(pro, T.pro)} tone={pro != null && pro < T.pro * 0.8 ? 'warn' : ''}
-          note={`Target ${T.pro} g · keeps the loss from being muscle`} />
-        <Meter id="f-steps" label="Steps" unit="" integer value={log.steps} placeholder={g?.steps ?? T.steps} onCommit={v => set({ steps: v })}
-          pct={pct(steps, T.steps)} tone=""
-          note={steps != null && steps < T.steps
-            ? `${(T.steps - steps).toLocaleString()} to go${fromWatch('steps') ? ' · from your watch' : ''} · at least ${T.steps.toLocaleString()} every day`
-            : `${fromWatch('steps') ? 'From your watch · ' : ''}At least ${T.steps.toLocaleString()}, every day, on top of workouts`} />
-        <Meter id="f-sleep" label="Sleep" unit="h" value={log.sleep} placeholder={g?.sleepH ?? 7.5} onCommit={v => set({ sleep: v })}
-          pct={pct(sleep, 8)} tone={sleep != null && sleep < 7 ? 'warn' : ''}
-          note={`${fromWatch('sleep') ? `From your watch${g?.sleepScore ? `, sleep score ${g.sleepScore}` : ''} · ` : ''}7 to 8 h · bad sleep two weeks running is a signal to ease off`} />
+        <header><h3>Steps and sleep</h3>{g && <span className="aside">your watch fills these in</span>}</header>
+        <LogValue id="f-steps" label="Steps" unit="" date={date} integer min={0} max={100000} value={log.steps} source={g?.steps} sourceLabel="from your watch"
+          placeholder={T.steps} onSave={v => set({ steps: v })} pct={pct(steps, T.steps)}
+          note={steps != null && steps < T.steps ? `${(T.steps - steps).toLocaleString()} to go · at least ${T.steps.toLocaleString()} every day` : steps != null ? `Goal hit · ${T.steps.toLocaleString()} a day, on top of workouts` : `At least ${T.steps.toLocaleString()} a day, on top of workouts`} />
+        <LogValue id="f-sleep" label="Sleep" unit="h" date={date} min={0} max={16} value={log.sleep} source={g?.sleepH} sourceLabel={`from your watch${g?.sleepScore ? ` · score ${g.sleepScore}` : ''}`}
+          placeholder={7.5} onSave={v => set({ sleep: v })} pct={pct(sleep, 8)} tone={sleep != null && sleep < 7 ? 'warn' : ''}
+          note="7 to 8 h · short sleep two weeks running is a signal to ease off" />
       </article>
 
-      <article className="card o-note">
-        <header><h3><label htmlFor="f-note">Notes</label></h3></header>
-        <textarea className="inp" id="f-note" placeholder="How it felt, what you swapped, anything aching…"
-          value={log.note ?? ''} onChange={e => set({ note: e.target.value })} />
-      </article>
+      <NotesCard date={date} value={log.note} />
     </>
   );
 }
 
 /** Type a weight and press Log: it then shows as logged, with Edit to change it. */
-function WeighIn({ date, log, scale, hint }: { date: string; log: DayLog; scale?: number; hint?: number }) {
+function WeighIn({ date, log, scale }: { date: string; log: DayLog; scale?: number }) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState('');
   const [fresh, setFresh] = useState(false);
@@ -410,7 +398,7 @@ function WeighIn({ date, log, scale, hint }: { date: string; log: DayLog; scale?
     <form className="weigh-form" onSubmit={e => { e.preventDefault(); save(); }}>
       <div className="weigh-row">
         <input id="f-weight" inputMode="decimal" autoComplete="off" aria-label="Body weight in pounds" autoFocus={editing}
-          placeholder={scale != null ? String(scale) : hint != null ? String(hint) : '—'} value={text} onChange={e => setText(e.target.value)} />
+          placeholder={scale != null ? String(scale) : '—'} value={text} onChange={e => setText(e.target.value)} />
         <span className="u">lb</span>
       </div>
       <div className="weigh-actions">
@@ -424,16 +412,23 @@ function WeighIn({ date, log, scale, hint }: { date: string; log: DayLog; scale?
   );
 }
 
-function Meter(p: { id: string; label: string; unit: string; value?: number; placeholder: number; onCommit: (v?: number) => void; pct: number; tone: string; note: string; integer?: boolean }) {
+/** Waist once a week: fat loss shows here when the scale stalls. */
+function Waist({ data, date, log, onSave }: { data: Data; date: string; log: DayLog; onSave: (v?: number) => void }) {
+  const all = Object.keys(data.days).sort().filter(k => data.days[k].waist != null && k <= date);
+  const first = all[0] ? data.days[all[0]].waist! : undefined;
+  const last = [...all].reverse().find(k => k < date);
+  const [open, setOpen] = useState(false);
+  const due = !last || diffDays(date, last) >= 7;
+  if (log.waist == null && !open) {
+    return <button className="linkbtn" onClick={() => setOpen(true)}>{due ? '+ Measure your waist (once a week)' : '+ Waist'}</button>;
+  }
+  const change = first != null && log.waist != null && all[0] !== date ? log.waist - first : undefined;
   return (
-    <div className="meter">
-      <div className="meter-top">
-        <label htmlFor={p.id}>{p.label}</label>
-        <NumField className="inp" id={p.id} inputMode={p.integer ? 'numeric' : 'decimal'} integer={p.integer} placeholder={String(p.placeholder)} value={p.value} onCommit={p.onCommit} />
-        <span className="u">{p.unit}</span>
-      </div>
-      <div className="track"><i className={p.tone} style={{ width: `${p.pct}%` }} /></div>
-      <small>{p.note}</small>
+    <div className="waist">
+      <LogValue id="f-waist" label="Waist" unit="in" date={date} min={20} max={80} value={log.waist} placeholder={last ? data.days[last].waist : undefined}
+        onSave={v => { onSave(v); if (v == null) setOpen(false); }}
+        note={change != null ? `${change <= 0 ? '−' : '+'}${Math.abs(r1(change)).toFixed(1)} in since ${fmtShort(all[0])}` : 'At the belly button, relaxed, same morning each week'} />
     </div>
   );
 }
+const diffDays = (a: string, b: string) => Math.round((parse(a).getTime() - parse(b).getTime()) / 864e5);

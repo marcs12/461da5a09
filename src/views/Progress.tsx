@@ -71,7 +71,11 @@ export function Progress({ data, goToday }: { data: Data; goToday: () => void })
             <div><dt>7-day average</dt><dd>{B.now != null ? r1(B.now).toFixed(1) : '—'}</dd></div>
             <div><dt>Pace</dt><dd>{B.perWeek != null ? `${sgn(B.perWeek)} lb/wk` : '—'}</dd></div>
             <div><dt>Race day at this pace</dt><dd>{B.projected != null ? `${r1(B.projected).toFixed(0)} lb` : '—'}</dd></div>
-            <div><dt>Body fat</dt><dd>{B.bodyFat != null ? `${B.bodyFat}%` : '—'}</dd></div>
+            {B.waist ? (
+              <div><dt>Waist</dt><dd>{B.waist.now} in{B.waist.now !== B.waist.first && <small className={B.waist.now < B.waist.first ? 'down' : ''}> {B.waist.now < B.waist.first ? '−' : '+'}{r1(Math.abs(B.waist.now - B.waist.first)).toFixed(1)}</small>}</dd></div>
+            ) : (
+              <div><dt>Body fat</dt><dd>{B.bodyFat != null ? `${B.bodyFat}%` : '—'}</dd></div>
+            )}
           </dl>
           {all.length ? <WeightChart E={all.filter(e => e.date >= CHART_FROM)} start={B.start} /> : (
             <div className="empty">Log a weigh-in on Today to start the chart.<button className="btn" onClick={goToday}>Log a weigh-in</button></div>

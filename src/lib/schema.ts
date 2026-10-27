@@ -6,10 +6,17 @@
 export const SCHEMA_VERSION = 5;
 
 export interface SetEntry { w?: number; r?: number }
+/** One thing eaten: what made up the day's calories and protein. */
+export interface FoodEntry { name: string; cal: number; pro: number; at: number }
+
 export interface DayLog {
   weight?: number;
   /** When the weight was logged, ms. */
   wAt?: number;
+  /** Waist at the belly button, inches. */
+  waist?: number;
+  /** What was eaten, adding up to cal and pro. */
+  food?: FoodEntry[];
   done?: boolean;
   walk?: boolean;
   min?: number;

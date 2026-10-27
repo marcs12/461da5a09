@@ -1,20 +1,9 @@
 import { useState } from 'react';
 import { TIERS } from '../lib/targets';
+import { DAY, SWAP_MEALS } from '../lib/meals';
 
-/** The repeat day at 1,450 kcal. Label estimates, cooked weights. */
-const DAY: { meal: string; what: string; kcal: number; pro: number }[] = [
-  { meal: 'Breakfast', what: 'Scramble: 2 eggs, 1 cup egg whites, spinach, peppers, 1 tbsp parmesan, salsa', kcal: 310, pro: 43 },
-  { meal: 'Lunch', what: 'Bulgogi beef bowl: 150 g extra-lean ground beef, ½ cup rice, vegetables, cucumber, green onion', kcal: 475, pro: 47 },
-  { meal: 'Snack', what: '250 g 0% Greek yogurt, 1 scoop whey isolate, a handful of berries', kcal: 295, pro: 52 },
-  { meal: 'Dinner', what: 'Pork adobo: 200 g tenderloin with vegetables', kcal: 380, pro: 56 },
-];
 const total = (k: 'kcal' | 'pro') => DAY.reduce((a, m) => a + m[k], 0);
-
-const SWAPS = [
-  ['Rotisserie chicken night', '180 g meat, skin off', '315 kcal · 50 g'],
-  ['Steak night', '200 g cooked top sirloin', '380 kcal · 58 g'],
-  ['Post-run shake', '1 scoop isolate in water, instead of the yogurt bowl', '120 kcal · 27 g'],
-];
+const SWAPS = SWAP_MEALS.map(m => [m.name, m.what, `${m.kcal} kcal · ${m.pro} g`]);
 
 const RECIPES: { name: string; makes: string; steps: string[] }[] = [
   { name: 'Bulgogi beef', makes: 'Seven 150 g lunches from 1.4 kg raw', steps: [

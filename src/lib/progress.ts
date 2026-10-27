@@ -45,6 +45,10 @@ export function body(d: Data, t: string) {
     checkpoints: CHECKPOINTS.map(c => ({ ...c, reached: now != null && now <= c.target })),
     series: E.filter(e => e.date >= addDays(START, -28)).map(e => ({ date: e.date, y: avg7(E, e.date)! })),
     bodyFat: [...E].reverse().map(e => garminDay(d, e.date)?.bodyFat).find((x): x is number => x != null),
+    waist: (() => {
+      const ks = Object.keys(d.days).filter(k => k <= t && d.days[k].waist != null).sort();
+      return ks.length ? { first: d.days[ks[0]].waist!, now: d.days[ks.at(-1)!].waist!, since: ks[0] } : undefined;
+    })(),
   };
 }
 
