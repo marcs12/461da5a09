@@ -40,7 +40,7 @@ export function Progress({ data, goToday }: { data: Data; goToday: () => void })
           <ul className="parts">
             <PartRow name="Body" pct={B.pct} detail={B.now == null ? 'log a weigh-in' : B.lost > 0 ? `${r1(B.lost).toFixed(1)} of ${Math.round(B.start - B.goal)} lb` : `${Math.round(B.start - B.goal)} lb to go`} />
             <PartRow name="Speed" pct={S.pct} detail={S.est != null ? `10K about ${hms(S.est)}` : 'first time trial Dec 20'} muted={S.est == null} />
-            <PartRow name="Habits" pct={Hb.sessions} detail={Hb.sched ? `${Hb.done} of ${Hb.sched} sessions` : 'starts Oct 26'} muted={!Hb.sched} />
+            <PartRow name="Training" pct={Hb.plan} detail={Hb.sched ? `${Hb.done} of ${Hb.total} sessions in the plan` : 'starts Oct 26'} muted={!Hb.sched} />
           </ul>
           <dl className="hero-facts">
             <div><dt>Sun Run</dt><dd>{left > 0 ? `${left} days` : left === 0 ? 'today' : 'done'}</dd></div>

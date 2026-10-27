@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { addDays } from './dates';
 import type { GActivity, GDay, GLap } from './garmin';
 import { START } from './program';
 import { emptyData, type Data } from './schema';
-import { BASE_10K, GOAL_10K, body, efforts, engine, longestStreak, milestones, riegel, slope, speed, streak } from './progress';
+import { BASE_10K, GOAL_10K, PLAN_SESSIONS, body, overall, efforts, engine, longestStreak, milestones, riegel, slope, speed, streak } from './progress';
 
 const day = (n: number) => addDays(START, n);
 const run = (id: string, date: string, over: Partial<GActivity> = {}): GActivity =>
@@ -111,5 +111,19 @@ describe('milestones', () => {
     const m = Object.fromEntries(milestones(d, day(10)).map(x => [x.id, x]));
     expect(m['run-10k'].at).toBe(day(5));
     expect(m['total-100'].progress).toBeCloseTo(0.15, 2);
+  });
+});
+
+describe('overall', () => {
+  afterEach(() => vi.useRealTimers());
+  it('counts day 1 as one session of the whole plan, not 100% of the sessions so far', () => {
+    vi.useFakeTimers(); vi.setSystemTime(new Date('2026-10-26T22:00:00-07:00'));
+    const d = emptyData();
+    d.days[day(-1)] = { weight: 238 } as never;
+    d.days[day(0)] = { weight: 236, done: true } as never;
+    const o = overall(d, day(0));
+    // Body uses the 7-day average: 238 and 236 make 237, so 1 lb of 73.
+    expect(o.pct).toBeCloseTo((1 / 73 + 1 / PLAN_SESSIONS) / 2, 3);
+    expect(o.pct).toBeLessThan(0.03);
   });
 });

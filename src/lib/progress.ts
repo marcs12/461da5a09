@@ -156,6 +156,9 @@ export function longestStreak(ok: (ds: string) => boolean, t: string, from = STA
   return { n: best, end: bestEnd };
 }
 
+/** Sessions in the whole plan (rest days aside). */
+export const PLAN_SESSIONS = Array.from({ length: TOTAL_DAYS }, (_, i) => sessionOf(addDays(START, i))).filter(s => s && s.kind !== 'rest').length;
+
 export function habits(d: Data, t: string) {
   const a = adherence(d);
   const runKm = new Map<string, number>();
@@ -170,6 +173,8 @@ export function habits(d: Data, t: string) {
   for (let w = 1; w <= upto; w++) weeks.push({ date: weekStart(w), y: Math.round((runKm.get(weekStart(w)) ?? 0) * 10) / 10 });
   return {
     sessions: a.sched ? a.done / a.sched : 0, done: a.done, sched: a.sched,
+    /** How much of the whole plan is behind you: what the overall gauge counts, so one early session can't read as 100%. */
+    plan: a.done / PLAN_SESSIONS, total: PLAN_SESSIONS,
     steps: a.days ? a.stepDays / a.days : 0, stepDays: a.stepDays, days: a.days,
     stepStreak: streak(ds => hitSteps(d, ds), t),
     totalKm: [...runKm.values()].reduce((s, x) => s + x, 0),
@@ -197,7 +202,7 @@ export function strength(d: Data) {
 
 export function overall(d: Data, t: string) {
   const b = body(d, t), s = speed(d, t), h = habits(d, t);
-  const parts = [{ key: 'body', pct: b.pct }, { key: 'speed', pct: s.pct, missing: s.est == null }, { key: 'habits', pct: h.sessions, missing: !h.sched }];
+  const parts = [{ key: 'body', pct: b.pct }, { key: 'speed', pct: s.pct, missing: s.est == null }, { key: 'training', pct: h.plan, missing: !h.sched }];
   const live = parts.filter(p => !p.missing);
   return { pct: live.length ? avg(live.map(p => p.pct))! : 0, parts };
 }
