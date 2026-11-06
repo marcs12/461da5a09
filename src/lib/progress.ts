@@ -5,6 +5,7 @@ import { END, EX, RACE_GOAL, START, STRENGTH, TOTAL_DAYS, WEEKS, programDay, ses
 import { CHECKPOINTS, GOAL_WEIGHT, daysToRace, startWeight, targetOn } from './targets';
 import { adherence, avg7, hitSteps, isDone, sortedKeys, weights } from './stats';
 import type { Data } from './schema';
+import { forecastOn, weightModel } from './forecast';
 
 /**
  * Everything the Progress tab shows, worked out from the log and the watch.
@@ -32,15 +33,17 @@ export function body(d: Data, t: string) {
   const now = last ? avg7(E, last.date)! : null;
   const lost = now != null ? start - now : 0;
   const pct = clamp01(lost / (start - goal));
-  const recent = E.filter(e => diff(t, e.date) <= 28 && diff(t, e.date) >= 0);
-  const span = recent.length ? diff(recent.at(-1)!.date, recent[0].date) : 0;
-  const s = recent.length >= 5 && span >= 10 ? slope(recent.map(e => ({ date: e.date, y: e.w }))) : undefined;
-  const left = Math.max(0, daysToRace(t));
   const inPlan = programDay(t).status !== 'pre';
+  // Race-day forecast from the curved, capped model in forecast.ts (a straight line through early water weight said 114 lb).
+  const M = inPlan ? weightModel(d, t) : undefined;
+  const F = M && daysToRace(t) > 0 ? forecastOn(d, M, END) : undefined;
   return {
     start, goal, now, lost, pct, toGo: now != null ? Math.max(0, now - goal) : start - goal,
-    perWeek: s != null ? s * 7 : undefined,
-    projected: s != null && now != null && left > 0 ? now + s * left : undefined,
+    /** Measured lb per week over the last four weeks, once there's a trend to measure. */
+    perWeek: M?.basis === 'trend' ? M.perWeek : undefined,
+    projected: M?.basis === 'trend' ? F?.w : undefined,
+    projectedRange: M?.basis === 'trend' && F ? [F.low, F.high] as const : undefined,
+    goalOn: M?.basis === 'trend' ? F?.goalOn : undefined,
     plan: inPlan ? targetOn(start, t) : undefined,
     checkpoints: CHECKPOINTS.map(c => ({ ...c, reached: now != null && now <= c.target })),
     series: E.filter(e => e.date >= addDays(START, -28)).map(e => ({ date: e.date, y: avg7(E, e.date)! })),

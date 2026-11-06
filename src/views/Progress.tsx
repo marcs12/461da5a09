@@ -5,6 +5,7 @@ import { hasGarmin, matchActivity, trialTime } from '../lib/garmin';
 import { floorAfter, floorOn, nextCheckpoint, targetAfter, targetOn, targetsOn, weeksBy } from '../lib/targets';
 import { avg7, weekAvg, weekLog, weights, type WeighIn } from '../lib/stats';
 import { BASE_10K, GOAL_10K, SUB60, body, engine, habits, milestones, overall, raceDayLeft, speed, strength } from '../lib/progress';
+import { ForecastCard } from '../components/Forecast';
 import { Arc, Bar, Columns, LineChart } from '../components/Charts';
 import type { Data } from '../lib/store';
 
@@ -70,7 +71,7 @@ export function Progress({ data, goToday }: { data: Data; goToday: () => void })
           <dl className="stats4">
             <div><dt>7-day average</dt><dd>{B.now != null ? r1(B.now).toFixed(1) : '—'}</dd></div>
             <div><dt>Pace</dt><dd>{B.perWeek != null ? `${sgn(B.perWeek)} lb/wk` : '—'}</dd></div>
-            <div><dt>Race day at this pace</dt><dd>{B.projected != null ? `${r1(B.projected).toFixed(0)} lb` : '—'}</dd></div>
+            <div><dt>Race day at this pace</dt><dd>{B.goalOn ? <>{B.goal} lb<small> by {fmtShort(B.goalOn)}</small></> : B.projected != null ? <>{Math.round(B.projected)} lb{B.projectedRange && <small> {Math.round(B.projectedRange[0])}–{Math.round(B.projectedRange[1])}</small>}</> : <small>after week 3</small>}</dd></div>
             {B.waist ? (
               <div><dt>Waist</dt><dd>{B.waist.now} in{B.waist.now !== B.waist.first && <small className={B.waist.now < B.waist.first ? 'down' : ''}> {B.waist.now < B.waist.first ? '−' : '+'}{r1(Math.abs(B.waist.now - B.waist.first)).toFixed(1)}</small>}</dd></div>
             ) : (
@@ -84,6 +85,8 @@ export function Progress({ data, goToday }: { data: Data; goToday: () => void })
             <span><i className="lg-dot" />Daily weigh-in</span><span><i className="lg-line" />7-day average</span><span><i className="lg-band" />On track to floor</span>
           </div>
         </article>
+
+        <ForecastCard data={data} today={t} />
 
         <article className="card goal">
           <header><h3>Speed</h3><span className="aside">10K: {hms(BASE_10K)} in April → {hms(GOAL_10K)}</span></header>

@@ -63,7 +63,7 @@ describe('arc', () => {
   it("waits two weeks before forecasting weight", () => {
     const d = emptyData();
     for (let i = -7; i <= 5; i++) d.days[day(i)] = { weight: 238 - Math.max(0, i) * 0.4 } as never;
-    expect(arc(d, day(5)).forecast).toMatch(/Two weeks in/);
+    expect(arc(d, day(5)).forecast).toMatch(/Three weeks in/);
   });
 });
 

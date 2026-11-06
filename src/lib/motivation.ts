@@ -1,4 +1,4 @@
-import { addDays, diff } from './dates';
+import { addDays, diff, fmtShort } from './dates';
 import { END, RACE_PACE, START, SUB60_PACE, TOTAL_DAYS, TT_DATE, pace, programDay, sessionOf, type ProgramDay, type Session } from './program';
 import { GOAL_WEIGHT, startWeight } from './targets';
 import { isDone, weights } from './stats';
@@ -88,11 +88,11 @@ export function arc(d: Data, t: string) {
     forecast = `${Math.round(startWeight(d) - GOAL_WEIGHT)} lb lighter and ${Math.round((BASE_10K - GOAL_10K) / 60)} minutes faster than last April. It starts ${pd.daysUntil === 1 ? 'tomorrow' : `in ${pd.daysUntil} days`}.`;
   } else if (pd.status === 'post') {
     forecast = 'The arc is complete. Hawaii is the victory lap.';
-  } else if (day < 15) {
-    forecast = `${day <= 7 ? 'Week 1' : 'Week 2'} builds the habit. Two weeks in, this turns into a forecast. For now: show up, log it, repeat.`;
+  } else if (day < 21) {
+    forecast = `${day <= 7 ? 'Week 1' : day <= 14 ? 'Week 2' : 'Week 3'} builds the habit. Three weeks in, this turns into a forecast. For now: show up, log it, repeat.`;
   } else if (B.projected != null && B.perWeek != null && B.perWeek < 0) {
-    forecast = B.projected <= GOAL_WEIGHT + 0.5
-      ? `At this pace you reach ${GOAL_WEIGHT} lb before the Sun Run.`
+    forecast = B.goalOn
+      ? `At this pace you reach ${GOAL_WEIGHT} lb around ${fmtShort(B.goalOn)}, before the Sun Run.`
       : `At this pace you weigh about ${Math.round(B.projected)} lb on race day. Every week on plan pulls that toward ${GOAL_WEIGHT}.`;
   } else if (S.est != null && S.est < BASE_10K) {
     forecast = `Your 10K is ${Math.round((BASE_10K - S.est) / 60)} minutes faster than last April already.`;
