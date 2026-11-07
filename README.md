@@ -28,18 +28,6 @@ Weeks run Monday to Sunday.
 | Taper | 24 | Less volume, a few efforts at goal pace |
 | Race week | 25 | Two short runs, then the 10K, goal 55:00 |
 
-Calories, protein and steps step down by week, and each step ends on a weight checkpoint:
-
-| Weeks | Calories | Protein | Steps | On track | Fallback |
-|---|---|---|---|---|---|
-| 1–8 | 1,450 | 190 g | 12,000 | 210 lb | 214 lb |
-| 9–14 | 1,600 | 190 g | 12,000 | 193 lb | 199 lb |
-| 15–20 | 1,500 | 180 g | 15,000 | 177 lb | 184 lb |
-| 21–24 | 1,500 | 180 g | 15,000 | 165 lb | 172 lb |
-| 25 | 2,400 | 150 g | 10,000 | | |
-
-Dec 24 and 25, and Jan 28 to 30 before the time trial, are at maintenance. 1,500 kcal is the floor while training, except weeks 1–8 at 1,450 by choice. From the race to Apr 30 (Hawaii) it stays at 1,500 kcal, 180 g protein and 12,000 steps.
-
 ## What it does
 
 - **Today**: your arc first (where you started, where you are and Apr 18, with the session streak, a forecast and the next time trial), then the day's session with why it matters with its prescription, an interval timer for every timed run (color flips per segment, beeps, vibrates, keeps the screen awake), set logging with "add 5 lb" hints, the morning weigh-in against the plan, and calories, protein, steps and sleep against the day's targets.
